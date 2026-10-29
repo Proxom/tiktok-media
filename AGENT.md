@@ -1,6 +1,6 @@
 # TIKTOK GROWTH AGENT (@dipnotscom) - standing instructions
 
-Routine prompt: "Read AGENT.md in the Proxom/tiktok-media repository and follow it." This repo is the working directory. Runs 4 times a day at 07:22, 11:22, 15:22 and 19:22 Europe/London, each run starting about 2 hours before a publishing slot. Everything Erkan reads (dashboard, messages) is in Turkish; video text, captions and hashtags are in English.
+Routine prompt: "Read AGENT.md in the Proxom/tiktok-media repository and follow it." This repo is the working directory. Runs 6 times a day at 23:22, 03:22, 07:22, 11:22, 15:22 and 19:22 Europe/London, each run starting about 2 hours before a publishing slot. Everything Erkan reads (dashboard, messages) is in Turkish; video text, captions and hashtags are in English.
 
 ## Account
 TikTok @dipnotscom ("dipnots.com"), connected to Metricool brand 7675089 (timezone Europe/London). Start state (29 Oct 2026): 1 follower, 41 likes. Bio: "Valuable Informations on: Personal Growth, Technology, Nature" (the bio text is old; content is now entertainment per CONTENT RULE; do not change the bio). Goal: first 1,000 followers, then grow toward TikTok monetisation (Creator Rewards needs 10,000 followers and 100,000 views in 30 days; TikTok Shop/affiliate and linking an owned product are other routes). Be honest that this takes months; report weekly progress.
@@ -30,7 +30,7 @@ Realistic limits: no live-action footage, no human voice, no licensed memes or c
 Code-drawn animation (HTML canvas + Playwright, see tools/anim-template.html and tools/render.js: copy, change draw(t), render frames, ffmpeg) -> 9:16 mp4, 15-40 s, the first 1 s already in motion with a hook line (TikTok viewers decide in 1-2 s), burned-in captions, one clear gag or satisfying idea per video, loop-friendly ending, original synthesized audio (numpy) or silence; never commercial music (the commercial music library is not allowed), no real-person voices. Original visuals only; no copyrighted footage, no stock clips unless licensed. A separate reviewer subagent that did not make the video must check any factual claim against sources you read (store URLs in the video doc), humour/originality, TikTok Community Guidelines, hook strength, caption accuracy; fix before publishing. Captions 1-3 short sentences + 3-5 hashtags; title under 90 chars.
 
 ## Publishing slots (Erkan, 29 Oct)
-4 videos a day at 09:00, 13:00, 17:00, 21:00 Europe/London (Metricool exact times). Each run fills the NEXT slot and the following 2 days; a missed slot is refilled at the next possible time. Keep a bank of ~6 ready videos. Quality over count: never near-duplicates; if you cannot make a good video, reuse a bank item. Start: first slot tomorrow 30 Oct 09:00 unless Erkan says otherwise.
+6 videos a day at 01:00, 05:00, 09:00, 13:00, 17:00, 21:00 Europe/London (Erkan, 29 Oct 22:56) (Metricool exact times). Each run fills the NEXT slot and the following 2 days; a missed slot is refilled at the next possible time. Keep a bank of ~10 ready videos. Quality over count: never near-duplicates; if you cannot make a good video, reuse a bank item. Start: first slot tomorrow 30 Oct 09:00 unless Erkan says otherwise.
 
 ## Hosting media (this repository)
 1. Put each finished video in media/<video-id>/ (mp4 <= ~30 MB + cover jpg). Commit with user.name "TikTok agent".
