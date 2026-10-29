@@ -46,7 +46,7 @@ function draw(t){
    if(t<GATE_T+1.0)txt('GO!',540,960,300*(1+ (GATE_T+1-t)*.1),'#3ddc97',Math.max(0,1-(t-GATE_T)));
    // photo finish tension
    const lead=Math.max(...f.m.map(p=>p[1]));
-   if(lead>1250&&t<wf)txt('PHOTO FINISH?!',540,1590,80,'#ffd23f',.6+.4*Math.sin(t*20));
+   if(lead>1250&&t<wf)txt('PHOTO FINISH?!',640,640,80,'#ffd23f',.6+.4*Math.sin(t*20));
   } else {
    const u=t-wf; // reveal
    const col=C[winner];
@@ -56,8 +56,8 @@ function draw(t){
    const a=Math.min(1,u*3);
    txt(N[winner]+'\nWINS!',540,250,150,col,a);
    txt('BY JUST '+gap.toFixed(2)+' SECONDS',540,520,56,'#fff',a);
-   if(u>0.8)txt('Did you pick '+N[winner]+'?',540,1610,64,'#fff',Math.min(1,(u-0.8)*3));
-   if(u>2.0)txt('Comment your marble\nfor the next race',540,1710,52,'#ffd23f',Math.min(1,(u-2)*3));
+   if(u>0.8)txt('Did you pick '+N[winner]+'?',540,760,72,'#fff',Math.min(1,(u-0.6)*5));
+   if(u>1.2)txt('Comment your marble\nfor the next race',540,880,60,'#ffd23f',Math.min(1,(u-1.2)*5));
   }
  }
 }
