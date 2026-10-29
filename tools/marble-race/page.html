@@ -1,0 +1,65 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id=c width=1080 height=1920></canvas><script src="data.js"></script><script>
+// DATA = {frames, events, order, names, cols, finishT, geo:{segs,pegs,spinners,R,GATE_T,FINISH}}
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1080,H=1920,FPS=30;
+const {segs,pegs,spinners,R,GATE_T,FINISH}=DATA.geo,N=DATA.names,C=DATA.cols;
+const winner=DATA.order[0],winT=DATA.finishT[winner],gap=DATA.finishT[DATA.order[1]]-winT;
+function txt(s,px,y,size,col,a,stroke){x.save();x.globalAlpha=a==null?1:a;x.font='900 '+size+'px "DejaVu Sans",Arial,sans-serif';x.textAlign='center';x.lineJoin='round';
+ s.split('\n').forEach((l,i)=>{const yy=y+i*size*1.2;x.lineWidth=size/6;x.strokeStyle=stroke||'rgba(0,0,0,.85)';x.strokeText(l,px,yy);x.fillStyle=col;x.fillText(l,px,yy)});x.restore()}
+function marble(px,py,col,name,badge,sc){x.save();x.translate(px,py);if(sc)x.scale(sc,sc);
+ const g=x.createRadialGradient(-9,-10,3,0,0,R);g.addColorStop(0,'#fff');g.addColorStop(.25,col);g.addColorStop(1,'rgba(0,0,0,.55)');
+ x.fillStyle=col;x.beginPath();x.arc(0,0,R,0,6.283);x.fill();x.fillStyle=g;x.beginPath();x.arc(0,0,R,0,6.283);x.fill();
+ x.strokeStyle='rgba(0,0,0,.5)';x.lineWidth=3;x.stroke();x.restore();
+ txt(name,px,py-R-10,26,'#fff',1);
+ if(badge)txt(badge,px,py+11,30,'#111',1,'rgba(255,255,255,.9)')}
+function bg(t){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1b1040');g.addColorStop(1,'#0b2a4a');x.fillStyle=g;x.fillRect(0,0,W,H);
+ x.fillStyle='rgba(255,255,255,.04)';for(let i=0;i<14;i++){const yy=((i*170+t*40)%(H+170))-170;x.fillRect(0,yy,W,70)}}
+function board(t,f){
+ x.lineCap='round';
+ segs.forEach((s,i)=>{x.strokeStyle=i<2?'#7c8cff':'#f4f1ff';x.lineWidth=i<2?10:16;x.beginPath();x.moveTo(s[0],s[1]);x.lineTo(s[2],s[3]);x.stroke()});
+ pegs.forEach(p=>{x.fillStyle='#ffb703';x.beginPath();x.arc(p[0],p[1],13,0,6.283);x.fill()});
+ spinners.forEach((p,i)=>{const a=f.sp[i],ca=Math.cos(a),sa=Math.sin(a);x.strokeStyle='#ff7ab6';x.lineWidth=18;x.beginPath();x.moveTo(p.x-ca*p.L,p.y-sa*p.L);x.lineTo(p.x+ca*p.L,p.y+sa*p.L);x.stroke();x.fillStyle='#fff';x.beginPath();x.arc(p.x,p.y,10,0,6.283);x.fill()});
+ // finish checker
+ for(let i=0;i<24;i++){x.fillStyle=i%2?'#fff':'#111';x.fillRect(60+i*40,FINISH+R-4,40,20);x.fillStyle=i%2?'#111':'#fff';x.fillRect(60+i*40,FINISH+R+16,40,20)}
+ // gate
+ if(t<GATE_T){x.fillStyle='#ff4d6d';x.fillRect(60,360+R,960,10)}
+}
+function draw(t){
+ const fi=Math.min(DATA.frames.length-1,Math.floor(t*FPS)),f=DATA.frames[fi];
+ bg(t);board(t,f);
+ const racing=t>=GATE_T;
+ // marbles (frozen finishers drawn with rank badge)
+ const ord=f.order;
+ f.m.forEach((p,i)=>{const r=ord.indexOf(i);marble(p[0],p[1],C[i],r>=0?'':N[i],r>=0?String(r+1):null)});
+ // hook / title
+ if(t<GATE_T){
+  const pulse=1+.04*Math.sin(t*10);
+  txt('WHICH MARBLE\nWINS?',540,110,96*pulse,'#fff',1);
+  txt('PICK ONE. COMMENT IT.',540,292,40,'#ffd23f',1);
+  const k=Math.floor(t/0.85);const lab=['','3','2','1'][Math.min(3,k)];
+  if(t>=0.85&&t<GATE_T-0.05){const ph=(t%0.85)/0.85;txt(lab,540,960,300*(1.2-0.3*ph),'#fff',1-ph*0.6)}
+ } else {
+  const wf=winT; 
+  if(t<wf+0.1){ // live leaderboard
+   const rk=f.m.map((p,i)=>[p[1],i]).sort((a,b)=>b[0]-a[0]).map(a=>a[1]);
+   txt('LIVE',140,120,44,'#ff4d6d',1);
+   rk.forEach((i,k)=>{x.fillStyle=C[i];x.beginPath();x.arc(80,170+k*62,20,0,6.283);x.fill();x.save();x.font='900 38px "DejaVu Sans",Arial';x.textAlign='left';x.lineWidth=7;x.strokeStyle='rgba(0,0,0,.85)';x.strokeText((k+1)+'. '+N[i],115,184+k*62);x.fillStyle='#fff';x.fillText((k+1)+'. '+N[i],115,184+k*62);x.restore()});
+   if(t<GATE_T+1.0)txt('GO!',540,960,300*(1+ (GATE_T+1-t)*.1),'#3ddc97',Math.max(0,1-(t-GATE_T)));
+   // photo finish tension
+   const lead=Math.max(...f.m.map(p=>p[1]));
+   if(lead>1250&&t<wf)txt('PHOTO FINISH?!',540,1590,80,'#ffd23f',.6+.4*Math.sin(t*20));
+  } else {
+   const u=t-wf; // reveal
+   const col=C[winner];
+   x.fillStyle=col;x.globalAlpha=Math.max(0,.55-u*.9);x.fillRect(0,0,W,H);x.globalAlpha=1;
+   // confetti
+   for(let i=0;i<70;i++){const sx=(i*137.5)%W,sp=250+((i*53)%200),yy=(-200+u*sp+i*29)%(H+200);x.fillStyle=C[i%5];x.save();x.translate(sx+Math.sin(u*4+i)*30,yy);x.rotate(u*5+i);x.fillRect(-9,-5,18,10);x.restore()}
+   const a=Math.min(1,u*3);
+   txt(N[winner]+'\nWINS!',540,250,150,col,a);
+   txt('BY JUST '+gap.toFixed(2)+' SECONDS',540,520,56,'#fff',a);
+   if(u>0.8)txt('Did you pick '+N[winner]+'?',540,1610,64,'#fff',Math.min(1,(u-0.8)*3));
+   if(u>2.0)txt('Comment your marble\nfor the next race',540,1710,52,'#ffd23f',Math.min(1,(u-2)*3));
+  }
+ }
+}
+window.draw=draw;window.DURATION=DATA.finishT[DATA.order[0]]+4.2;draw(0);
+</script>
