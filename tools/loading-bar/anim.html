@@ -15,7 +15,7 @@ function draw(t){
  const hook=t<3?'Wait for 100%...':t<11.5?'Any second now...':t<13.6?'':'Oh no.';
  txt(hook,300,76,'#fff',1);
  // bar
- const bx=100,by=900,bw=880,bh=130;
+ const bx=190,by=900,bw=700,bh=130;
  x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(bx,by,bw,bh,65);x.fill();
  const col=t>=11.5&&t<13.6?'#37e08a':'#5aa8ff';
  x.fillStyle=col;x.beginPath();x.roundRect(bx,by,Math.max(bw*p,0.01),bh,65);x.fill();
@@ -27,9 +27,9 @@ function draw(t){
  }
   
  if(t>=12.2&&t<13.6){txt('DONE!',720,110,'#37e08a');const s=1+0.08*Math.sin((t-12.2)*25);}
- if(t>=13.6){txt('Starting over...',1380,60,'#ff7a7a');}
- if(t<5.5)txt('Installing something important',1380,50,'#cfe0ff',.9);
- if(t>=1.0&&t<12)txt('Comment your longest wait ⏳',1700,44,'#fff',.85);
+ if(t>=13.6){txt('Starting over...',1330,60,'#ff7a7a');}
+ if(t<5.5)txt('Installing something important',1330,50,'#cfe0ff',.9);
+ if(t>=1.0&&t<12)txt('Comment your longest wait ⏳',1450,44,'#fff',.85);
  if(t<0.25){x.fillStyle='rgba(255,255,255,'+(0.25-t)*3+')';x.fillRect(0,0,W,H)}
 }
 window.draw=draw;draw(0);
