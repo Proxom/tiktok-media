@@ -28,7 +28,7 @@ Conclusion: a fixed, instantly recognisable TEMPLATE + a yes/no suspense questio
 - S2 "Will they sync?": N metronomes/pendulums/fireflies/washing machines on a shared platform, real coupled-oscillator physics, counter "in sync: 37/100", sound per tick.
 - S3 "Will it escape?": balls in a spinning ring with a gap, each bounce = note and the ball grows or splits.
 - S4 hypnotic particle-flow/tunnel loops (3dperfect style) as the calm filler.
-- S5 HERO "wall marble run": one glass marble on a clean wall of coloured ramps, pins, bells and spirals (three.js, real 2D-plane physics pre-simulated, soft daylight, shallow depth of field), every hit a synced click/bell note, 20-40 s, ending in a satisfying final drop/loop. Our own designs and props only: no brands, film logos or characters.
+- S5 HERO "wall marble run": one glass marble on a clean wall of coloured ramps, pins, bells and spirals (three.js, real 2D-plane physics pre-simulated, soft daylight, shallow depth of field), every hit a synced click/bell note, 20-40 s, ending in a satisfying final drop/loop. Victor de Martrin's hits are "Marble Music": the hits play a recognisable tune. We do the same ONLY with public-domain melodies (Für Elise, Ode to Joy, Can-Can, Hall of the Mountain King, Twinkle Twinkle, Canon in D...) played by our own synthesized instruments, never copyrighted songs. Our own designs and props only: no brands, film logos or characters.
 - S6 "Softness/viscosity X%" lab tests and press/roller/spike vs soft object, big % label, optionally named contestants with live scores.
 8. Once a day look at the reference accounts' latest/popular videos (WebSearch/Parallel; TikTok pages need a login, so use search results) and note in the dashboard what worked for them.
 
