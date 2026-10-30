@@ -1,0 +1,36 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id=c width=1080 height=1920></canvas><script>
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1080,H=1920;const DURATION=16;
+function txt(s,y,size,col,a=1,al='center'){x.save();x.globalAlpha=a;x.fillStyle=col;x.font='bold '+size+'px "DejaVu Sans",Arial,sans-serif';x.textAlign=al;x.shadowColor='rgba(0,0,0,.6)';x.shadowBlur=12;s.split('\n').forEach((l,i)=>x.fillText(l,W/2,y+i*size*1.25));x.restore()}
+function prog(t){ // 0..1 progress
+ if(t<5.5) return 0.99*Math.pow(t/5.5,0.7);
+ if(t<11.5) return 0.99+0.0004*Math.sin(t*3); // stuck
+ if(t<12.2) return 0.99+0.01*((t-11.5)/0.7);
+ if(t<13.6) return 1;
+ return Math.max(0,1-(t-13.6)/0.4); // snaps back to 0 for loop
+}
+function draw(t){
+ const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#1a1040');g.addColorStop(1,'#0b2a4a');x.fillStyle=g;x.fillRect(0,0,W,H);
+ const p=prog(t);
+ // hook
+ const hook=t<3?'Wait for 100%...':t<11.5?'Any second now...':t<13.6?'':'Oh no.';
+ txt(hook,300,76,'#fff',1);
+ // bar
+ const bx=100,by=900,bw=880,bh=130;
+ x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(bx,by,bw,bh,65);x.fill();
+ const col=t>=11.5&&t<13.6?'#37e08a':'#5aa8ff';
+ x.fillStyle=col;x.beginPath();x.roundRect(bx,by,Math.max(bw*p,0.01),bh,65);x.fill();
+ const pct=t>=13.6&&p<=0?0:Math.floor(p*100+ (p>=1?0:0));
+ txt((p>=1?100:Math.min(99,Math.round(p*100)))+'%',1180,150,'#fff');
+ // spinner / status
+ if(t<11.5){const a=t*6;x.strokeStyle='#fff';x.lineWidth=14;x.lineCap='round';x.beginPath();x.arc(540,720,50,a,a+4.2);x.stroke();}
+ if(t>=5.5&&t<11.5){const n=Math.floor((t-5.5)*1.7);const msgs=['Still 99%','Hello?','The bar is thinking','Have you tried waiting more','It is a long 1%'];
+ }
+  
+ if(t>=12.2&&t<13.6){txt('DONE!',720,110,'#37e08a');const s=1+0.08*Math.sin((t-12.2)*25);}
+ if(t>=13.6){txt('Starting over...',1380,60,'#ff7a7a');}
+ if(t<5.5)txt('Installing something important',1380,50,'#cfe0ff',.9);
+ if(t>=1.0&&t<12)txt('Comment your longest wait ⏳',1700,44,'#fff',.85);
+ if(t<0.25){x.fillStyle='rgba(255,255,255,'+(0.25-t)*3+')';x.fillRect(0,0,W,H)}
+}
+window.draw=draw;draw(0);
+</script>
