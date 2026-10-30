@@ -46,25 +46,26 @@ function state(t){
  // returns ram face y and cube squash factor sq (height scale)
  let face=TOPY,sq=1,launch=0,shake=0;
  // press 1: 1.2-3.2 down slow, hold to 4.0, up to 5.0
- if(t>=0.4&&t<5.0){const down=ease((t-0.4)/2.0),up=ease((t-3.5)/1.0);const tgt=BASE+CS*0.32;face=TOPY+(tgt-TOPY)*down*(1-up)+0;}
+ if(t<5.0){const down=ease((t+0.25)/1.45),up=ease((t-3.3)/1.0);const tgt=BASE+CS*0.36;face=TOPY+(tgt-TOPY)*down*(1-up)+0;}
  // press 2: MAX POWER 6.5-7.6 fast down, holds squish 7.6-9.0 (strain), 9.0 cube springs back & launches ram
- if(t>=6.3&&t<9.0){const down=ein((t-6.3)/1.2);face=TOPY+(BASE+CS*0.12-TOPY)*down;if(t>7.5)shake=Math.sin(t*90)*.02*cl((t-7.5)/1.5)}
- if(t>=9.0){const u=(t-9.0);launch=u<0?0:(u<2.5?eout(u/0.9)*12:12);face=BASE+CS*0.12+launch;if(t>12.6){const back=ease((t-12.6)/1.6);face=(BASE+CS*0.12+12)+(TOPY-(BASE+CS*0.12+12))*back}}
- const room=face-BASE;sq=Math.min(1,room/CS);
+ if(t>=6.3&&t<9.0){const down=ein((t-6.3)/1.2);face=TOPY+(BASE+CS*0.2-TOPY)*down;if(t>7.5)shake=Math.sin(t*90)*.02*cl((t-7.5)/1.5)}
+ let stretch=0;if(t>=9.0){const u=t-9.0;if(u<0.2){stretch=0.2+1.3*eout(u/0.2);face=BASE+CS*stretch;launch=0.01}else{stretch=-1;launch=1;face=BASE+1.5*CS+(u-0.2)*28;}
+  if(t>12.6){const hi=BASE+1.5*CS+3.4*28;const back=ease((t-12.6)/1.4);face=hi+(TOPY-hi)*back}}
+ const room=face-BASE;sq=Math.min(1,room/CS);if(stretch>0)sq=stretch;if(stretch<0){const u=t-9.2;sq=1+0.5*Math.exp(-u*4.5)*Math.cos(2*Math.PI*2.6*u);}
  // after release: spring wobble
- let wob=0;if(t>=4.0&&t<6.3)wob=spring(t-4.0,.2);if(t>=9.0)wob=spring(t-9.0,.35,4.5,3);
- return {face,sq,wob,shake,launch};}
+ let wob=0;if(t>=4.0&&t<6.3)wob=spring(t-4.0,.2);
+ return {face,sq,wob,shake,launch,stretch};}
 function render3d(t){
  const st=state(t);ram.position.y=st.face+.28+st.shake;
- const h=Math.max(.1,st.sq*(1+ (st.sq>=1?st.wob:0)));const wv=1/Math.sqrt(h); // volume preserving
+ const h=Math.max(.1,st.sq*(1+ (st.sq>=1&&!st.launch?st.wob:0)));const wv=Math.min(2.25,1/Math.sqrt(h)); // volume preserving
  cube.scale.set(wv,h,wv);cube.position.y=BASE+CS*h/2;
- const hop=t>=9.0&&t<10.2?Math.sin(Math.PI*(t-9.0)/1.2)*.9:0;cube.position.y+=hop;
+ const hop=[10.6,11.5].reduce((a,h0)=>a+(t>=h0&&t<h0+.45?Math.sin(Math.PI*(t-h0)/.45)*.45:0),0);cube.position.y+=hop;
  eyes.visible=t>10.0;const bl=((t*10)%30)<1.2?.15:1;eyes.scale.y=bl;
  jm.emissiveIntensity=.5+(t>6.3&&t<9?1.2*ease((t-7.4)/1.4):0);
  // camera: slow push in, shake on impacts, tilt up for launch
- const push=ease(t/15);const lk=st.launch>0?Math.min(st.launch,5)*.06:0;
+ const push=0.12*Math.sin(Math.PI*t/T);const lk=0;
  const sh=(t>9&&t<9.4)?Math.sin(t*120)*.06:0;
- cam.position.set(2.6-0.6*push+sh,3.4,11.5-1.6*push);cam.lookAt(0,2.6+lk,0);
+ cam.position.set(2.6-push+sh,3.4,11.0-4*push);cam.lookAt(0,2.25,0);
  r.render(s,cam);}
 const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');
 function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.font='900 '+size+'px "DejaVu Sans",Arial,sans-serif';x.textAlign='center';x.lineJoin='round';
@@ -74,7 +75,7 @@ function draw(t){
  const vg=x.createRadialGradient(W/2,H*.55,H*.25,W/2,H*.55,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  if(t>6.3&&t<9){x.fillStyle=`rgba(255,40,40,${.12*(.5+.5*Math.sin(t*14))})`;x.fillRect(0,0,W,H)}
  for(let n=0;n<1400;n++){const gx=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),gy=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.04)':'rgba(0,0,0,.06)';x.fillRect(gx*W,gy*H,2,2)}
- const Y=280,fd=(a,b)=>ease((t-a)/.2)*(1-ease((t-b)/.2));
+ const Y=305,fd=(a,b)=>ease((t-a)/.2)*(1-ease((t-b)/.2));
  txt('Hydraulic press\nvs jelly cube',Y,88,'#fff',t<.1?1:fd(-1,5.6));
  txt('MAX POWER 🔥',Y+40,100,'#ff5a5a',fd(5.9,8.2));
  txt('wait…',Y+40,96,'#fff',fd(8.3,9.1));

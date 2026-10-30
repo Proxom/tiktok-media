@@ -26,7 +26,7 @@ function panel(k,t){
 function draw(t){
  bg(t);for(let k=0;k<4;k++)panel(k,t);
  const Y=295;
- txt('Same data. Same speed.\nWho sorts it first? 👇',W/2,Y,64,'#fff',1-ease((t-fin[order[0]]+.25)/.2));
+ txt('Same data, same speed.\nWho wins? 👇',W/2,Y,64,'#fff',1-ease((t-fin[order[0]]+.25)/.2));
  if(t>=fin[order[0]]&&t<fin[order[2]]+.3)txt(names[order[0]]+' done in\n'+(len[order[0]]-1)+' checks ⚡',W/2,Y,70,cols[order[0]],ease((t-fin[order[0]])/.2)*(1-ease((t-fin[order[2]])/.3)));
  const last=order[3];
  if(t>=fin[order[2]]+.3&&t<fin[last])txt(names[last]+' is still\ngoing… 💀',W/2,Y,72,cols[last],ease((t-fin[order[2]]-.3)/.3));

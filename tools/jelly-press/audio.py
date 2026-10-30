@@ -16,7 +16,7 @@ def boing(t0,f,amp,dur=.6):
     m=int(SR*dur);tt,e=env(m,.003,5);add(t0,amp*np.sin(2*np.pi*(f+f*.5*np.sin(2*np.pi*14*tt)*np.exp(-tt*4))*tt)*e)
 # room bed
 out+=.006*lp(rng.standard_normal(n),40)+.03*np.sin(2*np.pi*50*t)
-hum(0.4,2.1,70,55,.12);squelch(1.6,1.0,.35);hum(3.5,1.0,55,75,.10);boing(4.0,180,.35)
+hum(0.0,1.2,70,55,.12);squelch(0.9,1.0,.35);hum(3.3,1.0,55,75,.10);boing(4.0,180,.35)
 # alarm 5.9-8.2
 for k in range(8):
     m=int(SR*.22);tt,e=env(m,.005,6);add(5.9+k*.3,.18*np.sign(np.sin(2*np.pi*(880 if k%2 else 660)*tt))*e)
@@ -33,7 +33,9 @@ m=int(SR*1.5);tt,e=env(m,.001,3);add(10.3,.12*sum(np.sin(2*np.pi*f*tt) for f in 
 for i,f in enumerate([988,1319]):
     m=int(SR*.15);tt,e=env(m,.002,20);add(10.05+i*.09,.2*np.sin(2*np.pi*f*tt)*e)
 # ram returning 12.6-14.2
-hum(12.6,1.6,50,70,.1)
+hum(12.6,1.4,50,70,.1)
+for h0 in [10.6,11.5]: boing(h0,320,.3,.45)
+m=int(SR*.3);tt,e=env(m,.001,14);add(14.0,.5*np.sin(2*np.pi*(60+50*np.exp(-tt*25))*tt)*e)
 out=np.tanh(out*1.1);out/=np.abs(out).max()/0.9
 st=np.stack([out,out],1)
 w=wave.open(sys.argv[1],'wb');w.setnchannels(2);w.setsampwidth(2);w.setframerate(SR);w.writeframes((st*32767).astype('<i2').tobytes());w.close()
