@@ -5,7 +5,7 @@ const OUT=process.argv[2]||'data.js';
 const CHAINS={
  dragon:{items:['🥚','🐣','🐥','🐔','🦃','🦚','🦅','🐉'],r0:30,f:1.3},
  sun:{items:['✨','🪨','☄️','🌑','🌍','🪐','☀️'],r0:30,f:1.36},
- dino:{items:['🥚','🦎','🐊','🦕','🦖'],r0:40,f:1.48},
+ dino:{items:['🦴','🥚','🦎','🐢','🐊','🦕','🦖'],r0:30,f:1.36},
 };
 const chainName=process.argv[4]||'dragon',CC=CHAINS[chainName],CH=CC.items,TOP=CH.length-1;
 const CX=540,CY=1010,R=400,G=2600,E=.25,FPS=30,SUB=16,DT=1/(FPS*SUB),TMAX=30;
