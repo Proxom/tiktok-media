@@ -1,0 +1,47 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="data.js"></script><script>
+// Format 1 renderer: neon concentric rotating rings with gaps, racing balls with trails; draws pre-simulated frames from data.js.
+const W=1080,H=1920,D=DATA,FPS=D.fps,CX=D.CX,CY=D.CY,K=D.K,HT=D.HT,BR=D.BR,FIN=D.finish,NB=D.balls.length;
+const c=document.getElementById('c'),x=c.getContext('2d');
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
+const ringHue=k=>(k*48+10)%360;
+const lastBounce=Array(K).fill(-9);D.events.forEach(e=>{if(e.type==='bounce')lastBounce[e.ring]=Math.max(lastBounce[e.ring],0)});
+const evByRing=Array.from({length:K},()=>[]);D.events.forEach(e=>{if(e.ring!==undefined)evByRing[e.ring].push(e.t)});
+function glowOf(k,t){const a=evByRing[k];let g=0;for(let i=a.length-1;i>=0;i--){if(a[i]<=t){g=Math.max(0,1-(t-a[i])/.18);break}}return g}
+const passTimes=D.balls.map((_,b)=>D.events.filter(e=>e.type==='pass'&&e.ball===b).map(e=>e.t));
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;{const g=bg.getContext('2d');const rg=g.createRadialGradient(CX,CY,50,CX,CY,1100);rg.addColorStop(0,'#14122e');rg.addColorStop(.55,'#08081a');rg.addColorStop(1,'#020208');g.fillStyle=rg;g.fillRect(0,0,W,H)}
+function draw(t){
+ const f=Math.min(D.frames.length-1,Math.max(0,Math.round(t*FPS)));
+ x.globalAlpha=1;x.drawImage(bg,0,0);
+ const fin=FIN&&t>=FIN?t-FIN:-1;
+ x.save();if(fin>=0&&fin<.35){const sh=(1-fin/.35)*10;x.translate(Math.sin(t*90)*sh,Math.cos(t*77)*sh)}
+ // rings
+ for(let k=0;k<K;k++){const rg=D.rings[k],gc=rg.a0+rg.om*t,gh=rg.gapHalf,g=glowOf(k,t);
+  x.save();x.lineCap='round';x.lineWidth=HT*2;x.strokeStyle=`hsl(${ringHue(k)},95%,${58+22*g}%)`;x.shadowColor=`hsl(${ringHue(k)},100%,65%)`;x.shadowBlur=14+30*g;
+  x.beginPath();x.arc(CX,CY,rg.R,gc+gh,gc-gh+Math.PI*2);x.stroke();x.restore()}
+ // trails + balls
+ for(let b=0;b<NB;b++){const col=D.balls[b].col;
+  for(let i=14;i>=0;i--){const ff=Math.max(0,f-i),p=D.frames[ff][b];x.globalAlpha=(1-i/15)*.35;x.fillStyle=col;x.beginPath();x.arc(p[0],p[1],BR*(1-i/22),0,7);x.fill()}
+  x.globalAlpha=1;const p=D.frames[f][b];x.save();x.shadowColor=col;x.shadowBlur=24;x.fillStyle=col;x.beginPath();x.arc(p[0],p[1],BR,0,7);x.fill();x.restore();
+  x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.arc(p[0]-BR*.3,p[1]-BR*.3,BR*.3,0,7);x.fill()}
+ // winner burst
+ if(fin>=0){const wp=D.frames[f][D.winner],pr=cl(fin/1.4);for(let i=0;i<60;i++){const an=i*2.39996,sp=140+((i*97)%260),dd=sp*pr;x.save();x.globalAlpha=(1-pr)*.9;x.fillStyle=D.balls[D.winner].col;x.beginPath();x.arc(wp[0]+Math.cos(an)*dd,wp[1]+Math.sin(an)*dd,4,0,7);x.fill();x.restore()}
+  x.save();x.globalAlpha=(1-pr)*.8;x.strokeStyle=D.balls[D.winner].col;x.lineWidth=8*(1-pr);x.beginPath();x.arc(wp[0],wp[1],BR+260*ease(pr),0,7);x.stroke();x.restore()}
+ x.restore();
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ // top panel: question + scoreboard of rings passed
+ x.save();x.fillStyle='rgba(8,6,26,.82)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(90,330,800,205,30);x.fill();x.stroke();x.restore();
+ if(fin<0)txt('Which colour escapes\nfirst? 🏁',388,54,'#fff',1);
+ else txt(D.balls[D.winner].name+' ESCAPED! 🏁',420,66,D.balls[D.winner].col,ease(fin/.25));
+ // scoreboard dots
+ for(let b=0;b<NB;b++){const cx=500-(NB-1)*80+b*160,n=D.frames[f][b][2];
+  x.save();x.fillStyle=D.balls[b].col;x.shadowColor=D.balls[b].col;x.shadowBlur=10;x.beginPath();x.arc(cx-26,502,14,0,7);x.fill();x.restore();
+  x.font='900 30px "DejaVu Sans"';x.textAlign='left';x.fillStyle='#fff';x.fillText(n+'/'+K,cx-4,513)}
+ return c.toDataURL('image/jpeg',0.93)}
+window.draw=draw;
+</script>
