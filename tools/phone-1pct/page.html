@@ -117,8 +117,8 @@ function draw(t,raw){
  const vg=x.createRadialGradient(W/2,H*.6,H*.25,W/2,H*.6,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(10,0,8,.6)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  for(let n=0;n<1600;n++){const gx=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),gy=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';x.fillRect(gx*W,gy*H,2,2)}
  if(t>12.9){x.fillStyle=`rgba(0,0,0,${ease((t-12.9)/.5)*.55*(1-ease((t-13.6)/.4))})`;x.fillRect(0,0,W,H)}
- // captions (top zone 250-700)
- const Y=300;
+ // captions (safe zone: first line top >= 320, AGENT.md)
+ const Y=400;
  txt('POV: your phone\nis at 1% 🪫',Y,92,'#fff',1*(1-ease((t-1.4)/.15)));
  txt('charger is\nway over there 👉',Y,84,'#fff',ease((t-1.5)/.25)*(1-ease((t-4.9)/.25)));
  txt('JUST... A... BIT...',Y+40,86,'#ffd166',ease((t-6.5)/.2)*(1-ease((t-7.35)/.15)));
