@@ -2,7 +2,7 @@
 # panned per lane, a ding on each finish, a riser-free win chord at the end, soft beat underneath.
 import numpy as np, wave, sys, json
 d=json.loads(open(sys.argv[1]).read().split('=',1)[1].rstrip(';\n'))
-SR=44100;D=14;n=SR*D;FPS=30;STEP=3;GO=2.0;L=np.zeros(n);R=np.zeros(n)
+SR=44100;D=12.5;n=int(SR*D);FPS=30;STEP=3;GO=0.6;L=np.zeros(n);R=np.zeros(n)
 names=['BUBBLE','INSERTION','MERGE','QUICK'];pan=[.2,.4,.6,.8];N=d['N']
 def add(t0,sig,p=.5):
     i=int(t0*SR);m=min(n-i,len(sig));L[i:i+m]+=sig[:m]*(1-p)*1.4;R[i:i+m]+=sig[:m]*p*1.4
@@ -23,11 +23,11 @@ for r,k in enumerate(order):
         for i,f in enumerate([523.25,659.25,783.99,1046.5]):add(fins[k]+.2+i*.1,.2*np.sin(2*np.pi*f*tt)*np.exp(-tt*2.5))
 # intro: 3 ticks + go whoosh
 for i in range(3):
-    m=int(SR*.08);tt=np.arange(m)/SR;add(.5+i*.5,.3*np.sin(2*np.pi*1500*tt)*np.exp(-tt*60))
+    m=int(SR*.08);tt=np.arange(m)/SR;add(.02+i*.18,.3*np.sin(2*np.pi*1500*tt)*np.exp(-tt*60))
 m=int(SR*.6);tt=np.arange(m)/SR;add(GO,.3*np.sin(2*np.pi*np.cumsum(200+900*tt)/SR)*np.exp(-tt*5))
 t=np.arange(n)/SR
 beat=np.zeros(n)
-for b in np.arange(GO,13.5,.5):
+for b in np.arange(GO,12.0,.5):
     i=int(b*SR);m=int(SR*.2);tt=np.arange(m)/SR;beat[i:i+m]+=.3*np.sin(2*np.pi*(50+60*np.exp(-tt*30))*tt)*np.exp(-tt*12)
 pad=.05*np.sin(2*np.pi*65.4*t)+.03*np.sin(2*np.pi*98*t)
 L+=beat+pad;R+=beat+pad
