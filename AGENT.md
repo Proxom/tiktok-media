@@ -12,6 +12,24 @@ What they share, and what we now do:
 5. Look: clean premium 3D (three.js, glossy/glass/metal materials, soft shadows, bloom, depth of field) or crisp neon 2D on dark; 30-60 fps, motion blur; 15-30 s; seamless loop where possible.
 6. Captions say honestly what it is: "Every frame computed with code" style, no false claims about real-world physics accuracy. 3-5 hashtags (#physics #simulation #satisfying #oddlysatisfying #fyp).
 7. Process: each run, first check the bank/slots (NO EMPTY SLOT rules stay), then build ONE reusable simulation engine per series in tools/<series>/ so later episodes are fast variations (new seed, colours, counts, twist), not rebuilds. Episodes of the same series must differ visibly (not near-duplicates). Track per series: views vs median after 72 h; double down on the winner, drop a series after 5 below-median episodes.
+LESSONS FROM ERKAN'S SCREENSHOTS (30 Oct, profile grids with view counts):
+- @tinycollider: EVERY video is the same template: rainbow-rimmed circle arena on black, a narrow chute at the top drops items, equal items merge and grow, glowing contact outlines. 300K-12M views per video with only 11K followers, so the algorithm pushes the template, not the account. (They use meme cats/real faces: we must NOT; use our own drawn characters or Noto Color Emoji, which is open-licensed.)
+- @mergedrop.sim: same idea, two chutes into a circle, a white label "WILL X EVOLVE? 🦕". The topic decides views: balls, dinosaurs and planets got 2.6-5.9M; dream homes, instruments and countries got 3-13K. Pick topics with an obvious, exciting final form.
+- @the.lab67: sound-led maths/physics with a red top banner question ("WAIT FOR ALL 100 TO SYNC", "100 WASHING MACHINES will they sync up?", "REACTOR MELTS DOWN", "WHY DO SIRENS SOUND SO SCARY?"). 1-4M views. Suspense + countdown + "turn your volume up".
+- @3dperfect: hypnotic colourful hyperspace/particle-flow loops, 2.9M pinned, most 20K-560K.
+- @3d.4fun: clean realistic pastel C4D tests (duck vs steel ball, magnets, viscosity, 80 kg vs 10,000 kg): mostly 250-15K views. Realism alone does NOT win.
+- @victordemartrin (2.2M): one glass marble rolling down a white wall of small coloured ramps, pins, bells and tracks (marble-run ASMR, clicks on every hit). Pinned ones 94.6M and 138.5M views; most 120K-1.9M. Biggest proven format in the set.
+- @kawaken_3dcg (204K): "visual ASMR" lab tests with a big label: "Viscosity 100%", "Acid", "Lava", "10000 Balls", "16384 Faces", "Grass", press/rollers/spikes vs soft objects. Press/spike/roller ones 2M-4.6M; others 20K-560K.
+- @goblin_3xd (158K): "Softness simulation" playlists (soft 0%/10%/100% labels) plus races with named contestants (OLIVIA / NASTYA / SOPHIA scores, "LVL 1"), up to 1.5M. Named contestants drive comments.
+- @foryastudios (3K): smart but text-heavy maths explainers (Collatz, Hanoi, π, sorting race) mostly 200-17K; best are visual ("Same jump on every world" 34K). Avoid text-heavy explainers.
+- @marblemannequin (5.6M): art-directed wooden typography sculptures, 7K-234K recently. Art alone is mid.
+Conclusion: a fixed, instantly recognisable TEMPLATE + a yes/no suspense question ("Will it evolve / escape / sync?") + an exciting final form + synced sound beats photorealism. QUALITY BAR v2's realism scores now count less than hook, clarity of the game, suspense and payoff. Our signature series, each with its own look (never a clone of one account's arena):
+- S1 "Will it evolve?" merge arena: items drop through a chute into a glowing arena, equal tiers merge into the next tier (emoji or own-drawn chain, e.g. egg → chick → … → dragon), a tier row under the question lights up as tiers are reached, finale when the top tier forms. Topics with a big final form (dragon, sun, black hole, T-rex, rocket).
+- S2 "Will they sync?": N metronomes/pendulums/fireflies/washing machines on a shared platform, real coupled-oscillator physics, counter "in sync: 37/100", sound per tick.
+- S3 "Will it escape?": balls in a spinning ring with a gap, each bounce = note and the ball grows or splits.
+- S4 hypnotic particle-flow/tunnel loops (3dperfect style) as the calm filler.
+- S5 HERO "wall marble run": one glass marble on a clean wall of coloured ramps, pins, bells and spirals (three.js, real 2D-plane physics pre-simulated, soft daylight, shallow depth of field), every hit a synced click/bell note, 20-40 s, ending in a satisfying final drop/loop. Our own designs and props only: no brands, film logos or characters.
+- S6 "Softness/viscosity X%" lab tests and press/roller/spike vs soft object, big % label, optionally named contestants with live scores.
 8. Once a day look at the reference accounts' latest/popular videos (WebSearch/Parallel; TikTok pages need a login, so use search results) and note in the dashboard what worked for them.
 
 
