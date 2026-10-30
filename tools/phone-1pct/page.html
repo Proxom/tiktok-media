@@ -1,0 +1,133 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas><script>
+// "Phone at 1%": a phone hops to its charger, plugs in... the power strip is OFF. 14 s loop, canvas 2D.
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1080,H=1920,T=14;
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)},eio=v=>{v=cl(v);return v<.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2};
+const eob=v=>{v=cl(v);const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(v-1,3)+c1*Math.pow(v-1,2)};
+let sd=11;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
+// static layers (prebuilt once)
+const bokeh=[...Array(28)].map(()=>({x:rnd()*2600-200,y:rnd()*900+150,r:30+rnd()*90,h:rnd()<.6?38:rnd()<.5?200:330,a:.08+rnd()*.18}));
+const bg=document.createElement('canvas');bg.width=3400;bg.height=H;{const b=bg.getContext('2d');
+ let g=b.createLinearGradient(0,0,0,H);g.addColorStop(0,'#2a1c33');g.addColorStop(.55,'#3b2533');g.addColorStop(1,'#1b1218');b.fillStyle=g;b.fillRect(0,0,3400,H);
+ // window with night city
+ b.fillStyle='#16203a';b.fillRect(250,260,700,760);for(let i=0;i<60;i++){b.fillStyle=`rgba(255,${190+rnd()*60|0},120,${.3+rnd()*.5})`;b.fillRect(270+rnd()*660,600+rnd()*400,8+rnd()*10,10+rnd()*14)}
+ b.strokeStyle='#4a3340';b.lineWidth=26;b.strokeRect(250,260,700,760);b.beginPath();b.moveTo(600,260);b.lineTo(600,1020);b.stroke();
+ // wall outlet + strip area at far right
+ b.filter='blur(14px)';bokeh.forEach(o=>{const gg=b.createRadialGradient(o.x,o.y,0,o.x,o.y,o.r);gg.addColorStop(0,`hsla(${o.h},90%,70%,${o.a*2})`);gg.addColorStop(1,`hsla(${o.h},90%,60%,0)`);b.fillStyle=gg;b.beginPath();b.arc(o.x,o.y,o.r,0,7);b.fill()});b.filter='none';
+ // lamp glow
+ g=b.createRadialGradient(1500,500,0,1500,500,900);g.addColorStop(0,'rgba(255,190,120,.35)');g.addColorStop(1,'rgba(255,190,120,0)');b.fillStyle=g;b.fillRect(0,0,3400,H);}
+const DESK=1330; // desk top y
+const desk=document.createElement('canvas');desk.width=3800;desk.height=H-DESK+40;{const d=desk.getContext('2d');
+ let g=d.createLinearGradient(0,0,0,desk.height);g.addColorStop(0,'#a8683f');g.addColorStop(.06,'#8a5230');g.addColorStop(1,'#3a2014');d.fillStyle=g;d.fillRect(0,0,3800,desk.height);
+ for(let i=0;i<70;i++){d.strokeStyle=`rgba(${rnd()<.5?40:200},${rnd()<.5?20:130},10,${.05+rnd()*.08})`;d.lineWidth=1+rnd()*4;d.beginPath();let y=rnd()*desk.height;d.moveTo(0,y);for(let k=0;k<=38;k++)d.lineTo(k*100,y+Math.sin(k*.7+i)*6+rnd()*4);d.stroke()}
+ g=d.createLinearGradient(0,0,0,30);g.addColorStop(0,'rgba(255,220,180,.5)');g.addColorStop(1,'rgba(255,220,180,0)');d.fillStyle=g;d.fillRect(0,0,3800,30);}
+// world coords: phone starts x=250, plug end at x=1150, strip at x=2050
+const PLUG=1180,STRIP=2080;
+function phonePos(t){ // returns x, lift, squash, rot
+ const hops=[[1.6,250,460],[2.5,460,680],[3.4,680,880],[4.3,880,1040]];
+ for(const [t0,a,b] of hops){if(t<t0)return {x:a,y:0,sq:t>t0-.25?1-.18*Math.sin(Math.PI*(t-(t0-.25))/.25):1,rot:0};
+  if(t<t0+.6){const u=(t-t0)/.6;return {x:a+(b-a)*eio(u),y:-260*Math.sin(Math.PI*u),sq:1+.12*Math.sin(Math.PI*u),rot:.12*Math.sin(Math.PI*2*u)}}}
+ // 4.9-6.6 strain: drags cable, last leap 6.6-7.3 to plug end
+ if(t<6.6){const w=t>5.2?Math.sin((t-5.2)*30)*6*(1-cl((t-6.3)/.3)):0;return {x:1040+w,y:0,sq:1-.08*Math.sin(Math.min(1,(t-4.9)/.4)*Math.PI),rot:w*.004}}
+ if(t<7.3){const u=(t-6.6)/.7;return {x:1040+(PLUG-60-1040)*eio(u),y:-200*Math.sin(Math.PI*u),sq:1,rot:-.5*Math.sin(Math.PI*u)}}
+ if(t<12.65)return {x:PLUG-60,y:0,sq:t<7.45?1-.2*Math.sin((t-7.3)/.15*Math.PI):1,rot:0};
+ const u=cl((t-12.65)/.45);return {x:PLUG-60,y:0,sq:1,rot:-Math.PI/2*eob(u)}; // faceplant
+}
+function camX(t){ // world x at screen center
+ const fol=Math.min(PLUG-60,phonePos(t).x)+40;const pan=eio((t-9.6)/1.1)*(1-eio((t-12.0)/.6));
+ const base=540+(fol-540)*1;return base+(STRIP-60-base)*pan;}
+function pct(t){return t<12.95?'1%':'0%'}
+function drawPhone(t,P){
+ x.save();x.translate(P.x,DESK+P.y);
+ // shadow
+ const sh=1+P.y/400;x.save();x.scale(1,.25);x.fillStyle=`rgba(0,0,0,${.45*sh})`;x.filter='blur(10px)';x.beginPath();x.ellipse(0,0,120*sh,40,0,0,7);x.fill();x.restore();x.filter='none';
+ x.rotate(P.rot);x.scale(1/P.sq,P.sq);
+ const w=200,h=400;x.translate(0,-h/2-6);
+ // body
+ let g=x.createLinearGradient(-w/2,0,w/2,0);g.addColorStop(0,'#3d4250');g.addColorStop(.5,'#9aa3b5');g.addColorStop(1,'#2a2e38');
+ x.fillStyle=g;x.beginPath();x.roundRect(-w/2,-h/2,w,h,34);x.fill();
+ // screen
+ const dead=t>13.05;const red=t<7.4||t>8.9;
+ g=x.createLinearGradient(0,-h/2,0,h/2);
+ if(dead){g.addColorStop(0,'#050507');g.addColorStop(1,'#000')}else if(red){g.addColorStop(0,'#2b0b12');g.addColorStop(1,'#13060a')}else{g.addColorStop(0,'#0c2a1a');g.addColorStop(1,'#06130c')}
+ x.fillStyle=g;x.beginPath();x.roundRect(-w/2+12,-h/2+12,w-24,h-24,24);x.fill();
+ x.fillStyle='#000';x.beginPath();x.roundRect(-28,-h/2+22,56,14,7);x.fill();
+ if(!dead){
+  // battery icon
+  const bl=t<7.4?(Math.sin(t*12)>0?1:.35):1;x.globalAlpha=bl;x.strokeStyle=red?'#ff4d5e':'#43e07a';x.lineWidth=7;x.beginPath();x.roundRect(-50,-60,92,48,9);x.stroke();x.fillStyle=x.strokeStyle;x.fillRect(46,-44,9,16);
+  x.fillRect(-42,-52,red?6:14,32);x.globalAlpha=1;
+  if(!red){x.fillStyle='#ffd166';x.beginPath();x.moveTo(6,-56);x.lineTo(-12,-34);x.lineTo(0,-34);x.lineTo(-6,-14);x.lineTo(14,-40);x.lineTo(2,-40);x.closePath();x.fill()}
+  x.font='900 54px "DejaVu Sans",Arial';x.textAlign='center';x.fillStyle=red?'#ff4d5e':'#43e07a';x.fillText(pct(t),0,52);
+  // face: eyes
+  const blink=(t%3.1)<.12?.15:1;x.fillStyle='#fff';const ey=110;
+  const worried=red;x.save();x.translate(0,ey);
+  [-38,38].forEach(ex=>{x.beginPath();x.ellipse(ex,0,16,18*blink,0,0,7);x.fill()});
+  x.strokeStyle='#fff';x.lineWidth=5;x.lineCap='round';x.beginPath();
+  if(worried){x.moveTo(-20,48);x.quadraticCurveTo(0,34,20,48)}else{x.moveTo(-22,36);x.quadraticCurveTo(0,58,22,36)}x.stroke();
+  if(worried){x.beginPath();x.moveTo(-56,-34);x.lineTo(-24,-24);x.moveTo(56,-34);x.lineTo(24,-24);x.stroke();
+   // sweat drop
+   const sw=(t*1.3)%1;x.fillStyle='rgba(140,200,255,.9)';x.beginPath();x.arc(70,-30+sw*60,9,0,7);x.fill();}
+  x.restore();
+ } else { x.strokeStyle='rgba(255,255,255,.25)';x.lineWidth=5;x.beginPath();x.moveTo(-40,110);x.lineTo(-20,130);x.moveTo(-20,110);x.lineTo(-40,130);x.moveTo(20,110);x.lineTo(40,130);x.moveTo(40,110);x.lineTo(20,130);x.stroke() }
+ // glass highlight
+ g=x.createLinearGradient(-w/2,-h/2,w/2,h/2);g.addColorStop(0,'rgba(255,255,255,.18)');g.addColorStop(.35,'rgba(255,255,255,0)');x.fillStyle=g;x.beginPath();x.roundRect(-w/2+12,-h/2+12,w-24,h-24,24);x.fill();
+ x.restore();}
+function drawCable(t,P){
+ // cable from strip (STRIP-40, DESK-40) lying on desk to plug head; plug head is carried by phone after 6.6
+ const sx=STRIP-150,sy=DESK-30;let px,py;
+ const carried=t>4.9;
+ if(!carried){px=PLUG;py=DESK-18}else{const pa=P.x+95*Math.cos(P.rot),pb=DESK+P.y-30;px=t<7.3?Math.min(pa+20,PLUG+((t>6.6)?(pa+20-PLUG)*0:0)):PLUG-60+100;py=t<7.3?pb:DESK-30;}
+ if(t>4.9&&t<6.6)px=PLUG,py=DESK-30;
+ if(t>=6.6&&t<7.3){px=PLUG+(P.x+100-PLUG)*0;py=DESK-30}
+ const tight=t>5.2&&t<7.3;
+ x.strokeStyle='#e9e6ee';x.lineWidth=14;x.lineCap='round';x.beginPath();x.moveTo(sx,sy);
+ if(tight)x.lineTo(px,py);else{x.bezierCurveTo(sx-300,DESK-6,px+300,DESK-6+Math.sin(t*3)*3,px,py)}x.stroke();
+ x.strokeStyle='rgba(0,0,0,.25)';x.lineWidth=4;x.stroke();
+ // plug head
+ x.save();x.translate(px,py);x.fillStyle='#f4f2f7';x.beginPath();x.roundRect(-46,-14,52,28,8);x.fill();x.fillStyle='#b9b4c4';x.fillRect(-70,-7,26,14);x.restore();
+ if(t>7.25&&t<7.6){const a=1-(t-7.25)/.35;x.save();x.translate(PLUG-60+100-70,DESK-30);x.strokeStyle=`rgba(255,230,120,${a})`;x.lineWidth=6;for(let i=0;i<8;i++){const an=i*.785;x.beginPath();x.moveTo(Math.cos(an)*20,Math.sin(an)*20);x.lineTo(Math.cos(an)*(50+40*(1-a)),Math.sin(an)*(50+40*(1-a)));x.stroke()}x.restore()}
+}
+function drawStrip(t){
+ x.save();x.translate(STRIP,DESK);x.scale(1.5,1.5);
+ x.fillStyle='rgba(0,0,0,.4)';x.filter='blur(8px)';x.fillRect(-170,-6,340,20);x.filter='none';
+ let g=x.createLinearGradient(0,-70,0,0);g.addColorStop(0,'#fafafa');g.addColorStop(1,'#c9c6cf');x.fillStyle=g;x.beginPath();x.roundRect(-170,-70,340,70,16);x.fill();
+ x.fillStyle='#2b2830';[-60,10].forEach(o=>{x.beginPath();x.roundRect(o,-52,44,32,6);x.fill()});
+ // switch (OFF, red) 
+ const on=false;x.fillStyle='#b5162b';x.beginPath();x.roundRect(100,-56,52,40,8);x.fill();
+ x.fillStyle='#ff6b7a';x.beginPath();x.roundRect(104,-52,22,32,5);x.fill();
+ x.fillStyle='#fff';x.font='900 18px "DejaVu Sans"';x.textAlign='center';x.fillText('O',139,-29);
+ // cable from strip going right off
+ x.strokeStyle='#e9e6ee';x.lineWidth=14;x.beginPath();x.moveTo(170,-30);x.bezierCurveTo(300,-10,350,0,600,0);x.stroke();
+ if(t>10.4&&t<12.2){const a=ease((t-10.4)/.3)*(1-ease((t-11.9)/.3));x.globalAlpha=a;x.strokeStyle='#ff4d5e';x.lineWidth=6;x.beginPath();x.arc(126,-36,48+6*Math.sin(t*10),0,7);x.stroke();x.globalAlpha=1}
+ x.restore();}
+function txt(s,y,size,col,a,stroke){if(a<=0)return;x.save();x.globalAlpha=cl(a);x.font='900 '+size+'px "DejaVu Sans",Arial,sans-serif';x.textAlign='center';x.lineJoin='round';
+ s.split('\n').forEach((l,i)=>{const yy=y+i*size*1.15;x.lineWidth=size/5;x.strokeStyle=stroke||'rgba(20,6,14,.92)';x.strokeText(l,W/2,yy);x.fillStyle=col;x.fillText(l,W/2,yy)});x.restore()}
+function draw(t,raw){
+ t=((t%T)+T)%T;const P=phonePos(t);const cx=camX(t);
+ const zoom=1.4+0.06*ease(t/1.5)+0.15*ease((t-7.6)/1.0)*(1-ease((t-9.6)/.8))+0.12*ease((t-10.7)/.6)*(1-ease((t-12.0)/.5));
+ const shake=(t>7.25&&t<7.5)?Math.sin(t*90)*6:(t>13.0&&t<13.25?Math.sin(t*80)*8:0);
+ x.setTransform(1,0,0,1,0,0);x.fillStyle='#000';x.fillRect(0,0,W,H);
+ x.save();x.translate(W/2+shake,1250);x.scale(zoom,zoom);x.translate(-cx,-1250);
+ // parallax background (slower)
+ x.save();x.translate(cx*0.55-700,0);x.drawImage(bg,0,0);x.restore();
+ x.drawImage(desk,-600,DESK-10);
+ drawStrip(t);drawCable(t,P);drawPhone(t,P);
+ // foreground blurred mug for depth
+ x.restore();
+ // grade: warm lamp vignette + grain
+ const vg=x.createRadialGradient(W/2,H*.6,H*.25,W/2,H*.6,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(10,0,8,.6)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ for(let n=0;n<1600;n++){const gx=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),gy=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.05)':'rgba(0,0,0,.06)';x.fillRect(gx*W,gy*H,2,2)}
+ if(t>12.9){x.fillStyle=`rgba(0,0,0,${ease((t-12.9)/.5)*.55*(1-ease((t-13.6)/.4))})`;x.fillRect(0,0,W,H)}
+ // captions (top zone 250-700)
+ const Y=300;
+ txt('POV: your phone\nis at 1% 🪫',Y,92,'#fff',1*(1-ease((t-3.6)/.3)));
+ txt('the charger is\nALL the way over there',Y,78,'#fff',ease((t-3.9)/.3)*(1-ease((t-6.5)/.3)));
+ txt('JUST... A... BIT...',Y+40,86,'#ffd166',ease((t-6.5)/.2)*(1-ease((t-7.35)/.15)));
+ txt('CHARGING ⚡',Y+40,100,'#43e07a',ease((t-7.4)/.15)*(1-ease((t-8.9)/.3)));
+ txt('...still 1%?',Y+40,96,'#fff',ease((t-9.1)/.3)*(1-ease((t-10.6)/.2)));
+ txt('the switch was\nOFF the whole time',Y,84,'#ff6b7a',ease((t-10.8)/.25)*(1-ease((t-13.7)/.3)));
+ if(!raw)return c.toDataURL('image/jpeg',0.93);}
+const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
+// motion blur: average SUB sub-frames across half a frame interval
+window.frame=(t,SUB)=>{for(let k=0;k<SUB;k++){draw(Math.max(0,t+(k/SUB-.5)/60),1);ax.globalAlpha=1/(k+1);ax.drawImage(c,0,0)}ax.globalAlpha=1;return acc.toDataURL('image/jpeg',0.95)};
+window.draw=draw;
+</script>

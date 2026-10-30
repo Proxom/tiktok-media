@@ -1,0 +1,88 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="three.min.js"></script><script>
+// "Find the odd donut": 30 glazed donuts spin in sync, one spins the other way. 12 s loop.
+const W=1080,H=1920,T=12,COLS=5,ROWS=6,ODD=[3,2]; // odd donut col,row
+const r=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=0.9;
+r.outputColorSpace=THREE.SRGBColorSpace;
+const s=new THREE.Scene();s.background=new THREE.Color(0xf3d9c8);s.fog=new THREE.Fog(0xf3d9c8,26,60);
+const cam=new THREE.PerspectiveCamera(30,W/H,0.1,100);
+const ec=document.createElement('canvas');ec.width=512;ec.height=256;const g=ec.getContext('2d');
+let gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#fff6ee');gr.addColorStop(.5,'#f0c9b0');gr.addColorStop(1,'#6b4a3a');g.fillStyle=gr;g.fillRect(0,0,512,256);
+g.fillStyle='#fff';g.fillRect(80,30,140,60);g.fillRect(340,40,80,50);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+s.add(new THREE.HemisphereLight(0xfff1e6,0x8a5a44,0.6));
+const key=new THREE.DirectionalLight(0xfff4ea,2.4);key.position.set(-4,14,7);key.castShadow=true;key.shadow.mapSize.set(2048,2048);
+Object.assign(key.shadow.camera,{left:-10,right:10,top:10,bottom:-10,near:1,far:40});key.shadow.radius=5;key.shadow.bias=-0.0005;s.add(key);
+const rim=new THREE.PointLight(0xffc7a8,30,40);rim.position.set(6,5,-6);s.add(rim);
+// marble-ish counter top
+const tc=document.createElement('canvas');tc.width=tc.height=1024;const tg=tc.getContext('2d');tg.fillStyle='#efe6df';tg.fillRect(0,0,1024,1024);
+let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+for(let i=0;i<40;i++){tg.strokeStyle=`rgba(150,130,120,${.05+rnd()*.12})`;tg.lineWidth=1+rnd()*3;tg.beginPath();let px=rnd()*1024,py=rnd()*1024;tg.moveTo(px,py);for(let k=0;k<12;k++){px+=(rnd()-.3)*120;py+=(rnd()-.5)*90;tg.lineTo(px,py)}tg.stroke()}
+const tt=new THREE.CanvasTexture(tc);tt.wrapS=tt.wrapT=THREE.RepeatWrapping;tt.repeat.set(3,3);tt.colorSpace=THREE.SRGBColorSpace;
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(120,120),new THREE.MeshPhysicalMaterial({map:tt,roughness:.25,clearcoat:.6,clearcoatRoughness:.2}));
+floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;s.add(floor);
+// donut parts
+const R0=0.62,TUBE=0.3;
+const doughG=new THREE.TorusGeometry(R0,TUBE,40,80);doughG.rotateX(Math.PI/2);
+const glazeG=new THREE.TorusGeometry(R0,TUBE*1.06,40,80,Math.PI*2);glazeG.rotateX(Math.PI/2);
+// keep only top half-ish of glaze: squash & lift
+const doughM=new THREE.MeshPhysicalMaterial({color:0xc98a4b,roughness:.75,sheen:.6,sheenColor:new THREE.Color(0xffd2a0)});
+const glazeCols=[0xff6fa8];
+const glazeM=new THREE.MeshPhysicalMaterial({color:0xff3d8b,roughness:.16,clearcoat:1,clearcoatRoughness:.08});
+const sprG=new THREE.CapsuleGeometry(0.028,0.11,4,8);
+const sprCols=[0xffffff,0x4cc9f0,0xffd166,0x06d6a0,0x9b5de5,0xef476f];
+const sprMs=sprCols.map(c=>new THREE.MeshStandardMaterial({color:c,roughness:.4}));
+const donuts=[],SP=1.75;
+for(let j=0;j<ROWS;j++)for(let i=0;i<COLS;i++){
+ const grp=new THREE.Group();const x=(i-(COLS-1)/2)*SP,z=(j-(ROWS-1)/2)*SP;grp.position.set(x,TUBE,z);
+ const d=new THREE.Mesh(doughG,doughM);d.castShadow=d.receiveShadow=true;grp.add(d);
+ const gl=new THREE.Mesh(glazeG,glazeM);gl.scale.set(1,0.7,1);gl.position.y=0.14;gl.castShadow=true;gl.receiveShadow=true;grp.add(gl);
+ seed=1000+i*31+j*7; // same sprinkle pattern per donut is fine, vary slightly
+ for(let k=0;k<26;k++){const a=rnd()*Math.PI*2,rr=R0+(rnd()-.5)*TUBE*1.3;const sp=new THREE.Mesh(sprG,sprMs[k%sprMs.length]);
+  sp.position.set(Math.cos(a)*rr,0.14+TUBE*1.06*0.7+0.005,Math.sin(a)*rr);sp.rotation.set(Math.PI/2,0,rnd()*Math.PI);sp.rotation.order='YXZ';sp.rotation.y=rnd()*Math.PI;sp.castShadow=true;grp.add(sp)}
+ grp.userData={i,j,odd:i===ODD[0]&&j===ODD[1]};s.add(grp);donuts.push(grp);}
+const ease=x=>x<0?0:x>1?1:x*x*(3-2*x);
+const eob=x=>{x=Math.min(1,Math.max(0,x));const c1=1.7,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+const REV=7.0; // reveal time
+function render3d(t){
+ const spin=t*1.4; // rad/s
+ const rv=ease((t-REV)/0.8), back=ease((t-10.8)/1.0); const k=rv*(1-back);
+ for(const d of donuts){const {odd}=d.userData;d.rotation.y=odd?-spin:spin;
+  if(odd){const up=eob((t-REV)/0.9)*(1-back);d.position.y=TUBE+up*1.1;d.scale.setScalar(1+up*0.35);d.rotation.x=up*0.5;}
+  else{d.position.y=TUBE-k*0.0;d.traverse(m=>{if(m.material&&m.material.transparent!==undefined){}});}}
+ // dim others by darkening lights on reveal via overlay later; camera
+ const intro=ease(t/1.2),dz=1-intro;
+ const R=22-dz*6-k*5, ang=0.05*Math.sin(t*2*Math.PI/T);
+ const ox=k*((ODD[0]-(COLS-1)/2)*SP), oz=k*((ODD[1]-(ROWS-1)/2)*SP);
+ cam.position.set(ox+Math.sin(ang)*R*0.25+0.03*Math.sin(t*1.7),R*(0.8+0.12*k),oz+R*(0.6-0.15*k)+0.03*Math.cos(t*1.3));
+ cam.lookAt(ox,0.2+k*0.8,oz-0.6+(1-k)*-1.0);
+ r.render(s,cam);}
+// 2D overlay
+const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');
+function txt(str,y,size,col,a,stroke){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.font='900 '+size+'px "DejaVu Sans",Arial,sans-serif';x.textAlign='center';x.lineJoin='round';
+ str.split('\n').forEach((l,i)=>{const yy=y+i*size*1.15;x.lineWidth=size/5;x.strokeStyle=stroke||'rgba(40,10,20,.9)';x.strokeText(l,W/2,yy);x.fillStyle=col;x.fillText(l,W/2,yy)});x.restore()}
+function pill(y,h,a){x.save();x.globalAlpha=a;x.fillStyle='rgba(30,8,18,.55)';const w=900;x.beginPath();x.roundRect((W-w)/2,y,w,h,40);x.fill();x.restore()}
+function draw(t){
+ render3d(t);x.clearRect(0,0,W,H);x.drawImage(r.domElement,0,0);
+ const rv=ease((t-REV)/0.6),back=ease((t-10.8)/1.0),k=rv*(1-back);
+ // vignette + dim
+ const vg=x.createRadialGradient(W/2,H*0.55,H*0.2,W/2,H*0.55,H*0.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,`rgba(40,10,10,${0.35+0.35*k})`);x.fillStyle=vg;x.fillRect(0,0,W,H);
+ // grain
+ for(let n=0;n<1400;n++){const gx=(Math.sin(n*12.9898+t*78.233)*43758.5453)%1,gy=(Math.sin(n*78.233+t*12.9898)*12543.17)%1;x.fillStyle=n%2?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)';x.fillRect(Math.abs(gx)*W,Math.abs(gy)*H,2,2)}
+ const top=250;
+ if(t<REV){
+  const a=1;pill(top,330,a*.9);
+  txt('One donut is\nspinning WRONG',top+120,86,'#fff',a);
+  const left=Math.max(0,Math.ceil(5-(t-1.5)));const cd=t<1.5?'5':String(left);
+  const ph=(t-1.5)%1,pop=t<1.5?1:1+0.25*Math.max(0,1-ph*4);
+  if(t>=1.0){x.save();x.translate(W/2,top+470);x.scale(pop,pop);x.translate(-W/2,-(top+470));
+   txt(left===0?'⏱':'⏱ '+cd,top+500,120,left<=2&&t>1.5?'#ffd166':'#fff',ease((t-1)/0.3));x.restore()}
+ } else {
+  const a=ease((t-REV-0.3)/0.4)*(1-back);pill(top,330,a*.9);
+  txt('FOUND IT? 👀',top+120,96,'#ffd166',a);
+  txt('Comment ✅ or ❌',top+250,72,'#fff',ease((t-REV-1.2)/0.4)*(1-back));
+ }
+ return o.toDataURL('image/jpeg',0.94);}
+window.draw=draw;
+</script>
