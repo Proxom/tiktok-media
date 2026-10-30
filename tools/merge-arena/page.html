@@ -1,0 +1,75 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="data.js"></script><script>
+// S1 "Will it evolve?" merge arena renderer: draws the pre-simulated frames from data.js (sim.js).
+const W=1080,H=1920,T0=2.0,D=DATA,CH=D.chain,TOP=CH.length-1,CX=D.CX,CY=D.CY,R=D.R,FPS=D.fps,FIN=D.final;
+const c=document.getElementById('c'),x=c.getContext('2d');
+const rad=k=>30*Math.pow(1.3,k);
+const HUE=[40,50,55,20,0,180,30,130];
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)},eob=v=>{v=cl(v);const c1=1.7,c3=c1+1;return 1+c3*Math.pow(v-1,3)+c1*Math.pow(v-1,2)};
+const merges=D.events.filter(e=>e.type==='merge'),drops=D.events.filter(e=>e.type==='drop');
+const firstTier=CH.map((_,k)=>k===0?0:(merges.find(e=>e.k===k)||{t:1e9}).t);
+// background stars (static)
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;{const g=bg.getContext('2d');const rg=g.createRadialGradient(CX,CY,50,CX,CY,1300);rg.addColorStop(0,'#1a1440');rg.addColorStop(.5,'#0a0a1e');rg.addColorStop(1,'#020208');g.fillStyle=rg;g.fillRect(0,0,W,H);
+ for(let i=0;i<260;i++){const sx=(i*397.31)%W,sy=(i*911.7)%H;g.fillStyle=`rgba(255,255,255,${.08+.25*((i*7)%10)/10})`;g.beginPath();g.arc(sx,sy,.6+((i*13)%10)/8,0,7);g.fill()}}
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';x.textBaseline='alphabetic';
+ str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
+function emoji(k,px,py,r,ang,alpha){x.save();x.globalAlpha=alpha;x.translate(px,py);x.rotate(ang);x.font=(r*1.55)+'px "Noto Color Emoji"';x.textAlign='center';x.textBaseline='middle';x.fillText(CH[k],0,r*.08);x.restore()}
+function ball(k,px,py,r,ang,alpha,glow){
+ x.save();x.globalAlpha=alpha;
+ const g=x.createRadialGradient(px,py,r*.2,px,py,r*1.25);g.addColorStop(0,`hsla(${HUE[k]},90%,60%,.30)`);g.addColorStop(.75,`hsla(${HUE[k]},90%,55%,.12)`);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.beginPath();x.arc(px,py,r*1.25,0,7);x.fill();
+ x.strokeStyle=`rgba(255,255,255,${.55+.45*glow})`;x.lineWidth=2+3*glow;x.shadowColor=`hsl(${HUE[k]},100%,70%)`;x.shadowBlur=12+30*glow;x.beginPath();x.arc(px,py,r-1,0,7);x.stroke();
+ x.restore();emoji(k,px,py,r*.9,ang,alpha)}
+function arena(t){
+ const gap=Math.asin(46/R);x.save();x.lineWidth=10;x.lineCap='round';
+ const cg=x.createConicGradient?x.createConicGradient(-Math.PI/2+t*.3,CX,CY):null;
+ if(cg){[[0,'#ffd166'],[.25,'#ff6b6b'],[.5,'#c77dff'],[.75,'#4cc9f0'],[1,'#ffd166']].forEach(([o,cc])=>cg.addColorStop(o,cc));x.strokeStyle=cg}else x.strokeStyle='#ffd166';
+ x.shadowColor='#c77dff';x.shadowBlur=36;x.beginPath();x.arc(CX,CY,R+6,-Math.PI/2+gap,-Math.PI/2-gap+Math.PI*2);x.stroke();
+ x.shadowBlur=0;x.lineWidth=2;x.strokeStyle='rgba(255,255,255,.35)';x.beginPath();x.arc(CX,CY,R-6,-Math.PI/2+gap,-Math.PI/2-gap+Math.PI*2);x.stroke();
+ // chute
+ const top=CY-R-Math.cos(gap)*0;x.lineWidth=6;x.strokeStyle='#ffd166';x.shadowColor='#ffd166';x.shadowBlur=20;
+ [-46,46].forEach(o=>{x.beginPath();x.moveTo(CX+o,CY-R+4);x.lineTo(CX+o,0);x.stroke()});x.restore()}
+function chuteQueue(t,q){ // next items waiting in the chute, sliding down between drops
+ if(FIN&&t>FIN)return;const last=drops.filter(d=>d.t<=t).pop();const fr=last?cl((t-last.t)/.27):1;
+ q.forEach((k,i)=>{const y0=CY-R-40-(i+1-ease(fr)*1)*84+84;if(y0<-40)return;emoji(k,CX,y0,30,0,1)})}
+function tierRow(t){const n=CH.length,sp=94,x0=500-sp*(n-1)/2,y=520;
+ for(let k=0;k<n;k++){const got=t>=firstTier[k],p=got?eob((t-firstTier[k])/.35):0,cx=x0+k*sp;
+  x.save();if(got){x.fillStyle=`hsla(${HUE[k]},90%,60%,.25)`;x.beginPath();x.arc(cx,y,40,0,7);x.fill()}
+  x.globalAlpha=got?1:.45;x.filter=got?'none':'grayscale(1)';x.translate(cx,y);const s=got?(.8+.2*p+(t-firstTier[k]<.35?.3*Math.sin(p*Math.PI):0)):.8;x.scale(s,s);
+  x.font='58px "Noto Color Emoji"';x.textAlign='center';x.textBaseline='middle';x.fillText(CH[k],0,4);x.restore();
+  if(k<n-1){x.fillStyle='rgba(255,255,255,.35)';x.beginPath();x.arc(cx+sp/2,y,3,0,7);x.fill()}}}
+function panel(){x.save();x.fillStyle='rgba(8,6,26,.86)';x.strokeStyle='rgba(255,209,102,.8)';x.lineWidth=3;x.shadowColor='#c77dff';x.shadowBlur=24;x.beginPath();x.roundRect(80,318,840,250,34);x.fill();x.stroke();x.restore()}
+function draw(t){t+=T0;
+ const f=Math.min(D.frames.length-1,Math.max(0,Math.round(t*FPS)));const fr=D.frames[f];
+ x.globalAlpha=1;x.filter='none';x.drawImage(bg,0,0);
+ // camera punch on the final
+ const fin=FIN&&t>=FIN?t-FIN:-1;x.save();if(fin>=0&&fin<.4){const sh=(1-fin/.4)*10;x.translate(Math.sin(t*90)*sh,Math.cos(t*77)*sh)}
+ arena(t);chuteQueue(t,fr.q);
+ const recent=merges.filter(e=>t>=e.t&&t-e.t<.45);
+ for(const [id,k,px,py,a,born] of fr.it){const r=rad(k);const age=t-born;let s=1,glow=0,al=1;
+  if(age<.3&&born>0.05){s=.6+.4*eob(age/.3);glow=1-age/.3}
+  let X=px,Y=py;
+  if(fin>=0){if(k===TOP){const m=ease(fin/.9);X=px+(CX-px)*m;Y=py+(CY-py)*m;s*=1+.35*m+.04*Math.sin(fin*6);glow=Math.max(glow,.6+.4*Math.sin(fin*5))}
+   else{const d=Math.hypot(px-CX,py-CY);const pt=.15+d/R*.5;al=1-cl((fin-pt)/.15);if(al<=0)continue;s*=1+.3*cl((fin-pt)/.15)}}
+  ball(k,X,Y,r*s,a,al,glow)}
+ // merge flashes + sparkles
+ for(const e of recent){const p=(t-e.t)/.45,r=rad(e.k);x.save();x.globalAlpha=1-p;x.strokeStyle=`hsl(${HUE[e.k]},100%,75%)`;x.lineWidth=6*(1-p);x.shadowColor='#fff';x.shadowBlur=20;
+  x.beginPath();x.arc(e.x,e.y,r*(1+.9*ease(p)),0,7);x.stroke();
+  for(let i=0;i<10;i++){const an=i*.628+e.t*7,dd=r*(1+1.4*ease(p));x.fillStyle='#fff';x.beginPath();x.arc(e.x+Math.cos(an)*dd,e.y+Math.sin(an)*dd,3*(1-p)+1,0,7);x.fill()}x.restore()}
+ // final burst particles from popped items
+ if(fin>=0){for(let i=0;i<90;i++){const an=i*2.39996,sp=300+((i*97)%260),p=cl((fin-.1)/1.6),dd=sp*p;x.save();x.globalAlpha=(1-p)*.9;x.fillStyle=`hsl(${(i*37)%360},100%,70%)`;
+  x.beginPath();x.arc(CX+Math.cos(an)*dd*1.6,CY+Math.sin(an)*dd*1.3-200*p*p,4,0,7);x.fill();x.restore()}}
+ x.restore();
+ if(fin>=0&&fin<.25){x.fillStyle=`rgba(255,255,255,${.7*(1-fin/.25)})`;x.fillRect(0,0,W,H)}
+ // vignette
+ const vg=x.createRadialGradient(W/2,H*.52,H*.3,W/2,H*.52,H*.85);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ // text: question until the final, then the payoff
+panel();
+ if(fin<0)txt('Will the egg become\na DRAGON? 🐉',375,66,'#fff',1);
+ else txt('IT EVOLVED! 🐉',430,96,'#7CFF6B',ease(fin/.25));
+ tierRow(t);
+ return c.toDataURL('image/jpeg',0.93);}
+window.draw=draw;
+</script>
