@@ -61,7 +61,7 @@ function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,
 function drawF(t){render3d(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(20,30,50,.30)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
- if(!FIN||t<FIN){const a=t<4?1:Math.max(0,1-ease((t-4)/.5)),fo=FIN?1-ease((t-(FIN-1.2))/.3):1;txt('Marble music:\nguess the song 🎵',360,70,'#fff',Math.min(a,fo));if(t>=4.5)txt('🎵 guess the song',350,52,'#fff',.85*fo)}
+ if(!FIN||t<FIN){const a=t<4?1:Math.max(0,1-ease((t-4)/.5)),fo=FIN?1-ease((t-(FIN-1.2))/.3):1;txt('Marble music:\nguess the song 🎵',405,70,'#fff',Math.min(a,fo));if(t>=4.5)txt('🎵 guess the song',395,52,'#fff',.85*fo)}
  else{txt('FINISH! 🏁',420,110,'#ffd23f',ease((t-FIN)/.25));txt(D.song||'Ode to Joy 🎵',540,60,'#fff',ease((t-FIN-.6)/.3))}
  return o}
 const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');

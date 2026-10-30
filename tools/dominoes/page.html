@@ -1,0 +1,68 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="three.min.js"></script><script src="data.js"></script><script>
+// Format 3: rainbow spiral of dominoes toppling in a wave (three.js instanced boxes). Timing comes from data.js (gen.js).
+const W=1080,H=1920,D=DATA,N=D.N,T_END=D.tEnd+1.6;
+const r=new THREE.WebGLRenderer({canvas:document.createElement('canvas'),antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.05;r.outputColorSpace=THREE.SRGBColorSpace;
+const s=new THREE.Scene();s.background=new THREE.Color(0xe9dccb);s.fog=new THREE.Fog(0xe9dccb,26,48);
+const cam=new THREE.PerspectiveCamera(40,W/H,.1,100);
+const ec=document.createElement('canvas');ec.width=512;ec.height=256;const eg=ec.getContext('2d');let gr=eg.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#fff8ee');gr.addColorStop(.55,'#e8d9c6');gr.addColorStop(1,'#8d7a66');eg.fillStyle=gr;eg.fillRect(0,0,512,256);eg.fillStyle='#fff';eg.fillRect(80,30,150,60);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+const key=new THREE.DirectionalLight(0xfff0dc,3.0);key.position.set(-8,16,9);key.castShadow=true;key.shadow.mapSize.set(4096,4096);Object.assign(key.shadow.camera,{left:-12,right:12,top:12,bottom:-12,near:1,far:50});key.shadow.radius=4;key.shadow.bias=-.0004;s.add(key);
+s.add(new THREE.HemisphereLight(0xfff6e8,0xc9b79c,.55));
+// wooden floor
+const fc=document.createElement('canvas');fc.width=1024;fc.height=1024;const fg=fc.getContext('2d');fg.fillStyle='#d8b88f';fg.fillRect(0,0,1024,1024);
+for(let i=0;i<8;i++){fg.fillStyle=`hsl(32,${35+i%3*4}%,${64+(i*5)%9}%)`;fg.fillRect(0,i*128,1024,124);fg.fillStyle='rgba(70,40,20,.35)';fg.fillRect(0,i*128+124,1024,4);for(let k=0;k<60;k++){fg.strokeStyle=`rgba(90,55,25,${.05+.04*(k%3)})`;fg.beginPath();const y0=i*128+((k*37)%120);fg.moveTo(0,y0);for(let xx=0;xx<=1024;xx+=64)fg.lineTo(xx,y0+2*Math.sin(xx*.02+k));fg.stroke()}}
+const ft=new THREE.CanvasTexture(fc);ft.colorSpace=THREE.SRGBColorSpace;ft.wrapS=ft.wrapT=THREE.RepeatWrapping;ft.repeat.set(5,5);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandardMaterial({map:ft,roughness:.6}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;s.add(floor);
+// dominoes
+const DH=1.0,DW=.55,DT=.13;
+const geo=new THREE.BoxGeometry(DT,DH,DW);const mat=new THREE.MeshPhysicalMaterial({roughness:.28,clearcoat:.7,clearcoatRoughness:.2});
+const mesh=new THREE.InstancedMesh(geo,mat,N);mesh.castShadow=true;mesh.receiveShadow=true;s.add(mesh);
+const col=new THREE.Color();for(let i=0;i<N;i++){col.setHSL((i/N*.92+.0)%1,.8,.55);mesh.setColorAt(i,col)}mesh.instanceColor.needsUpdate=true;
+const M=new THREE.Matrix4(),B=new THREE.Matrix4(),P=new THREE.Matrix4(),Rz=new THREE.Matrix4(),C=new THREE.Matrix4();
+const FINAL=72*Math.PI/180;
+function ang(i,t){const u=(t-D.t[i])/D.D;if(u<=0)return 0;if(u>=1)return FINAL;return FINAL*Math.pow(u,2.1)}
+function place(t){for(let i=0;i<N;i++){const [x,z,tx,tz]=D.pos[i];const a=ang(i,t);
+  // basis: X=T (forward), Y=up, Z=T x up
+  const nz=[-tz,tx]; // perpendicular on the ground
+  B.set(tx,0,nz[0]*-1*-1,x, 0,1,0,0, tz,0,nz[1],z, 0,0,0,1);
+  // right-handed: columns are X=(tx,0,tz), Y=(0,1,0), Z=(-tz,0,tx)
+  B.set(tx,0,-tz,x, 0,1,0,0, tz,0,tx,z, 0,0,0,1);
+  P.makeTranslation(DT/2,0,0);Rz.makeRotationZ(-a);C.makeTranslation(-DT/2,DH/2,0);
+  M.copy(B).multiply(P).multiply(Rz).multiply(C);mesh.setMatrixAt(i,M)}mesh.instanceMatrixNeedsUpdate=true}
+// starter ball rolling in to tip the first domino
+const ball=new THREE.Mesh(new THREE.SphereGeometry(.32,40,28),new THREE.MeshPhysicalMaterial({color:0xf2f2f2,metalness:1,roughness:.12}));ball.castShadow=true;s.add(ball);
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
+const frontIdx=t=>{let lo=0,hi=N-1;while(lo<hi){const m=(lo+hi+1)>>1;if(D.t[m]<=t)lo=m;else hi=m-1}return lo};
+function render3d(t){place(t);
+ const p0=D.pos[0],tx=p0[2],tz=p0[3];const bt=cl(t/D.t[0]);const dist=-3.2+(3.2+DT/2+.32)*ease(bt);
+ ball.position.set(p0[0]+tx*dist,.32,p0[1]+tz*dist);ball.visible=t<D.t[0]+1.2;
+ const f=frontIdx(t),fp=D.pos[f];const done=cl((t-(D.tEnd-1.2))/2.6),e=ease(done);
+ // camera: follow the wave front, then pull back to show the whole rainbow
+ const fx=fp[0],fz=fp[1];const cxF=fx*(1-e),czF=fz*(1-e);
+ const dist2=7.5+e*13,hgt=8.5+e*16,ox=-3.5*(1-e),oz=5.5*(1-e);
+ const orb=.15*Math.sin(t*.3);
+ cam.position.set(cxF+ox*Math.cos(orb)-oz*Math.sin(orb)+(0),hgt,czF+dist2*(.55+.45*e)*0+oz*Math.cos(orb)+ox*Math.sin(orb)+dist2*.5*e);
+ cam.lookAt(cxF,0,czF);
+ r.render(s,cam)}
+const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');document.getElementById('c').replaceWith(o);o.id='c';
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(40,24,14,.9)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
+function drawF(t){render3d(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(40,20,5,.30)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
+ const f=frontIdx(t);
+ txt('420 dominoes.\nOne tap. 🌈',385,68,'#fff',t<.1?1:fd(-1,D.t[0]+4.5));
+ if(t>D.t[0]+5&&t<D.tEnd-3)txt(Math.min(N,f+1)+' / '+N,360,70,'#fff',.95);
+ txt('Wait for the end… 👀',385,64,'#ffe9a8',fd(D.tEnd-7,D.tEnd-2.5));
+ txt('SATISFYING 🌈',400,92,'#fff',ease((t-(D.tEnd-.6))/.3));
+ return o}
+const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
+window.frame=(t,SUB)=>{if(SUB<=1){drawF(t);return o.toDataURL('image/jpeg',0.93)}
+ for(let k=0;k<SUB;k++){drawF(Math.max(0,t+(k/SUB-.5)/60));ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;return acc.toDataURL('image/jpeg',0.93)};
+window.draw=t=>{drawF(t);return o.toDataURL('image/jpeg',0.93)};
+</script>

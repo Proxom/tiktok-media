@@ -4,7 +4,7 @@
 const fs=require('fs');
 const OUT=process.argv[2]||'data.js',SEED=+process.argv[3]||1;
 const FPS=30,SUB=20,DT=1/(FPS*SUB),TMAX=60,CX=540,CY=990;
-const NB=+process.env.NB||5,K=+process.env.K||7,BR=+process.env.BR||15,HT=7;
+const NB=+process.env.NB||5,K=+process.env.K||6,BR=+process.env.BR||15,HT=7;
 const NAMES=['RED','BLUE','GREEN','YELLOW','PURPLE'],COLS=['#ff4d5e','#4d8dff','#3ddc84','#ffd23f','#b56cff'];
 function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 const wrap=a=>{while(a>Math.PI)a-=2*Math.PI;while(a<-Math.PI)a+=2*Math.PI;return a};
@@ -28,7 +28,7 @@ function run(seed){
    for(let i=0;i<NB;i++)for(let j=i+1;j<NB;j++){const a=balls[i],b=balls[j];if(a.region!==b.region)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);if(d<2*BR&&d>1e-6){const nx=dx/d,ny=dy/d,ov=2*BR-d;a.x-=nx*ov/2;a.y-=ny*ov/2;b.x+=nx*ov/2;b.y+=ny*ov/2;const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){a.vx+=rv*nx;a.vy+=rv*ny;b.vx-=rv*nx;b.vy-=rv*ny;events.push({t,type:'clack',ball:i,v:-rv})}}}
   }
   frames.push(balls.map(b=>[Math.round(b.x*10)/10,Math.round(b.y*10)/10,b.region]));
-  if(finish!==null&&t>finish+3)break;
+  if(finish!==null&&t>finish+2.6)break;
  }
  if(finish===null)return{fail:'timeout'};
  return{rings,balls:NAMES.slice(0,NB).map((n,i)=>({name:n,col:COLS[i]})),frames,events,winner,finish,seed,CX,CY,BR,HT,K,fps:FPS};

@@ -35,13 +35,13 @@ function draw(t){
  x.restore();
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: question + scoreboard of rings passed
- x.save();x.fillStyle='rgba(8,6,26,.82)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(90,330,800,205,30);x.fill();x.stroke();x.restore();
+ x.save();x.fillStyle='rgba(8,6,26,.82)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(80,330,820,215,30);x.fill();x.stroke();x.restore();
  if(fin<0)txt('Which colour escapes\nfirst? 🏁',388,54,'#fff',1);
  else txt(D.balls[D.winner].name+' ESCAPED! 🏁',420,66,D.balls[D.winner].col,ease(fin/.25));
  // scoreboard dots
- for(let b=0;b<NB;b++){const cx=500-(NB-1)*80+b*160,n=D.frames[f][b][2];
-  x.save();x.fillStyle=D.balls[b].col;x.shadowColor=D.balls[b].col;x.shadowBlur=10;x.beginPath();x.arc(cx-26,502,14,0,7);x.fill();x.restore();
-  x.font='900 30px "DejaVu Sans"';x.textAlign='left';x.fillStyle='#fff';x.fillText(n+'/'+K,cx-4,513)}
+ for(let b=0;b<NB;b++){const cx=490-(NB-1)*80+b*160,n=D.frames[f][b][2];
+  x.save();x.fillStyle=D.balls[b].col;x.shadowColor=D.balls[b].col;x.shadowBlur=10;x.beginPath();x.arc(cx-30,508,19,0,7);x.fill();x.restore();
+  x.font='900 40px "DejaVu Sans"';x.textAlign='left';x.fillStyle='#fff';x.fillText(n+'/'+K,cx-2,522)}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
