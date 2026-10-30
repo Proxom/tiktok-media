@@ -77,11 +77,11 @@ function draw(t){
   const left=Math.max(0,Math.ceil(5-(t-1.5)));const cd=t<1.5?'5':String(left);
   const ph=(t-1.5)%1,pop=t<1.5?1:1+0.25*Math.max(0,1-ph*4);
   if(t>=1.0){x.save();x.translate(W/2,top+470);x.scale(pop,pop);x.translate(-W/2,-(top+470));
-   txt(left===0?'⏱':'⏱ '+cd,top+500,120,left<=2&&t>1.5?'#ffd166':'#fff',ease((t-1)/0.3));x.restore()}
+   txt(left===0?'TIME!':'⏱ '+cd,top+500,120,left<=2&&t>1.5?'#ffd166':'#fff',ease((t-1)/0.3));x.restore()}
  } else {
-  const a=ease((t-REV-0.3)/0.4)*(1-back);pill(top,330,a*.9);
+  const a=ease((t-REV-0.3)/0.4);pill(top,330,a*.9);
   txt('FOUND IT? 👀',top+120,96,'#ffd166',a);
-  txt('Comment ✅ or ❌',top+250,72,'#fff',ease((t-REV-1.2)/0.4)*(1-back));
+  txt('Comment ✅ or ❌',top+250,72,'#fff',ease((t-REV-1.2)/0.4));
  }
  return o.toDataURL('image/jpeg',0.94);}
 window.draw=draw;
