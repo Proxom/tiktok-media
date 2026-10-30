@@ -51,7 +51,7 @@ function frame(t){
  render3d(t);x.clearRect(0,0,W,H);x.drawImage(r.domElement,0,0);
  const vg=x.createRadialGradient(W/2,H*.5,H*.25,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  for(let n=0;n<1400;n++){const gx=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),gy=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.04)':'rgba(0,0,0,.06)';x.fillRect(gx*W,gy*H,2,2)}
- const Y=320,fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
+ const Y=400,fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
  txt('15 balls. Different\nstring lengths.',Y,80,'#fff',t<0.1?1:fd(-1,3.2));
  txt('Watch the pattern 👀',Y+40,82,'#ffd166',fd(3.4,7.6));
  txt('now it splits in two…',Y+40,76,'#fff',fd(9.0,11.6));

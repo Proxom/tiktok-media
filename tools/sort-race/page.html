@@ -9,7 +9,7 @@ function txt(s,px,y,size,col,a,al){if(a<=0)return;x.save();x.globalAlpha=cl(a);x
  s.split('\n').forEach((l,i)=>{const yy=y+i*size*1.15;x.lineWidth=size/5;x.strokeStyle='rgba(5,5,15,.9)';x.strokeText(l,px,yy);x.fillStyle=col;x.fillText(l,px,yy)});x.restore()}
 function bg(t){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b0d1d');g.addColorStop(1,'#151033');x.fillStyle=g;x.fillRect(0,0,W,H);
  for(let i=0;i<6;i++){const gx=W*(.2+.6*((i*.37+t*.02)%1)),gy=H*(.2+.12*i);const r=x.createRadialGradient(gx,gy,0,gx,gy,380);r.addColorStop(0,`hsla(${230+i*25},80%,60%,.10)`);r.addColorStop(1,'hsla(0,0%,0%,0)');x.fillStyle=r;x.fillRect(0,0,W,H)}}
-const PY=470,PH=245,PG=22,PX=40,PW=1000;
+const PY=520,PH=215,PG=18,PX=60,PW=860; // safe zones: panels end <1440, right edge <930
 function panel(k,t){
  const y=PY+k*(PH+PG);const step=t<GO?0:Math.min(len[k]-1,Math.floor((t-GO)*FPS*STEP));const st=DATA.algos[names[k]][step];const done=t>=fin[k];
  const intro=1;x.save();x.translate((1-intro)*-W,0);
@@ -25,7 +25,7 @@ function panel(k,t){
  x.restore();}
 function draw(t){
  bg(t);for(let k=0;k<4;k++)panel(k,t);
- const Y=295;
+ const Y=390;
  txt('Same data, same speed.\nWho wins? 👇',W/2,Y,64,'#fff',1-ease((t-fin[order[0]]+.25)/.2));
  if(t>=fin[order[0]]&&t<fin[order[2]]+.3)txt(names[order[0]]+' done in\n'+(len[order[0]]-1)+' checks ⚡',W/2,Y,70,cols[order[0]],ease((t-fin[order[0]])/.2)*(1-ease((t-fin[order[2]])/.3)));
  const last=order[3];

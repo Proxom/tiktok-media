@@ -29,7 +29,7 @@ function draw(t,raw){
  // soft vignette + grain
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.5)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  for(let n=0;n<1500;n++){const gx=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),gy=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.035)':'rgba(0,0,0,.05)';x.fillRect(gx*W,gy*H,2,2)}
- const Y=318,fd=(a,b)=>ease((t-a)/.2)*(1-ease((t-b)/.2));
+ const Y=400,fd=(a,b)=>ease((t-a)/.2)*(1-ease((t-b)/.2));
  txt('Are these grey\nlines tilted? 🤔',Y,84,'#fff',t<.1?1:fd(-1,4.4));
  txt('Perfectly straight 📏',Y+40,82,'#ff6b81',fd(4.6,6.9));
  txt('Now line the tiles up…',Y+40,72,'#fff',fd(7.0,9.4));
