@@ -2,6 +2,18 @@
 
 Routine prompt: "Read AGENT.md in the Proxom/tiktok-media repository and follow it." This repo is the working directory. Runs 6 times a day at 23:22, 03:22, 07:22, 11:22, 15:22 and 19:22 Europe/London, each run starting about 2 hours before a publishing slot. Everything Erkan reads (dashboard, messages) is in Turkish; video text, captions and hashtags are in English.
 
+## ERKAN'S RULE (30 Oct 17:50) — EVERY VIDEO FROM NOW ON IS IN THE STYLE OF THE REFERENCE ACCOUNTS; VIEWS ARE WHAT MATTER
+"All future videos must be like the videos on the TikTok accounts I gave. Pick the best-performing ones from each and post every type. What matters is lots of views."
+- No more illusions, mini stories, sorting races, fact videos or other old formats. Only the series below, ranked by the view counts seen on the reference profiles. Daily mix of the 6 slots (rotate so every type appears; give the top ones more slots):
+  1. S5 Marble Music wall run (Victor de Martrin style, 94-138M): 2 slots/day once the engine exists (HERO).
+  2. S1 "Will it evolve?" merge arena (tinycollider 1-12M, mergedrop 2.6-5.9M): 1-2 slots/day.
+  3. S6 press/roller/spikes vs soft object and "Softness/Viscosity X%" (kawaken 2-4.6M, goblin 1.5M; named contestants with scores): 1 slot/day.
+  4. S2 the.lab67-style sound-led sims: "Wait for all 100 to sync", "Reactor melts down / will it go critical?", "Math functions, turn your volume up" (1-4.2M): 1 slot/day.
+  5. S4 hypnotic hyperspace/particle-flow loop (3dperfect 2.9M): 1 slot every other day.
+  6. S3 escape ring: test only.
+- Already scheduled old-format posts: 31 Oct 09:00 café-wall illusion, 13:00 shape-sorter, 17:00 pumpkin mini story. NO EMPTY SLOT still wins, so leave them unless a new-style video is ready; as soon as one is, swap it into the earliest of these slots (updateScheduledPost with the new media/title/caption) and mark the old video "bank (old format)" in the dashboard. Sort race, jelly press and pendulum are close enough to the new style to stay.
+- Judge every video by: does it look like it belongs in those accounts' top-performing grids (same type, same hook strength, same satisfying payoff and sound)? If not, rebuild. After 72 h compare our views per series and shift slots to whatever gets the most views.
+
 ## NEW DIRECTION — CODE-MADE PHYSICS SIMS & SATISFYING 3D (Erkan, 30 Oct 17:15; this overrides "rotate the 5 formats" and the mini-story focus below)
 Erkan's reference accounts (study them, never copy a specific video): @tinycollider (11K followers, "every video is made with code, physics sims, generative art & satisfying chaos, no editing tricks, just math"), @the.lab67 (159K, physics and math sims), @foryastudios (3K, "real physics, every frame computed"), @mergedrop.sim (10K, satisfying objects merging & evolving), @kawaken_3dcg (204K, "visual ASMR" satisfying 3DCG), @goblin_3xd (158K, 3D animation + ASMR), @3d.4fun (C4D/Blender sims), @3dperfect (57K, high-end visual loops), @victordemartrin (2.2M, 3D entertainer), @marblemannequin (5.6M, concept 3D worlds). The bigger ones are human 3D artists using Blender/C4D. The code-made ones (tinycollider, the.lab67, foryastudios, mergedrop.sim) are the model to beat with our pipeline.
 What they share, and what we now do:
