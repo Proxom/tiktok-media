@@ -4,6 +4,11 @@ Routine prompt: "Read AGENT.md in the Proxom/tiktok-media repository and follow 
 
 ## ERKAN'S RULE (30 Oct 17:50) — EVERY VIDEO FROM NOW ON IS IN THE STYLE OF THE REFERENCE ACCOUNTS; VIEWS ARE WHAT MATTER
 "All future videos must be like the videos on the TikTok accounts I gave. Pick the best-performing ones from each and post every type. What matters is lots of views."
+- ERKAN'S FAVOURITES (30 Oct 18:05): "the videos of Marble Mannequin, Victor de Martrin and MergeDrop make me want to watch the next one; and I watch dominoes falling and a rolling marble hitting obstacles and deflectors on its way to a FINISH a lot." So the priority order is now:
+  A. MARBLE RUN to a FINISH (S5): Victor-style wall run with coloured deflectors, pins and bells (marble music with public-domain tunes), and Marble Mannequin-style runs through carved wooden sculptures/letters on a pastel gradient background. The camera follows the marble, every hit is a synced note, and it ends in a clear FINISH (cup, gate, finish flag, final chord). Variants: race of 2-4 named marbles to the finish (comment "who did you pick?").
+  B. DOMINOES: long chain reactions (spirals, splits, stairs, dominoes that grow 1.5x each, domino toppling a giant, colour-wave patterns), real rigid-body physics, a click for each domino falling.
+  C. MERGEDROP-style "Will X evolve?" merge arena (S1, engine ready in tools/merge-arena): topics with an exciting final form (dinosaurs, planets, balls, dragon).
+  Then the rest (S6 press/softness, S2 sync, S4 loops) as variety. Each day aim for 2-3 A, 1-2 B, 1-2 C.
 - No more illusions, mini stories, sorting races, fact videos or other old formats. Only the series below, ranked by the view counts seen on the reference profiles. Daily mix of the 6 slots (rotate so every type appears; give the top ones more slots):
   1. S5 Marble Music wall run (Victor de Martrin style, 94-138M): 2 slots/day once the engine exists (HERO).
   2. S1 "Will it evolve?" merge arena (tinycollider 1-12M, mergedrop 2.6-5.9M): 1-2 slots/day.
