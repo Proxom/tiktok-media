@@ -1,0 +1,84 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="three.min.js"></script><script>
+// Hydraulic press vs jelly cube: squish 1 (satisfying), squish 2 at MAX POWER... the cube springs back and launches the press. 15 s.
+const W=1080,H=1920,T=15;
+const r=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.05;r.outputColorSpace=THREE.SRGBColorSpace;
+const s=new THREE.Scene();s.background=new THREE.Color(0x1a1d24);s.fog=new THREE.Fog(0x1a1d24,14,30);
+const cam=new THREE.PerspectiveCamera(34,W/H,0.1,100);
+const ec=document.createElement('canvas');ec.width=1024;ec.height=512;const g=ec.getContext('2d');
+let gr=g.createLinearGradient(0,0,0,512);gr.addColorStop(0,'#3a4150');gr.addColorStop(.5,'#1a1d24');gr.addColorStop(1,'#08090c');g.fillStyle=gr;g.fillRect(0,0,1024,512);
+g.fillStyle='#fff';g.fillRect(150,80,240,100);g.fillRect(620,60,200,140);g.fillStyle='#ffcf9a';g.fillRect(450,170,80,50);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+const key=new THREE.SpotLight(0xfff3e6,300,40,0.55,0.5,1.5);key.position.set(-3,10,6);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.radius=4;key.shadow.bias=-0.0004;s.add(key);
+const rim=new THREE.PointLight(0x58b4ff,40,30);rim.position.set(5,4,-4);s.add(rim);
+s.add(new THREE.AmbientLight(0xffffff,0.1));
+// steel base plate + floor
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(60,60),new THREE.MeshPhysicalMaterial({color:0x22252c,roughness:.5}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;s.add(floor);
+const steel=new THREE.MeshPhysicalMaterial({color:0xb8bec8,metalness:1,roughness:.28});
+const dark=new THREE.MeshPhysicalMaterial({color:0x2b2f37,metalness:.8,roughness:.4});
+const yel=new THREE.MeshPhysicalMaterial({color:0xffb300,metalness:.3,roughness:.35,clearcoat:.6});
+const plate=new THREE.Mesh(new THREE.BoxGeometry(4.2,.3,3),steel);plate.position.y=.15;plate.receiveShadow=plate.castShadow=true;s.add(plate);
+// frame columns + top beam (yellow industrial)
+[-1.8,1.8].forEach(xx=>{const col=new THREE.Mesh(new THREE.BoxGeometry(.4,7,.6),yel);col.position.set(xx,3.5,-.6);col.castShadow=true;s.add(col)});
+const beam=new THREE.Mesh(new THREE.BoxGeometry(4.4,.8,1.0),yel);beam.position.set(0,7.2,-.5);beam.castShadow=true;s.add(beam);
+// hazard stripes on base front
+const hc=document.createElement('canvas');hc.width=512;hc.height=64;const hg=hc.getContext('2d');hg.fillStyle='#111';hg.fillRect(0,0,512,64);hg.fillStyle='#ffc400';for(let i=-2;i<20;i++){hg.beginPath();hg.moveTo(i*40,64);hg.lineTo(i*40+20,64);hg.lineTo(i*40+44,0);hg.lineTo(i*40+24,0);hg.fill()}
+const ht=new THREE.CanvasTexture(hc);ht.colorSpace=THREE.SRGBColorSpace;const haz=new THREE.Mesh(new THREE.PlaneGeometry(4.2,.3),new THREE.MeshStandardMaterial({map:ht,roughness:.6}));haz.position.set(0,.15,1.501);s.add(haz);
+// ram: piston rod + press head
+const ram=new THREE.Group();s.add(ram);
+const rod=new THREE.Mesh(new THREE.CylinderGeometry(.35,.35,5,40),steel);rod.position.y=2.5;rod.castShadow=true;ram.add(rod);
+const head=new THREE.Mesh(new THREE.BoxGeometry(2.6,.5,2.0),dark);head.castShadow=true;head.receiveShadow=true;ram.add(head);
+const face=new THREE.Mesh(new THREE.BoxGeometry(2.4,.06,1.8),steel);face.position.y=-.28;ram.add(face);
+// jelly cube (rounded via sphere-ish normals: use box with many segments and pull corners)
+const CS=1.3;const cg=new THREE.BoxGeometry(CS,CS,CS,24,24,24);
+{const p=cg.attributes.position,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const h=CS/2,rr=.22;const cx=Math.max(-h+rr,Math.min(h-rr,v.x)),cy=Math.max(-h+rr,Math.min(h-rr,v.y)),cz=Math.max(-h+rr,Math.min(h-rr,v.z));const d=new THREE.Vector3(v.x-cx,v.y-cy,v.z-cz);if(d.length()>0){d.setLength(rr);v.set(cx+d.x,cy+d.y,cz+d.z)}p.setXYZ(i,v.x,v.y,v.z)}cg.computeVertexNormals()}
+const jm=new THREE.MeshPhysicalMaterial({color:0x0fd45a,roughness:.08,clearcoat:1,clearcoatRoughness:.03,sheen:.5,sheenColor:new THREE.Color(0xaaffcc),emissive:0x063a18,emissiveIntensity:.5});
+const cube=new THREE.Mesh(cg,jm);cube.castShadow=true;s.add(cube);
+// eyes for the cube (appear at the end)
+const eyeM=new THREE.MeshStandardMaterial({color:0x0b0b0b,roughness:.2});const eyes=new THREE.Group();
+[-.22,.22].forEach(ex=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.09,24,16),eyeM);e.position.set(ex,.15,CS/2+.01);e.scale.z=.4;eyes.add(e)});cube.add(eyes);
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)},ein=v=>{v=cl(v);return v*v*v},eout=v=>{v=cl(v);return 1-Math.pow(1-v,3)};
+const TOPY=5.6,BASE=.3; // ram face rest height
+// wobble spring: damped sine after release
+const spring=(dt,amp,f=5,dmp=4)=>dt<0?0:amp*Math.exp(-dt*dmp)*Math.sin(2*Math.PI*f*dt);
+function state(t){
+ // returns ram face y and cube squash factor sq (height scale)
+ let face=TOPY,sq=1,launch=0,shake=0;
+ // press 1: 1.2-3.2 down slow, hold to 4.0, up to 5.0
+ if(t>=0.4&&t<5.0){const down=ease((t-0.4)/2.0),up=ease((t-3.5)/1.0);const tgt=BASE+CS*0.32;face=TOPY+(tgt-TOPY)*down*(1-up)+0;}
+ // press 2: MAX POWER 6.5-7.6 fast down, holds squish 7.6-9.0 (strain), 9.0 cube springs back & launches ram
+ if(t>=6.3&&t<9.0){const down=ein((t-6.3)/1.2);face=TOPY+(BASE+CS*0.12-TOPY)*down;if(t>7.5)shake=Math.sin(t*90)*.02*cl((t-7.5)/1.5)}
+ if(t>=9.0){const u=(t-9.0);launch=u<0?0:(u<2.5?eout(u/0.9)*12:12);face=BASE+CS*0.12+launch;if(t>12.6){const back=ease((t-12.6)/1.6);face=(BASE+CS*0.12+12)+(TOPY-(BASE+CS*0.12+12))*back}}
+ const room=face-BASE;sq=Math.min(1,room/CS);
+ // after release: spring wobble
+ let wob=0;if(t>=4.0&&t<6.3)wob=spring(t-4.0,.2);if(t>=9.0)wob=spring(t-9.0,.35,4.5,3);
+ return {face,sq,wob,shake,launch};}
+function render3d(t){
+ const st=state(t);ram.position.y=st.face+.28+st.shake;
+ const h=Math.max(.1,st.sq*(1+ (st.sq>=1?st.wob:0)));const wv=1/Math.sqrt(h); // volume preserving
+ cube.scale.set(wv,h,wv);cube.position.y=BASE+CS*h/2;
+ const hop=t>=9.0&&t<10.2?Math.sin(Math.PI*(t-9.0)/1.2)*.9:0;cube.position.y+=hop;
+ eyes.visible=t>10.0;const bl=((t*10)%30)<1.2?.15:1;eyes.scale.y=bl;
+ jm.emissiveIntensity=.5+(t>6.3&&t<9?1.2*ease((t-7.4)/1.4):0);
+ // camera: slow push in, shake on impacts, tilt up for launch
+ const push=ease(t/15);const lk=st.launch>0?Math.min(st.launch,5)*.06:0;
+ const sh=(t>9&&t<9.4)?Math.sin(t*120)*.06:0;
+ cam.position.set(2.6-0.6*push+sh,3.4,11.5-1.6*push);cam.lookAt(0,2.6+lk,0);
+ r.render(s,cam);}
+const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');
+function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.font='900 '+size+'px "DejaVu Sans",Arial,sans-serif';x.textAlign='center';x.lineJoin='round';
+ str.split('\n').forEach((l,i)=>{const yy=y+i*size*1.15;x.lineWidth=size/5;x.strokeStyle='rgba(0,0,0,.88)';x.strokeText(l,W/2,yy);x.fillStyle=col;x.fillText(l,W/2,yy)});x.restore()}
+function draw(t){
+ render3d(t);x.clearRect(0,0,W,H);x.drawImage(r.domElement,0,0);
+ const vg=x.createRadialGradient(W/2,H*.55,H*.25,W/2,H*.55,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.55)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ if(t>6.3&&t<9){x.fillStyle=`rgba(255,40,40,${.12*(.5+.5*Math.sin(t*14))})`;x.fillRect(0,0,W,H)}
+ for(let n=0;n<1400;n++){const gx=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),gy=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.04)':'rgba(0,0,0,.06)';x.fillRect(gx*W,gy*H,2,2)}
+ const Y=280,fd=(a,b)=>ease((t-a)/.2)*(1-ease((t-b)/.2));
+ txt('Hydraulic press\nvs jelly cube',Y,88,'#fff',t<.1?1:fd(-1,5.6));
+ txt('MAX POWER 🔥',Y+40,100,'#ff5a5a',fd(5.9,8.2));
+ txt('wait…',Y+40,96,'#fff',fd(8.3,9.1));
+ txt('the jelly won 💚',Y+40,92,'#5dff9d',fd(9.6,14.8));
+ return o.toDataURL('image/jpeg',0.94);}
+window.draw=draw;
+</script>
