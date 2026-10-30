@@ -3,11 +3,13 @@
 const fs=require('fs');
 const OUT=process.argv[2]||'data.js';
 const CHAINS={
- dragon:['🥚','🐣','🐥','🐔','🦃','🦚','🦅','🐉'],
+ dragon:{items:['🥚','🐣','🐥','🐔','🦃','🦚','🦅','🐉'],r0:30,f:1.3},
+ sun:{items:['✨','🪨','☄️','🌑','🌍','🪐','☀️'],r0:30,f:1.36},
+ dino:{items:['🥚','🦎','🐊','🦕','🦖'],r0:40,f:1.48},
 };
-const chainName=process.argv[4]||'dragon',CH=CHAINS[chainName],TOP=CH.length-1;
+const chainName=process.argv[4]||'dragon',CC=CHAINS[chainName],CH=CC.items,TOP=CH.length-1;
 const CX=540,CY=1010,R=400,G=2600,E=.25,FPS=30,SUB=16,DT=1/(FPS*SUB),TMAX=30;
-const rad=k=>30*Math.pow(1.3,k);
+const rad=k=>CC.r0*Math.pow(CC.f,k);
 function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 function run(seed){
  const rnd=rng(seed);let items=[],nid=1,t=0,next=.35,frames=[],events=[],final=null,queue=[];
@@ -46,10 +48,11 @@ function run(seed){
   if(final===null&&items.some(i=>i.y<CY-R+rad(i.k)-2&&t-i.born>1.5))return{fail:'overflow',t};
   if(final!==null&&t>final+3.2)break;
  }
- return{final,frames,events,seed,chain:CH,R,CX,CY,fps:FPS};
+ return{final,frames,events,seed,chain:CH,r0:CC.r0,rf:CC.f,R,CX,CY,fps:FPS};
 }
 let seed=+process.argv[3]||0,res;
-const s0=seed||1;for(let s=s0;s<s0+400;s++){res=run(s);if(res.final&&res.final>14&&res.final<24){seed=s;break}res=null}
+const s0=seed||1,stats=[];for(let s=s0;s<s0+400;s++){res=run(s);stats.push(res.fail||(res.final?res.final.toFixed(1):"none"));if(res.final&&res.final>14&&res.final<24){seed=s;break}res=null}
+if(!res)console.log(stats.slice(0,40).join(" "));
 if(!res){console.log('no good seed');process.exit(1)}
 console.log('seed',res.seed,'final at',res.final.toFixed(2),'frames',res.frames.length,'events',res.events.length,'merges',res.events.filter(e=>e.type==='merge').length);
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');
