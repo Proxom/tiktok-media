@@ -1,0 +1,41 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas><script>
+// Café wall illusion: perfectly horizontal mortar lines look tilted because of the offset tile rows.
+// Beats: hook, laser rulers prove straightness, rows slide into alignment (illusion vanishes), slide back (returns). 13 s loop.
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1080,H=1920,T=13;
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)},eio=v=>{v=cl(v);return v<.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2};
+const TS=125,ROWS=8,MORTAR=7,TOP=470,COLS=12;const shifts=[0,1/3,2/3,1/3,0,1/3,2/3,1/3];
+function txt(s,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=cl(a);x.font='900 '+size+'px "DejaVu Sans",Arial,sans-serif';x.textAlign='center';x.lineJoin='round';
+ s.split('\n').forEach((l,i)=>{const yy=y+i*size*1.15;x.lineWidth=size/5;x.strokeStyle='rgba(10,10,14,.92)';x.strokeText(l,W/2,yy);x.fillStyle=col;x.fillText(l,W/2,yy)});x.restore()}
+function wall(t){
+ const align=eio((t-7.0)/1.4)*(1-eio((t-9.6)/1.4));
+ const zoom=1+0.06*ease(t/5)-0.06*ease((t-11.5)/1.5),pan=Math.sin(t*2*Math.PI/T)*10;
+ x.save();x.translate(W/2+pan,TOP+ROWS*(TS+MORTAR)/2);x.scale(zoom,zoom);x.translate(-W/2,-(TOP+ROWS*(TS+MORTAR)/2));
+ // mortar background (mid grey is what makes the illusion work)
+ x.fillStyle='#8a8a8a';x.fillRect(-200,TOP-MORTAR,W+400,ROWS*(TS+MORTAR)+MORTAR);
+ for(let r=0;r<ROWS;r++){const y=TOP+r*(TS+MORTAR);const off=shifts[r]*TS*2*(1-align)-TS*1.2;
+  for(let k=-1;k<COLS;k++){const xx=off+k*TS;const dark=k%2===0;
+   const g=x.createLinearGradient(xx,y,xx+TS,y+TS);
+   if(dark){g.addColorStop(0,'#1c1c20');g.addColorStop(1,'#0c0c0e')}else{g.addColorStop(0,'#fbfaf5');g.addColorStop(1,'#e4e2da')}
+   x.fillStyle=g;x.fillRect(xx,y,TS,TS)}}
+ // laser rulers 4.6-7.0 sweep along each mortar line
+ for(let r=1;r<ROWS;r++){const y=TOP+r*(TS+MORTAR)-MORTAR/2;const st=4.6+r*.12,p=eio((t-st)/.6),fade=1-ease((t-6.9)/.35);
+  if(p>0&&fade>0){x.save();x.globalAlpha=fade;x.shadowColor='#ff2a4a';x.shadowBlur=18;x.strokeStyle='#ff3355';x.lineWidth=5;x.beginPath();x.moveTo(-10,y);x.lineTo(-10+(W+20)*p,y);x.stroke();x.restore()}}
+ x.restore();
+ return align;}
+function draw(t,raw){
+ t=((t%T)+T)%T;
+ const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#16161c');g.addColorStop(1,'#0b0b0f');x.fillStyle=g;x.fillRect(0,0,W,H);
+ wall(t);
+ // soft vignette + grain
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.5)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ for(let n=0;n<1500;n++){const gx=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),gy=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.035)':'rgba(0,0,0,.05)';x.fillRect(gx*W,gy*H,2,2)}
+ const Y=318,fd=(a,b)=>ease((t-a)/.2)*(1-ease((t-b)/.2));
+ txt('Are these grey\nlines tilted? 🤔',Y,84,'#fff',t<.1?1:fd(-1,4.4));
+ txt('Perfectly straight 📏',Y+40,82,'#ff6b81',fd(4.6,6.9));
+ txt('Now line the tiles up…',Y+40,72,'#fff',fd(7.0,9.4));
+ txt('…and it breaks again 🤯',Y+40,72,'#ffd166',fd(9.6,12.8));
+ if(!raw)return c.toDataURL('image/jpeg',0.93);}
+const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
+window.frame=(t,SUB)=>{for(let k=0;k<SUB;k++){draw(Math.max(0,t+(k/SUB-.5)/60),1);ax.globalAlpha=1/(k+1);ax.drawImage(c,0,0)}ax.globalAlpha=1;return acc.toDataURL('image/jpeg',0.95)};
+window.draw=draw;
+</script>
