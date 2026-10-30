@@ -1,7 +1,7 @@
 <!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
 <script src="data.js"></script><script>
 // S1 "Will it evolve?" merge arena renderer: draws the pre-simulated frames from data.js (sim.js).
-const W=1080,H=1920,T0=2.0,D=DATA,CH=D.chain,TOP=CH.length-1,CX=D.CX,CY=D.CY,R=D.R,FPS=D.fps,FIN=D.final;
+const W=1080,H=1920,D=DATA,T0=D.t0||2.0,CH=D.chain,TOP=CH.length-1,CX=D.CX,CY=D.CY,R=D.R,FPS=D.fps,FIN=D.final;
 const c=document.getElementById('c'),x=c.getContext('2d');
 const rad=k=>(D.r0||30)*Math.pow(D.rf||1.3,k);
 const HUE=D.hue||[40,50,55,20,0,180,30,130];
@@ -62,7 +62,7 @@ function draw(t){t+=T0;
  if(fin>=0){for(let i=0;i<90;i++){const an=i*2.39996,sp=300+((i*97)%260),p=cl((fin-.1)/1.6),dd=sp*p;x.save();x.globalAlpha=(1-p)*.9;x.fillStyle=`hsl(${(i*37)%360},100%,70%)`;
   x.beginPath();x.arc(CX+Math.cos(an)*dd*1.6,CY+Math.sin(an)*dd*1.3-200*p*p,4,0,7);x.fill();x.restore()}}
  x.restore();
- if(fin>=0&&fin<.25){x.fillStyle=`rgba(255,255,255,${.7*(1-fin/.25)})`;x.fillRect(0,0,W,H)}
+ if(fin>=0&&fin<.15){x.fillStyle=D.flash||'rgba(255,255,255,1)';x.globalAlpha=.55*(1-fin/.15);x.fillRect(0,0,W,H);x.globalAlpha=1}
  // vignette
  const vg=x.createRadialGradient(W/2,H*.52,H*.3,W/2,H*.52,H*.85);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.35)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // text: question until the final, then the payoff
