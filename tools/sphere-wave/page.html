@@ -1,0 +1,37 @@
+<!doctype html><html><body style="margin:0;background:#000"><canvas id="c" width="720" height="1280"></canvas>
+<script src="three.min.js"></script><script>
+const W=720,H=1280,T=8; // loop period seconds
+const r=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.15;
+const s=new THREE.Scene();s.background=new THREE.Color(0x0b0d18);s.fog=new THREE.Fog(0x0b0d18,14,34);
+const cam=new THREE.PerspectiveCamera(38,W/H,0.1,60);
+// env map from gradient for reflections
+const ec=document.createElement('canvas');ec.width=512;ec.height=256;const g=ec.getContext('2d');
+let gr=g.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#9fb6ff');gr.addColorStop(.5,'#2a2f55');gr.addColorStop(1,'#05060c');g.fillStyle=gr;g.fillRect(0,0,512,256);
+g.fillStyle='#fff';g.fillRect(60,40,120,50);g.fillRect(330,30,90,70);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+const key=new THREE.DirectionalLight(0xffffff,2.2);key.position.set(5,12,6);key.castShadow=true;key.shadow.mapSize.set(1024,1024);
+Object.assign(key.shadow.camera,{left:-9,right:9,top:9,bottom:-9,near:1,far:40});key.shadow.radius=6;key.shadow.bias=-0.0004;s.add(key);
+const rim=new THREE.PointLight(0xff5cc8,60,30);rim.position.set(-6,4,-5);s.add(rim);
+const fill=new THREE.PointLight(0x4cc9ff,40,30);fill.position.set(6,3,5);s.add(fill);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandardMaterial({color:0x10131f,roughness:.35,metalness:.6}));
+floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;s.add(floor);
+const N=13,sp=0.72,balls=[];const geo=new THREE.SphereGeometry(0.3,48,32);
+for(let i=0;i<N;i++)for(let j=0;j<N;j++){const x=(i-(N-1)/2)*sp,z=(j-(N-1)/2)*sp;
+ const d=Math.hypot(x,z);const hue=(d*0.06+0.55)%1;
+ const m=new THREE.MeshPhysicalMaterial({color:new THREE.Color().setHSL(hue,.85,.55),metalness:.25,roughness:.12,clearcoat:1,clearcoatRoughness:.05});
+ const b=new THREE.Mesh(geo,m);b.castShadow=true;b.receiveShadow=true;b.userData={x,z,d};s.add(b);balls.push(b);}
+const ease=x=>x*x*(3-2*x);
+function draw(t){
+ const ph=2*Math.PI*t/T;
+ for(const b of balls){const {x,z,d}=b.userData;
+  const w=Math.sin(d*1.6-ph)*0.5+0.5; // ripple outward
+  const e=ease(w);b.position.set(x,0.3+e*1.5,z);
+  const sc=0.8+0.4*e;b.scale.setScalar(sc);b.position.y=0.3*sc+e*1.5;
+  b.material.color.setHSL((0.55+d*0.05+0.25*Math.sin(ph))%1,.85,.45+.2*e);}
+ const a=ph*0.5+0.6; // camera orbit, full turn per 2 loops -> use half so loop closes at 2T
+ const ang=Math.PI*0.25+Math.sin(ph)*0.35, R=21, hgt=12-Math.cos(ph)*1.5;
+ cam.position.set(Math.sin(ang)*R,hgt,Math.cos(ang)*R);cam.lookAt(0,0.8,0);
+ r.render(s,cam);}
+window.draw=draw;
+</script></body></html>
