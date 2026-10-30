@@ -28,8 +28,8 @@ arp=[440,523.3,659.3,523.3,440,587.3,698.5,587.3];tb=0;k=0
 while tb<D-.3:
     if tb<TS-.1 or tb>11.6:add(tb,bell(arp[k%8],.7,.06 if tb<TS else .035))
     tb+=.3;k+=1
-# thunder 3.2
-m=int(SR*2.2);tt=np.arange(m)/SR;nz=lp(rng.standard_normal(m),60);add(3.2,.55*nz*np.exp(-tt*1.6)*(1-np.exp(-tt/.02))/np.abs(nz).max()*3)
+# thunder 0.9
+m=int(SR*2.2);tt=np.arange(m)/SR;nz=lp(rng.standard_normal(m),60);add(0.9,.55*nz*np.exp(-tt*1.6)*(1-np.exp(-tt/.02))/np.abs(nz).max()*3)
 # spider zip-drop 5.2 + thread boing + little chirps while waving
 gliss(5.2,.35,1600,500,.10,harm=.05);boing(5.55,420,.18,.6)
 for i,c0 in enumerate([6.05,6.35,6.65,6.95]):gliss(c0,.09,1800+i*120,2600+i*120,.06,harm=0)
