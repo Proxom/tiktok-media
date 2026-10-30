@@ -1,0 +1,125 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="three.min.js"></script><script>
+// Shape sorter fake-out: circle + triangle fit perfectly... then everything goes in the square hole.
+// Twist: square hole is full, so the cube squeezes into the circle hole. 15 s, loops.
+const W=1080,H=1920,T=15;
+const r=new THREE.WebGLRenderer({canvas:document.createElement('canvas'),antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.1;r.outputColorSpace=THREE.SRGBColorSpace;
+const s=new THREE.Scene();s.background=new THREE.Color(0x1c2230);s.fog=new THREE.Fog(0x1c2230,11,22);
+const cam=new THREE.PerspectiveCamera(50,W/H,0.1,100);
+// soft studio env for reflections
+const ec=document.createElement('canvas');ec.width=1024;ec.height=512;const g=ec.getContext('2d');
+let gr=g.createLinearGradient(0,0,0,512);gr.addColorStop(0,'#c9d4e6');gr.addColorStop(.55,'#3a4152');gr.addColorStop(1,'#14161d');g.fillStyle=gr;g.fillRect(0,0,1024,512);
+g.fillStyle='#ffffff';g.fillRect(120,60,300,120);g.fillRect(640,80,220,90);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+const key=new THREE.DirectionalLight(0xffe7c8,3.2);key.position.set(-4,9,5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);
+Object.assign(key.shadow.camera,{left:-5,right:5,top:5,bottom:-5});key.shadow.radius=6;key.shadow.bias=-0.0005;s.add(key);
+const fill=new THREE.PointLight(0xbfd8ff,18,30);fill.position.set(5,4,3);s.add(fill);
+s.add(new THREE.HemisphereLight(0xdfe8ff,0x2a2018,.35));const rim=new THREE.PointLight(0x6fb6ff,30,20);rim.position.set(-3,3,-4);s.add(rim);
+// table
+const tc=document.createElement('canvas');tc.width=1024;tc.height=1024;const tg=tc.getContext('2d');tg.fillStyle='#6b4a32';tg.fillRect(0,0,1024,1024);
+for(let i=0;i<260;i++){tg.strokeStyle=`rgba(${90+(i*37)%40},${60+(i*13)%30},30,${.05+.06*((i*7)%5)/5})`;tg.lineWidth=1+(i%4);tg.beginPath();const y0=(i*53)%1024;tg.moveTo(0,y0);for(let xx=0;xx<=1024;xx+=32)tg.lineTo(xx,y0+8*Math.sin(xx*.01+i));tg.stroke()}
+const tt=new THREE.CanvasTexture(tc);tt.colorSpace=THREE.SRGBColorSpace;tt.wrapS=tt.wrapT=THREE.RepeatWrapping;tt.repeat.set(3,3);
+const table=new THREE.Mesh(new THREE.PlaneGeometry(40,40),new THREE.MeshPhysicalMaterial({map:tt,roughness:.6}));table.rotation.x=-Math.PI/2;table.receiveShadow=true;s.add(table);
+// shapes (2D, x/y in shape space; laid flat with rotateX(-PI/2) so shape y -> world -z)
+function circ(rr){const sh=new THREE.Shape();sh.absarc(0,0,rr,0,Math.PI*2,false);return sh}
+function poly(pts){const sh=new THREE.Shape();sh.moveTo(pts[0][0],pts[0][1]);pts.slice(1).forEach(p=>sh.lineTo(p[0],p[1]));sh.closePath();return sh}
+const ngon=(n,rr,rot=0)=>Array.from({length:n},(_,i)=>{const a=rot+i*2*Math.PI/n;return[rr*Math.cos(a),rr*Math.sin(a)]});
+const starPts=(ro,ri)=>Array.from({length:10},(_,i)=>{const a=Math.PI/2+i*Math.PI/5,rr=i%2?ri:ro;return[rr*Math.cos(a),rr*Math.sin(a)]});
+function heart(k){const sh=new THREE.Shape();sh.moveTo(0,-.42*k);sh.bezierCurveTo(.55*k,-.05*k,.42*k,.42*k,0,.2*k);sh.bezierCurveTo(-.42*k,.42*k,-.55*k,-.05*k,0,-.42*k);return sh}
+const SH={circle:s=>circ(.36*s),tri:s=>poly(ngon(3,.44*s,Math.PI/2)),star:s=>poly(starPts(.44*s,.2*s)),square:s=>poly(ngon(4,.6*s,Math.PI/4)),heart:s=>heart(s),hex:s=>poly(ngon(6,.36*s))};
+// box: top slab with holes + walls + dark interior
+const BX=3.4,TOP=1.3,HOLES={circle:[-.85,.8],tri:[.85,.8],star:[-.85,-.8],square:[.85,-.8]};
+const slab=new THREE.Shape();slab.moveTo(-BX/2,-BX/2);slab.lineTo(BX/2,-BX/2);slab.lineTo(BX/2,BX/2);slab.lineTo(-BX/2,BX/2);slab.closePath();
+for(const k in HOLES){const h=SH[k](1.1);const [hx,hz]=HOLES[k];const pts=h.getPoints(48).map(p=>new THREE.Vector2(p.x+hx,p.y-hz));slab.holes.push(new THREE.Path(pts))}
+const wood=new THREE.MeshPhysicalMaterial({color:0xf4efe6,roughness:.42,clearcoat:.5,clearcoatRoughness:.25});
+const sg=new THREE.ExtrudeGeometry(slab,{depth:.16,bevelEnabled:true,bevelSize:.035,bevelThickness:.035,bevelSegments:4,curveSegments:48});sg.rotateX(-Math.PI/2);
+const slabM=new THREE.Mesh(sg,wood);slabM.position.y=TOP-.16;slabM.castShadow=slabM.receiveShadow=true;
+const box=new THREE.Group();s.add(box);box.add(slabM);
+const wallM=new THREE.MeshPhysicalMaterial({color:0x2f7fd6,roughness:.35,clearcoat:.8,clearcoatRoughness:.1});
+[[0,BX/2-.08,BX,.16],[0,-BX/2+.08,BX,.16],[BX/2-.08,0,.16,BX],[-BX/2+.08,0,.16,BX]].forEach(([wx,wz,ww,wd])=>{const m=new THREE.Mesh(new THREE.BoxGeometry(ww,TOP-.17,wd),wallM);m.position.set(wx,(TOP-.17)/2,wz);m.castShadow=m.receiveShadow=true;box.add(m)});
+const inner=new THREE.Mesh(new THREE.BoxGeometry(BX-.32,.05,BX-.32),new THREE.MeshStandardMaterial({color:0x0c0a12,roughness:1}));inner.position.y=.03;box.add(inner);
+// inner shadow volume so holes look deep
+const inside=new THREE.Mesh(new THREE.BoxGeometry(BX-.33,TOP-.2,BX-.33),new THREE.MeshBasicMaterial({color:0x07060b,side:THREE.BackSide}));inside.position.y=(TOP-.2)/2;box.add(inside);
+// pieces
+const plastic=c=>new THREE.MeshPhysicalMaterial({color:c,roughness:.22,clearcoat:1,clearcoatRoughness:.06});
+function piece(kind,col,th=.32){const geo=new THREE.ExtrudeGeometry(SH[kind](1),{depth:th-.08,bevelEnabled:true,bevelSize:.04,bevelThickness:.04,bevelSegments:5,curveSegments:40});
+ geo.rotateX(-Math.PI/2);geo.translate(0,.04,0);const m=new THREE.Mesh(geo,plastic(col));m.castShadow=true;m.receiveShadow=true;s.add(m);m.visible=false;return m}
+const cubeG=new THREE.BoxGeometry(.78,.78,.78,8,8,8);{const p=cubeG.attributes.position,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const h=.39,rr=.1;const c=new THREE.Vector3(Math.max(-h+rr,Math.min(h-rr,v.x)),Math.max(-h+rr,Math.min(h-rr,v.y)),Math.max(-h+rr,Math.min(h-rr,v.z)));v.sub(c).normalize().multiplyScalar(rr).add(c);p.setXYZ(i,v.x,v.y,v.z)}cubeG.computeVertexNormals()}
+const cube=new THREE.Mesh(cubeG,plastic(0xff8a1f));cube.castShadow=true;s.add(cube);
+const eyeM=new THREE.MeshStandardMaterial({color:0x111111,roughness:.15});const eyes=new THREE.Group();[-.15,.15].forEach(ex=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.06,20,14),eyeM);e.position.set(ex,.1,.39);e.scale.z=.4;eyes.add(e)});cube.add(eyes);
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)},eio=v=>{v=cl(v);return v<.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2},ein=v=>{v=cl(v);return v*v*v},eob=v=>{v=cl(v);const c1=1.7,c3=c1+1;return 1+c3*Math.pow(v-1,3)+c1*Math.pow(v-1,2)};
+// script: [kind, color, t0 enter, t hover-arrive, hole hovered first, final hole, t drop, stack index or -1]
+const P=[
+ ['circle',0xe8344e,-0.45,0.75,'circle','circle',1.05,-1],
+ ['tri',0x2bb673,1.35,2.05,'tri','tri',2.35,-1],
+ ['star',0xffc21a,2.75,3.55,'star','square',5.25,0],
+ ['heart',0xff5fa8,6.05,6.45,'square','square',6.6,1],
+ ['hex',0x8a5cf6,6.85,7.2,'square','square',7.35,2],
+ ['circle',0x19b6c9,7.55,7.85,'square','square',8.0,3],
+ ['tri',0xff6b35,8.15,8.45,'square','square',8.6,4],
+ ['star',0x3d7bff,8.75,9.05,'square','square',9.2,5],
+];
+const pm=P.map(p=>piece(p[0],p[1]));
+const hoverY=TOP+.65,ST=.24;
+function placePiece(i,t){const [kind,,t0,ta,h1,h2,td,si]=P[i];const m=pm[i];m.visible=t>=t0;if(!m.visible)return;
+ const A=HOLES[h1],B=HOLES[h2];let x,y,z,ry=0,rz=0;
+ // enter from above-right with a little arc + spin settling to aligned
+ const k=eio((t-t0)/(ta-t0));x=A[0]+(1-k)*2.2;z=A[1]-(1-k)*1.2;y=hoverY+(1-k)*2.6+Math.sin(k*Math.PI)*.4;ry=(1-k)*2.4;rz=(1-k)*.5;
+ if(kind==='star'&&h1!==h2){ // star: hovers over star hole, lines up, then slides to the square hole
+  const wob=t>ta&&t<4.6?Math.sin((t-ta)*9)*.05*(1-ease((t-ta)/1)):0;ry+=wob;y+=t>ta?.06*Math.sin((t-ta)*3):0;
+  const m2=eio((t-4.55)/.6);x=A[0]+(B[0]-A[0])*m2;z=A[1]+(B[1]-A[1])*m2;y+=Math.sin(m2*Math.PI)*.35;rz+=Math.sin(m2*Math.PI)*.25;
+ }
+ if(t>=td){const d=t-td;const floorY=si<0?-.5:.55+si*ST;const fall=ein(d/.32);y=hoverY+(floorY-hoverY)*fall;x=B[0];z=B[1];
+  // slight settle tilt for stacked pieces poking out of the square hole
+  if(si>=0&&d>.32){const b=Math.exp(-(d-.32)*7)*Math.sin((d-.32)*30)*.04;y+=b;rz=(si%2?.07:-.06)*ease((d-.32)/.2);ry=si*.35}}
+ if(si<0&&t>td+.5)m.visible=false;
+ m.position.set(x,y,z);m.rotation.set(0,ry,rz);}
+function placeCube(t){const t0=10.2;cube.visible=t>=t0&&t<14.2;if(!cube.visible)return;
+ const S=HOLES.square,C=HOLES.circle;let x,y,z,sx=1,sy=1,sz=1,ry=0,rz=0;
+ const k=eio((t-t0)/.9);x=S[0]+(1-k)*2.0;z=S[1]-(1-k)*.4;y=hoverY+.45+(1-k)*2.6;
+ // looks down at the full square hole, then at the camera
+ ry=(1-k)*-2;if(t>11.1)ry=.35*Math.sin(ease((t-11.1)/.5)*Math.PI);
+ cube.rotation.x=t>11.1&&t<11.7?.35*Math.sin(ease((t-11.1)/.6)*Math.PI):0;
+ // hops to the circle hole
+ const h=eio((t-11.8)/.55);x=x+(C[0]-S[0])*h;z=z+(C[1]-S[1])*h;y+=Math.sin(h*Math.PI)*.6;
+ // squish to a tall thin cylinder-ish shape, then squeeze down through
+ const q=eob((t-12.45)/.35);sx=sz=1-.42*q;sy=1+.55*q;
+ const d=ein((t-12.95)/.8);y=y+(-.6-y)*d;
+ if(t>12.95&&t<13.75){sx=sz=(1-.42)*(1-.12*Math.sin((t-12.95)*40))}
+ if(t>12.2&&t<12.35)eyes.scale.y=.15;else eyes.scale.y=1;
+ cube.position.set(x,y,z);cube.scale.set(sx,sy,sz);cube.rotation.y=ry;cube.rotation.z=rz;}
+const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');document.getElementById('c').replaceWith(o);o.id='c';
+// text: auto-fit each line to <=800 px centred at x=500 (safe zones), emoji drawn with the colour emoji font
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(12,8,18,.92)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
+function render3d(t){
+ for(let i=0;i<P.length;i++)placePiece(i,t);placeCube(t);
+ // gentle orbit + push-ins on the beats
+ const push=.6*ease((t-5.0)/.6)*(1-ease((t-6.2)/.5))+.5*ease((t-10.6)/1)*(1-ease((t-14.4)/.5));
+ const th=-.16+.07*Math.sin(t*2*Math.PI/T),R=8.4-push*1.4,hy=6.0-push*.6;
+ const sh=(t>13.55&&t<13.8)?Math.sin(t*90)*.03:0;
+ cam.position.set(Math.sin(th)*R+sh,hy,Math.cos(th)*R);cam.lookAt(sh*.5,1.05+push*.2,-.1);
+ box.position.y=(t>9.2&&t<9.6)?Math.sin((t-9.2)*50)*.02*(1-(t-9.2)/.4):0;
+ r.render(s,cam);}
+function drawF(t){t=((t%T)+T)%T;
+ render3d(t);x.globalAlpha=1;x.clearRect(0,0,W,H);x.drawImage(r.domElement,0,0);
+ const vg=x.createRadialGradient(W/2,H*.52,H*.28,W/2,H*.52,H*.85);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(5,6,12,.6)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ for(let n=0;n<1400;n++){const gx=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),gy=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.05)':'rgba(0,0,0,.05)';x.fillRect(gx*W,gy*H,2,2)}
+ const Y=410,fd=(a,b)=>ease((t-a)/.18)*(1-ease((t-b)/.18));
+ txt('Every shape has\nits own hole… right?',Y,84,'#fff',t<.1?1:fd(-1,2.9));
+ txt('Star… perfect fit…',Y+40,82,'#ffd23f',fd(3.1,4.6));
+ txt('…the square hole 🙂',Y+40,82,'#fff',fd(5.3,6.6));
+ txt('It ALL goes in\nthe square hole',Y,86,'#7fd4ff',fd(6.7,9.9));
+ txt('Square hole is full…',Y+40,80,'#fff',fd(10.3,12.3));
+ txt('wait. HOW?? 😲',Y+40,96,'#ff9a3d',fd(13.1,15.5));
+  return o;}
+const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
+// motion blur: average SUB sub-frames across half a frame interval
+window.frame=(t,SUB)=>{if(SUB<=1){drawF(t);return o.toDataURL('image/jpeg',0.94)}
+ for(let k=0;k<SUB;k++){drawF(Math.max(0,t+(k/SUB-.5)/60));ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;return acc.toDataURL('image/jpeg',0.94)};
+window.draw=t=>{drawF(t);return o.toDataURL('image/jpeg',0.94)};
+</script>

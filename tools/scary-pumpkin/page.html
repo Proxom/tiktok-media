@@ -1,0 +1,116 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="three.min.js"></script><script>
+// Halloween mini story: the scariest pumpkin on the street... until a tiny spider drops in. Lights out. 13 s.
+const W=1080,H=1920,T=13;
+const r=new THREE.WebGLRenderer({canvas:document.createElement('canvas'),antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.0;r.outputColorSpace=THREE.SRGBColorSpace;
+const s=new THREE.Scene();const BG=new THREE.Color(0x0b1024);s.background=BG;s.fog=new THREE.Fog(0x0b1024,7,18);
+const cam=new THREE.PerspectiveCamera(36,W/H,0.1,100);
+const ec=document.createElement('canvas');ec.width=512;ec.height=256;const eg=ec.getContext('2d');let gr=eg.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#2a3766');gr.addColorStop(.6,'#0c1022');gr.addColorStop(1,'#050508');eg.fillStyle=gr;eg.fillRect(0,0,512,256);eg.fillStyle='#ffe6b0';eg.fillRect(300,120,60,40);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+// moonlight rim from behind + soft fill
+const moon=new THREE.DirectionalLight(0x8fb0ff,1.6);moon.position.set(3,6,-5);moon.castShadow=true;moon.shadow.mapSize.set(1024,1024);s.add(moon);
+const fill=new THREE.HemisphereLight(0x3a4a80,0x120a06,.35);s.add(fill);
+// candle light in front of the face (warm, flickers) + inner light
+const candle=new THREE.PointLight(0xff9a2e,0,9,1.6);candle.position.set(0,.15,1.9);candle.castShadow=true;s.add(candle);
+// porch floor: wooden planks
+const pc=document.createElement('canvas');pc.width=1024;pc.height=1024;const pg=pc.getContext('2d');
+for(let i=0;i<8;i++){pg.fillStyle=`hsl(25,${28+i%3*4}%,${17+(i*7)%6}%)`;pg.fillRect(0,i*128,1024,124);pg.fillStyle='#07040a';pg.fillRect(0,i*128+124,1024,4);
+ for(let k=0;k<40;k++){pg.strokeStyle=`rgba(0,0,0,${.08+.05*(k%3)})`;pg.beginPath();const y0=i*128+((k*37)%120);pg.moveTo(0,y0);for(let xx=0;xx<=1024;xx+=64)pg.lineTo(xx,y0+3*Math.sin(xx*.02+k));pg.stroke()}}
+const pt=new THREE.CanvasTexture(pc);pt.colorSpace=THREE.SRGBColorSpace;pt.wrapS=pt.wrapT=THREE.RepeatWrapping;pt.repeat.set(2,2);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshStandardMaterial({map:pt,roughness:.85}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;s.add(floor);
+// back wall with a glowing window far away
+const wall=new THREE.Mesh(new THREE.PlaneGeometry(30,12),new THREE.MeshStandardMaterial({color:0x1a1630,roughness:1}));wall.position.set(0,6,-6);s.add(wall);
+const win=new THREE.Mesh(new THREE.PlaneGeometry(1.4,1.8),new THREE.MeshBasicMaterial({color:0xffc56b}));win.position.set(-2.6,2.6,-5.95);s.add(win);
+// pumpkin: ribbed squashed sphere with carved-face texture (colour + emissive)
+const PR=1.0;const pgeo=new THREE.SphereGeometry(PR,128,96);
+{const p=pgeo.attributes.position,v=new THREE.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const phi=Math.atan2(v.z,v.x);const rib=1+.055*Math.pow(Math.abs(Math.cos(5*phi)),.6)-.03;
+ const yy=v.y/PR;const dent=1-.18*Math.pow(Math.abs(yy),6);v.x*=rib*dent;v.z*=rib*dent;v.y*=.78;p.setXYZ(i,v.x,v.y,v.z)}pgeo.computeVertexNormals()}
+function faceTex(kind,emis){const c=document.createElement('canvas');c.width=2048;c.height=1024;const g=c.getContext('2d');
+ if(!emis){const gg=g.createLinearGradient(0,0,0,1024);gg.addColorStop(0,'#c45a0c');gg.addColorStop(.5,'#ff8a1e');gg.addColorStop(1,'#a8470a');g.fillStyle=gg;g.fillRect(0,0,2048,1024);
+  for(let i=0;i<300;i++){g.fillStyle=`rgba(${i%2?255:90},${i%2?200:40},0,.05)`;g.fillRect((i*137)%2048,(i*71)%1024,6,40)}}
+ else{g.fillStyle='#000';g.fillRect(0,0,2048,1024)}
+ // face centred at u=.25 (front, +z)
+ const cx=512,cy=520;g.save();g.translate(cx,cy);g.scale(.62,.9);
+ const cut=(fn)=>{g.beginPath();fn();if(emis){g.fillStyle='#ffd27a';g.shadowColor='#ffb347';g.shadowBlur=30;g.fill()}else{g.fillStyle='#2a0f02';g.fill()}};
+ if(kind==='scary'){
+  [-1,1].forEach(sd=>cut(()=>{g.moveTo(sd*40,-60);g.lineTo(sd*175,-150);g.lineTo(sd*150,-30);g.closePath()}));
+  cut(()=>{g.moveTo(-30,0);g.lineTo(0,-50);g.lineTo(30,0);g.closePath()});
+  cut(()=>{g.moveTo(-230,40);const pts=[[-180,110],[-150,70],[-110,150],[-70,95],[-30,165],[10,100],[50,165],[90,95],[130,150],[165,70],[200,110],[230,40],[170,200],[100,240],[0,255],[-100,240],[-170,200]];pts.forEach(p=>g.lineTo(p[0],p[1]));g.closePath()});
+ }else{ // scared: big round eyes, small round "O" mouth, worried brows
+  [-1,1].forEach(sd=>cut(()=>{g.ellipse(sd*110,-70,70,85,0,0,7)}));
+  cut(()=>{g.ellipse(0,140,55,75,0,0,7)});
+  [-1,1].forEach(sd=>cut(()=>{g.moveTo(sd*60,-190);g.lineTo(sd*180,-235);g.lineTo(sd*185,-215);g.lineTo(sd*65,-170);g.closePath()}));
+ }
+ g.restore();const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;return t}
+const TX={scary:[faceTex('scary',0),faceTex('scary',1)],scared:[faceTex('scared',0),faceTex('scared',1)]};
+const pmat=new THREE.MeshPhysicalMaterial({map:TX.scary[0],emissiveMap:TX.scary[1],emissive:0xffa040,emissiveIntensity:2.2,roughness:.45,clearcoat:.35,clearcoatRoughness:.4});
+const pump=new THREE.Group();s.add(pump);const pm=new THREE.Mesh(pgeo,pmat);pm.castShadow=true;pm.receiveShadow=true;pm.position.y=PR*.78;pump.add(pm);
+const stem=new THREE.Mesh(new THREE.CylinderGeometry(.07,.12,.38,16),new THREE.MeshStandardMaterial({color:0x4a3a1a,roughness:.9}));stem.position.set(.04,PR*.78*2-.02,0);stem.rotation.z=-.25;stem.castShadow=true;pump.add(stem);
+// spider on a thread
+const spider=new THREE.Group();s.add(spider);const blk=new THREE.MeshPhysicalMaterial({color:0x111015,roughness:.35,clearcoat:.6});
+const body=new THREE.Mesh(new THREE.SphereGeometry(.13,32,24),blk);body.scale.set(1,.9,1);spider.add(body);
+const headM=new THREE.Mesh(new THREE.SphereGeometry(.085,24,18),blk);headM.position.set(0,-.06,.12);spider.add(headM);
+const eyeW=new THREE.MeshBasicMaterial({color:0xffffff}),eyeB=new THREE.MeshBasicMaterial({color:0x000000});
+[-.035,.035].forEach(ex=>{const e=new THREE.Mesh(new THREE.SphereGeometry(.03,16,12),eyeW);e.position.set(ex,-.04,.195);spider.add(e);const pu=new THREE.Mesh(new THREE.SphereGeometry(.014,12,8),eyeB);pu.position.set(ex,-.045,.222);spider.add(pu)});
+const legs=[];for(let i=0;i<8;i++){const sd=i<4?-1:1,k=i%4;const leg=new THREE.Group();const a=new THREE.Mesh(new THREE.CylinderGeometry(.012,.012,.2,6),blk);a.position.y=.1;a.rotation.z=0;leg.add(a);
+ const b=new THREE.Mesh(new THREE.CylinderGeometry(.011,.008,.22,6),blk);b.position.set(0,.2,0);const bj=new THREE.Group();bj.position.y=.2;b.position.y=.11;bj.add(b);bj.rotation.z=sd*1.2;leg.add(bj);
+ leg.position.set(sd*.08,0,.06-k*.06);leg.rotation.set((k-1.5)*.35,0,-sd*1.0);spider.add(leg);legs.push({leg,sd,k})}
+const thread=new THREE.Mesh(new THREE.CylinderGeometry(.004,.004,1,6),new THREE.MeshBasicMaterial({color:0xd8e2ff,transparent:true,opacity:.7}));s.add(thread);
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)},eio=v=>{v=cl(v);return v<.5?4*v*v*v:1-Math.pow(-2*v+2,3)/2},eob=v=>{v=cl(v);const c1=1.7,c3=c1+1;return 1+c3*Math.pow(v-1,3)+c1*Math.pow(v-1,2)};
+const nz=t=>.5+.25*Math.sin(t*23.7)+.15*Math.sin(t*41.3+1)+.1*Math.sin(t*67.1+2);
+const TS=7.6; // twist: face switches to scared
+function glow(t){let g=.85+.15*nz(t);if(t>3.2&&t<3.9)g*=1+.5*Math.sin(Math.PI*(t-3.2)/.7);
+ if(t>TS+.5){const f=t-TS-.5;g*=f<.6?(f%.15<.07?.2:1):Math.max(0,1-(f-.6)/.25)} // sputter, then out
+ if(t>12.5)g=ease((t-12.5)/.4)*(.85+.15*nz(t));return g}
+let faceNow='scary';
+function render3d(t){
+ const scared=t>=TS&&t<12.5;const want=scared?'scared':'scary';if(want!==faceNow){faceNow=want;pmat.map=TX[want][0];pmat.emissiveMap=TX[want][1];pmat.needsUpdate=true}
+ const gl=glow(t);pmat.emissiveIntensity=1.5*gl;candle.intensity=7*gl;
+ // pumpkin "breathing" menace, then a jump scare when it sees the spider
+ const j=t>=TS?Math.sin(cl((t-TS)/.35)*Math.PI):0;const brr=t>TS+.35&&t<TS+1.6?Math.sin(t*70)*.012:0;
+ pump.position.set(brr,j*.35,0);pump.scale.set(1-j*.08,1+j*.12,1-j*.08);pump.rotation.y=.04*Math.sin(t*.9)+(t>TS?-.05:0);
+ // thunder flash
+ const fl=(t>3.2&&t<3.32)||(t>3.42&&t<3.5)?1:0;moon.intensity=1.6+fl*6;s.background=BG.clone().lerp(new THREE.Color(0x6a7cc0),fl*.5);
+ // spider: drops at 5.2, bounces on its thread, waves, then climbs up at 10.4
+ const top=4.2;let sy=top+1;if(t>5.2){const d=t-5.2;const fall=1-Math.pow(1-cl(d/.35),2);sy=top-fall*(top-1.2);if(d>.35)sy=1.2+Math.exp(-(d-.35)*4)*Math.sin((d-.35)*14)*.18}
+ if(t>10.4)sy+=eio((t-10.4)/1.4)*(top-1.2+.8);
+ spider.position.set(.36,sy,1.2);spider.rotation.set(0,.25*Math.sin(t*1.3),.1*Math.sin(t*2.1));
+ legs.forEach(({leg,sd,k},i)=>{let w=.12*Math.sin(t*9+i);if(k===0&&sd>0&&t>6.0&&t<7.4)w=.6+.5*Math.sin((t-6)*14);leg.rotation.z=-sd*1.0+w*sd});
+ thread.position.set(.36,(sy+top+2)/2,1.2);thread.scale.y=Math.max(.01,top+2-sy);thread.visible=sy<top+1;
+ // camera: slow push in, small handheld sway, punch-in on the twist
+ const push=ease(t/7)*.8+(t>TS?.5*eob((t-TS)/.4):0)-(t>11.5?eio((t-11.5)/1.2)*1.3:0);
+ const sw=.03*Math.sin(t*.7)+.015*Math.sin(t*1.9);
+ cam.position.set(sw,1.45+.05*Math.sin(t*.5),6.6-push);cam.lookAt(0,1.25,0);
+ r.render(s,cam);return gl}
+const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');document.getElementById('c').replaceWith(o);o.id='c';
+const proj=new THREE.Vector3();
+// text: auto-fit each line to <=800 px centred at x=500 (safe zones), emoji drawn with the colour emoji font
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(12,8,18,.92)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
+function drawF(t){t=((t%T)+T)%T;
+ const gl=render3d(t);x.globalAlpha=1;x.clearRect(0,0,W,H);x.drawImage(r.domElement,0,0);
+ // bloom-ish warm glow around the carved face
+ proj.set(0,.9,1).project(cam);const gx=(proj.x+1)/2*W,gy=(1-proj.y)/2*H;
+ x.save();x.globalCompositeOperation='lighter';const rg=x.createRadialGradient(gx,gy,20,gx,gy,520);rg.addColorStop(0,`rgba(255,150,40,${.18*gl})`);rg.addColorStop(.5,`rgba(255,90,10,${.10*gl})`);rg.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=rg;x.fillRect(0,0,W,H);x.restore();
+ // drifting dust motes
+ for(let i=0;i<60;i++){const px=((i*197.3+t*12*(1+i%3))%W),py=((i*311.7+Math.sin(t*.6+i)*30)%H);x.fillStyle=`rgba(255,220,170,${.05+.05*(i%3)})`;x.beginPath();x.arc(px,py,1.5+i%3,0,7);x.fill()}
+ const vg=x.createRadialGradient(W/2,H*.55,H*.22,W/2,H*.55,H*.75);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,6,.7)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ for(let n=0;n<1600;n++){const ax=Math.abs((Math.sin(n*12.9898+t*78.233)*43758.5453)%1),ay=Math.abs((Math.sin(n*78.233+t*12.9898)*12543.17)%1);x.fillStyle=n%2?'rgba(255,255,255,.04)':'rgba(0,0,0,.07)';x.fillRect(ax*W,ay*H,2,2)}
+ const Y=410,fd=(a,b)=>ease((t-a)/.18)*(1-ease((t-b)/.18));
+ txt('The scariest pumpkin\non the street 😈',Y,80,'#ffb347',t<.1?1:fd(-1,3.1));
+ txt('Nothing scares him.',Y+40,84,'#fff',fd(3.4,5.2));
+ txt('Then a tiny visitor…',Y+40,80,'#cfd8ff',fd(5.6,7.5));
+ txt('NOPE. 😱',Y+50,120,'#ff6b3d',fd(TS+.05,9.6));
+ txt('Lights out. 🕯️',Y+40,92,'#fff',fd(9.8,12.2));
+ if(t>12.45){x.fillStyle=`rgba(0,0,0,${Math.sin(ease((t-12.45)/.55)*Math.PI)*.9})`;x.fillRect(0,0,W,H)}
+ return o;}
+const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
+// motion blur: average SUB sub-frames across half a frame interval
+window.frame=(t,SUB)=>{if(SUB<=1){drawF(t);return o.toDataURL('image/jpeg',0.94)}
+ for(let k=0;k<SUB;k++){drawF(Math.max(0,t+(k/SUB-.5)/60));ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;return acc.toDataURL('image/jpeg',0.94)};
+window.draw=t=>{drawF(t);return o.toDataURL('image/jpeg',0.94)};
+</script>
