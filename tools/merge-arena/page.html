@@ -16,7 +16,7 @@ function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,
  str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
   let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
   let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
-function emoji(k,px,py,r,ang,alpha){x.save();x.globalAlpha=alpha;x.translate(px,py);x.rotate(ang);x.font=(r*1.7)+'px "Noto Color Emoji"';x.textAlign='center';x.textBaseline='middle';x.fillText(CH[k],0,r*.08);x.restore()}
+function emoji(k,px,py,r,ang,alpha){x.save();x.globalAlpha=alpha;x.translate(px,py);x.rotate(k===TOP?0:ang);x.font=(r*1.7)+'px "Noto Color Emoji"';x.textAlign='center';x.textBaseline='middle';x.fillText(CH[k],0,r*.08);x.restore()}
 function ball(k,px,py,r,ang,alpha,glow){
  x.save();x.globalAlpha=alpha;
  const g=x.createRadialGradient(px,py,r*.2,px,py,r*1.25);g.addColorStop(0,`hsla(${HUE[k]},70%,30%,.55)`);g.addColorStop(.7,`hsla(${HUE[k]},85%,55%,.28)`);g.addColorStop(.95,`hsla(${HUE[k]},90%,70%,.35)`);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.beginPath();x.arc(px,py,r*1.25,0,7);x.fill();
