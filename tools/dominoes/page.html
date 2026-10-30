@@ -57,7 +57,7 @@ function drawF(t){render3d(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
  const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
  const f=frontIdx(t);
  txt('420 dominoes.\nOne tap. 🌈',385,68,'#fff',t<.1?1:fd(-1,D.t[0]+4.5));
- if(t>D.t[0]+5&&t<D.tEnd-3)txt(Math.min(N,f+1)+' / '+N,400,70,'#fff',.95);
+ if(t>D.t[0]+5&&t<D.tEnd-7.6)txt(Math.min(N,f+1)+' / '+N,400,70,'#fff',.95);
  txt('Wait for the end… 👀',385,64,'#ffe9a8',fd(D.tEnd-7,D.tEnd-2.5));
  txt('SATISFYING 🌈',400,92,'#fff',ease((t-(D.tEnd-.6))/.3));
  return o}
