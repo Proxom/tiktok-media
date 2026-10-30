@@ -1,0 +1,71 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="../jelly-press/three.min.js"></script><script src="data.js"></script><script>
+// S5 marble run renderer: three.js wall course from data.js (sim.js), camera follows the marble, FINISH cup.
+const W=1080,H=1920,D=DATA,FPS=D.fps,S=.01,FIN=D.finish; // 1 sim px = 0.01 world units
+const r=new THREE.WebGLRenderer({canvas:document.createElement('canvas'),antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=.8;r.outputColorSpace=THREE.SRGBColorSpace;
+const s=new THREE.Scene();s.background=new THREE.Color(0xf0b9cc);
+const cam=new THREE.PerspectiveCamera(42,W/H,.05,60);
+// soft studio env
+const ec=document.createElement('canvas');ec.width=512;ec.height=256;const eg=ec.getContext('2d');let gr=eg.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#ffffff');gr.addColorStop(.5,'#efe6df');gr.addColorStop(1,'#b9aea6');eg.fillStyle=gr;eg.fillRect(0,0,512,256);eg.fillStyle='#fff';eg.fillRect(60,30,160,70);eg.fillRect(330,40,120,60);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+const key=new THREE.DirectionalLight(0xfff4ea,4.2);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.radius=5;key.shadow.bias=-.0006;
+Object.assign(key.shadow.camera,{left:-6,right:6,top:6,bottom:-6,near:.1,far:30});s.add(key);s.add(key.target);
+s.add(new THREE.HemisphereLight(0xffffff,0xb8c4d4,.45));
+// plaster wall
+const wc=document.createElement('canvas');wc.width=1024;wc.height=1024;const wg=wc.getContext('2d');wg.fillStyle='#f3bfd1';wg.fillRect(0,0,1024,1024);
+for(let i=0;i<9000;i++){const v=200+((i*53)%55);wg.fillStyle=`rgba(${v},${v-40},${v-25},.10)`;wg.fillRect((i*7919)%1024,(i*104729)%1024,2+(i%3),2+(i%2))}
+const wt=new THREE.CanvasTexture(wc);wt.colorSpace=THREE.SRGBColorSpace;wt.wrapS=wt.wrapT=THREE.RepeatWrapping;wt.repeat.set(6,12);
+const yMax=Math.max(...D.frames.map(f=>f[1]))*S;
+const wall=new THREE.Mesh(new THREE.PlaneGeometry(30,yMax+30),new THREE.MeshStandardMaterial({map:wt,roughness:.95}));wall.position.set(0,-yMax/2,0);wall.receiveShadow=true;s.add(wall);
+const metal=new THREE.MeshPhysicalMaterial({color:0xdfe3e8,metalness:1,roughness:.22});
+const white=new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.35,clearcoat:.6});
+const pieceMesh=[];
+D.pieces.forEach((p,i)=>{let m;
+ if(p.type==='pin'){m=new THREE.Mesh(new THREE.CylinderGeometry(p.r*S,p.r*S,.32,20),metal);m.rotation.x=Math.PI/2;m.position.set(p.x*S,-p.y*S,.16)}
+ else{const x1=p.x1*S,y1=-p.y1*S,x2=p.x2*S,y2=-p.y2*S,L=Math.hypot(x2-x1,y2-y1),an=Math.atan2(y2-y1,x2-x1);
+  if(p.type==='bell'){m=new THREE.Mesh(new THREE.CylinderGeometry(p.r*S,p.r*S,L,24),metal);m.rotation.z=an-Math.PI/2;m.position.set((x1+x2)/2,(y1+y2)/2,.17)}
+  else{const mat=p.type==='plank'?new THREE.MeshPhysicalMaterial({color:p.col,roughness:.3,clearcoat:.8,clearcoatRoughness:.15}):white;
+   m=new THREE.Mesh(new THREE.BoxGeometry(L+p.r*S*2,p.r*S*2,.34),mat);m.rotation.z=an;m.position.set((x1+x2)/2,(y1+y2)/2,.17);
+   if(p.type==='plank')[x1,x2].forEach((ex,k)=>{const sc=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.02,16),metal);sc.rotation.x=Math.PI/2;sc.position.set(k?x2-(x2-x1)/L*.12:x1+(x2-x1)/L*.12,(k?y2-(y2-y1)/L*.12:y1+(y2-y1)/L*.12),.345);s.add(sc)})}}
+ m.castShadow=true;m.receiveShadow=true;s.add(m);pieceMesh[i]=m});
+// finish flag above the cup
+const fc=document.createElement('canvas');fc.width=512;fc.height=256;const fg=fc.getContext('2d');for(let i=0;i<16;i++)for(let j=0;j<8;j++){fg.fillStyle=(i+j)%2?'#111':'#fff';fg.fillRect(i*32,j*32,32,32)}
+fg.fillStyle='rgba(255,255,255,.92)';fg.fillRect(70,78,372,100);fg.fillStyle='#111';fg.font='900 80px DejaVu Sans';fg.textAlign='center';fg.fillText('FINISH',256,158);
+const ft=new THREE.CanvasTexture(fc);ft.colorSpace=THREE.SRGBColorSpace;const flag=new THREE.Mesh(new THREE.PlaneGeometry(1.3,.65),new THREE.MeshStandardMaterial({map:ft,roughness:.8}));
+flag.position.set(D.cup.x*S,-(D.cup.y-180)*S,.05);flag.castShadow=true;s.add(flag);
+// glass marble with a coloured core
+const ball=new THREE.Group();s.add(ball);const BR=D.BR*S;
+const glass=new THREE.Mesh(new THREE.SphereGeometry(BR,48,32),new THREE.MeshPhysicalMaterial({color:0xe8f6ff,roughness:.0,metalness:0,transparent:true,opacity:.3,clearcoat:1,clearcoatRoughness:0,envMapIntensity:3,specularIntensity:1}));glass.castShadow=true;ball.add(glass);
+const mc=document.createElement('canvas');mc.width=256;mc.height=128;const mg=mc.getContext('2d');mg.fillStyle='#e0142f';mg.fillRect(0,0,256,128);['#ffffff','#ffd23f','#ff7a00'].forEach((cc,i)=>{mg.fillStyle=cc;mg.beginPath();for(let xx=0;xx<=256;xx+=4){const yy=64+40*Math.sin(xx/256*Math.PI*2*2+i*2.1);xx?mg.lineTo(xx,yy):mg.moveTo(xx,yy)}for(let xx=256;xx>=0;xx-=4){const yy=64+40*Math.sin(xx/256*Math.PI*2*2+i*2.1)+14;mg.lineTo(xx,yy)}mg.fill()});
+const mt=new THREE.CanvasTexture(mc);mt.colorSpace=THREE.SRGBColorSpace;const core=new THREE.Mesh(new THREE.SphereGeometry(BR*.9,40,24),new THREE.MeshPhysicalMaterial({map:mt,roughness:.15,clearcoat:1}));ball.add(core);
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
+function fr(t){const i=Math.min(D.frames.length-1,Math.max(0,Math.round(t*FPS)));return D.frames[i]}
+function smooth(t,k){let sx=0,sy=0,n=0;for(let d=-k;d<=k;d++){const f=fr(t+d/FPS);sx+=f[0];sy+=f[1];n++}return[sx/n,sy/n]}
+const hitIdx=D.hits.map(h=>h.id);
+function render3d(t){
+ const f=fr(t);ball.position.set(f[0]*S,-f[1]*S,.17);ball.rotation.z=-f[2];core.rotation.y=f[2]*.6;
+ // bells wobble when hit
+ D.hits.forEach(h=>{if(h.kind!=='bell'&&h.kind!=='pin')return;const dt=t-h.t;const m=pieceMesh[h.id];if(!m.userData.z0)m.userData.z0=m.position.z;
+  if(dt>=0&&dt<.6)m.position.z=m.userData.z0+.012*Math.sin(dt*60)*Math.exp(-dt*7)});
+ const [sx,sy]=smooth(t,18);const fin=FIN&&t>FIN?ease((t-FIN)/1.5):0;
+ const cx=sx*S*.75,cy=-sy*S;cam.position.set(cx+1.9+.3*Math.sin(t*.4),cy+2.1,6.4-1.6*fin);cam.lookAt(cx,cy-.6,0);
+ key.position.set(cx-2.5,cy+4,4);key.target.position.set(cx,cy,0);
+ r.render(s,cam)}
+const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');document.getElementById('c').replaceWith(o);o.id='c';
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(30,22,40,.9)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
+function drawF(t){render3d(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(20,30,50,.30)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
+ if(!FIN||t<FIN)txt('Marble music:\nguess the song 🎵',400,78,'#fff',1);
+ else{txt('FINISH! 🏁',420,110,'#ffd23f',ease((t-FIN)/.25));txt(D.song||'Ode to Joy 🎵',540,60,'#fff',ease((t-FIN-.6)/.3))}
+ return o}
+const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
+window.frame=(t,SUB)=>{if(SUB<=1){drawF(t);return o.toDataURL('image/jpeg',0.93)}
+ for(let k=0;k<SUB;k++){drawF(Math.max(0,t+(k/SUB-.5)/60));ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;return acc.toDataURL('image/jpeg',0.93)};
+window.draw=t=>{drawF(t);return o.toDataURL('image/jpeg',0.93)};
+</script>
