@@ -24,8 +24,8 @@ function draw(t){
  // spinner / status
  if(t<11.5){const a=t*6;x.strokeStyle='#fff';x.lineWidth=14;x.lineCap='round';x.beginPath();x.arc(540,720,50,a,a+4.2);x.stroke();}
  if(t>=5.5&&t<11.5){const n=Math.floor((t-5.5)*1.7);const msgs=['Still 99%','Hello?','The bar is thinking','Have you tried waiting more','It is a long 1%'];
+  txt(msgs[Math.min(n,4)],1330,52,'#ffd45a');
  }
-  
  if(t>=12.2&&t<13.6){txt('DONE!',720,110,'#37e08a');const s=1+0.08*Math.sin((t-12.2)*25);}
  if(t>=13.6){txt('Starting over...',1330,60,'#ff7a7a');}
  if(t<5.5)txt('Installing something important',1330,50,'#cfe0ff',.9);
