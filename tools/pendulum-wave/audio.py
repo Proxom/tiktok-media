@@ -17,6 +17,12 @@ for k in range(N):
         tc=(m+.5)/(2*f)
         if tc>=D: break
         note(tc,freq,.10);m+=1
+# realignment chime at the loop point (t=0)
+for i,f in enumerate([523.25,659.25,783.99,1046.5]):
+    m=int(SR*1.6);tt=np.arange(m)/SR;s_=.12*np.sin(2*np.pi*f*tt)*np.exp(-tt*2.5)*(1-np.exp(-tt*600));out[:m]+=s_
+# countdown ticks at 17,18,19
+for c0 in [17,18,19]:
+    m=int(SR*.12);tt=np.arange(m)/SR;i=int(c0*SR);out[i:i+m]+=.25*np.sin(2*np.pi*1760*tt)*np.exp(-tt*40)
 pad=sum(a*np.sin(2*np.pi*fr*t) for fr,a in [(55,.12),(82.41,.06),(110,.05)])*(.75+.25*np.cos(2*np.pi*t/D))
 out+=pad
 rng=np.random.default_rng(1);out+=.003*np.convolve(rng.standard_normal(n),np.ones(20)/20,'same')
