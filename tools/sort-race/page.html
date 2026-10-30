@@ -1,6 +1,6 @@
 <!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id=c width=1080 height=1920></canvas><script src="data.js"></script><script>
 // Sorting race: 4 real algorithms, same data, same speed (STEP comparisons per frame). 14 s.
-const c=document.getElementById('c'),x=c.getContext('2d'),W=1080,H=1920,FPS=30,STEP=3,GO=2.0,T=14;
+const c=document.getElementById('c'),x=c.getContext('2d'),W=1080,H=1920,FPS=30,STEP=3,GO=0.6,T=12.5;
 const names=['BUBBLE','INSERTION','MERGE','QUICK'],cols=['#ff6b8a','#ffb454','#4cd4ff','#8b7bff'];
 const len=names.map(n=>DATA.algos[n].length);const fin=len.map(l=>GO+(l-1)/STEP/FPS);
 const order=[0,1,2,3].sort((a,b)=>fin[a]-fin[b]);const rank=[];order.forEach((k,i)=>rank[k]=i);
@@ -20,14 +20,14 @@ function panel(k,t){
   const g=x.createLinearGradient(bx,0,bx+bw,0);const col=hl?'#ffffff':`hsl(${(v/N)*280+200},85%,${done?62:55}%)`;g.addColorStop(0,col);g.addColorStop(.5,hl?'#fff':`hsl(${(v/N)*280+200},90%,72%)`);g.addColorStop(1,col);
   if(hl){x.save();x.shadowColor='#fff';x.shadowBlur=24}x.fillStyle=g;x.beginPath();x.roundRect(bx+2,base-h,bw-4,h,4);x.fill();if(hl)x.restore();}
  txt(names[k],PX+28,y+52,40,cols[k],1,'left');
- txt((step+1)+' checks',PX+PW-28,y+50,30,'rgba(255,255,255,.75)',t>=GO?1:0,'right');
- if(done){const p=eob((t-fin[k])/.35);const lab=['🥇 1st','🥈 2nd','🥉 3rd','4th 🐢'][rank[k]];x.save();x.translate(PX+PW/2,y+PH/2-10);x.scale(p,p);txt(lab,0,24,74,'#fff',1);x.restore()}
+ txt(step+' checks',PX+PW-28,y+50,30,'rgba(255,255,255,.75)',t>=GO?1:0,'right');
+ if(done){const p=eob((t-fin[k])/.35);const lab=['🥇 1st','🥈 2nd','🥉 3rd','4th 🐢'][rank[k]];x.save();x.translate(PX+PW/2,y+PH/2-10);x.scale(p,p);x.fillStyle='rgba(8,8,20,.72)';x.beginPath();x.roundRect(-170,-50,340,100,50);x.fill();txt(lab,0,24,74,'#fff',1);x.restore()}
  x.restore();}
 function draw(t){
  bg(t);for(let k=0;k<4;k++)panel(k,t);
- const Y=280;
- if(t<GO){txt('Same data. Same speed.\nWho sorts it first? 👇',W/2,Y,64,'#fff',1)}
- else if(t<fin[order[1]]+.2)txt('GO! 🏁',W/2,Y+40,96,'#ffd166',1-ease((t-GO-1.2)/.3));
+ const Y=295;
+ txt('Same data. Same speed.\nWho sorts it first? 👇',W/2,Y,64,'#fff',1-ease((t-fin[order[0]]+.25)/.2));
+ if(t>=fin[order[0]]&&t<fin[order[2]]+.3)txt(names[order[0]]+' done in\n'+(len[order[0]]-1)+' checks ⚡',W/2,Y,70,cols[order[0]],ease((t-fin[order[0]])/.2)*(1-ease((t-fin[order[2]])/.3)));
  const last=order[3];
  if(t>=fin[order[2]]+.3&&t<fin[last])txt(names[last]+' is still\ngoing… 💀',W/2,Y,72,cols[last],ease((t-fin[order[2]]-.3)/.3));
  if(t>=fin[last]+.2){txt(names[order[0]]+' wins 🏆\nWho did you pick?',W/2,Y,70,'#fff',ease((t-fin[last]-.2)/.3))}
