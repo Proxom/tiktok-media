@@ -6,7 +6,7 @@ d=json.loads(open(sys.argv[1]).read().split('=',1)[1].rstrip(';\n'))
 MEL=sys.argv[3] if len(sys.argv)>3 else 'ode'
 N={'G3':196.0,'C4':261.63,'D4':293.66,'E4':329.63,'F4':349.23,'G4':392.0,'A4':440.0,'B4':493.88,'C5':523.25}
 MELODIES={  # public domain
- 'ode':'E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4 D4 D4 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4 C4 C4 D4 D4 E4 C4 D4 E4 F4 E4 C4 D4 E4 F4 E4 D4 C4 D4 G3',
+ 'ode':'E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4 D4 D4 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4 C4 C4 D4 D4 E4 C4 D4 E4 F4 E4 C4 D4 E4 F4 E4 D4 C4 D4 G3 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4 C4 C4',
 }
 notes=[N[n] for n in MELODIES[MEL].split()]
 SR=44100;fps=d['fps'];D=len(d['frames'])/fps;n=int(SR*D);t=np.arange(n)/SR;out=np.zeros(n);rng=np.random.default_rng(3)
@@ -31,7 +31,9 @@ out+=.003*np.convolve(rng.standard_normal(n),np.ones(60)/60,'same')
 out+=.010*sum(np.sin(2*np.pi*f*t+.4*np.sin(2*np.pi*.12*t)) for f in [130.81,196.0,261.63])*(.7+.3*np.sin(2*np.pi*t/8))
 k=0
 for h in d['hits']:
-    v=min(1,h['v']/700);f=notes[k%len(notes)];k+=1
+    v=min(1,h['v']/700)
+    if k>=len(notes):break
+    f=notes[k];k+=1
     add(h['t'],click(.08+.1*v))
     add(h['t'],bell(f,.10+.10*v) if h['kind']=='bell' else marimba(f,.16+.16*v))
 FIN=d['finish']
