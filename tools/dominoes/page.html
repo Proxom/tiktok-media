@@ -3,7 +3,7 @@
 // Format 3: rainbow spiral of dominoes toppling in a wave (three.js instanced boxes). Timing comes from data.js (gen.js).
 const W=1080,H=1920,D=DATA,N=D.N,T_END=D.tEnd+1.6;
 const r=new THREE.WebGLRenderer({canvas:document.createElement('canvas'),antialias:true,preserveDrawingBuffer:true});
-r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.05;r.outputColorSpace=THREE.SRGBColorSpace;
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=.92;r.outputColorSpace=THREE.SRGBColorSpace;
 const s=new THREE.Scene();s.background=new THREE.Color(0xe9dccb);s.fog=new THREE.Fog(0xe9dccb,26,48);
 const cam=new THREE.PerspectiveCamera(40,W/H,.1,100);
 const ec=document.createElement('canvas');ec.width=512;ec.height=256;const eg=ec.getContext('2d');let gr=eg.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#fff8ee');gr.addColorStop(.55,'#e8d9c6');gr.addColorStop(1,'#8d7a66');eg.fillStyle=gr;eg.fillRect(0,0,512,256);eg.fillStyle='#fff';eg.fillRect(80,30,150,60);
@@ -19,7 +19,7 @@ const floor=new THREE.Mesh(new THREE.PlaneGeometry(80,80),new THREE.MeshStandard
 const DH=1.0,DW=.55,DT=.13;
 const geo=new THREE.BoxGeometry(DT,DH,DW);const mat=new THREE.MeshPhysicalMaterial({roughness:.28,clearcoat:.7,clearcoatRoughness:.2});
 const mesh=new THREE.InstancedMesh(geo,mat,N);mesh.castShadow=true;mesh.receiveShadow=true;s.add(mesh);
-const col=new THREE.Color();for(let i=0;i<N;i++){col.setHSL((i/N*.92+.0)%1,.8,.55);mesh.setColorAt(i,col)}mesh.instanceColor.needsUpdate=true;
+const col=new THREE.Color();for(let i=0;i<N;i++){col.setHSL((i/N*.92+.0)%1,.85,.5);mesh.setColorAt(i,col)}mesh.instanceColor.needsUpdate=true;
 const M=new THREE.Matrix4(),B=new THREE.Matrix4(),P=new THREE.Matrix4(),Rz=new THREE.Matrix4(),C=new THREE.Matrix4();
 const FINAL=72*Math.PI/180;
 function ang(i,t){const u=(t-D.t[i])/D.D;if(u<=0)return 0;if(u>=1)return FINAL;return FINAL*Math.pow(u,2.1)}
@@ -30,7 +30,7 @@ function place(t){for(let i=0;i<N;i++){const [x,z,tx,tz]=D.pos[i];const a=ang(i,
   // right-handed: columns are X=(tx,0,tz), Y=(0,1,0), Z=(-tz,0,tx)
   B.set(tx,0,-tz,x, 0,1,0,0, tz,0,tx,z, 0,0,0,1);
   P.makeTranslation(DT/2,0,0);Rz.makeRotationZ(-a);C.makeTranslation(-DT/2,DH/2,0);
-  M.copy(B).multiply(P).multiply(Rz).multiply(C);mesh.setMatrixAt(i,M)}mesh.instanceMatrixNeedsUpdate=true}
+  M.copy(B).multiply(P).multiply(Rz).multiply(C);mesh.setMatrixAt(i,M)}mesh.instanceMatrix.needsUpdate=true}
 // starter ball rolling in to tip the first domino
 const ball=new THREE.Mesh(new THREE.SphereGeometry(.32,40,28),new THREE.MeshPhysicalMaterial({color:0xf2f2f2,metalness:1,roughness:.12}));ball.castShadow=true;s.add(ball);
 const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
