@@ -10,8 +10,8 @@ const TH={peach:{bg:'#c98b78',bg2:'#a8604f',tiles:['#c98a74','#d6a088','#b8735f'
  lilac:{bg:'#e3d9f6',bg2:'#c4b4ea',tiles:['#d7cbf2','#e9e1fa','#c9b8ee','#f2edfc','#d3c6e6'],rail:0xfcfaff,ring:[270,320,180,40,200,350]}}[THEME];
 const gl=document.getElementById('g'),out=document.getElementById('c'),x=out.getContext('2d');
 const r=new THREE.WebGLRenderer({canvas:gl,antialias:true,preserveDrawingBuffer:true});
-r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=.92;r.outputColorSpace=THREE.SRGBColorSpace;
-const s=new THREE.Scene();s.background=new THREE.Color(TH.bg);s.fog=new THREE.Fog(TH.bg,26,60);
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=1.0;r.outputColorSpace=THREE.SRGBColorSpace;
+const s=new THREE.Scene();s.background=new THREE.Color(TH.bg);s.fog=new THREE.Fog(TH.bg,52,95);
 const cam=new THREE.PerspectiveCamera(30,W/H,0.1,120);
 // studio env map (soft boxes) for brass/ceramic reflections
 const ec=document.createElement('canvas');ec.width=1024;ec.height=512;const eg=ec.getContext('2d');
@@ -56,15 +56,15 @@ for(let i=0;i<120;i++){const f=frameAt(i/120);const sl=new THREE.Mesh(slG,railMa
 // chime rings (torus around the track) with a tiny bell plate on top
 const rings=[];const torG=new THREE.TorusGeometry(BR*1.8,.11,20,72);
 D.rings.forEach((u,k)=>{const f=frameAt(u);const hue=TH.ring[k%TH.ring.length];
- const mat=new THREE.MeshPhysicalMaterial({color:new THREE.Color().setHSL(hue/360,.95,.55),roughness:.18,clearcoat:1,emissive:new THREE.Color().setHSL(hue/360,.9,.55),emissiveIntensity:0});
+ const mat=new THREE.MeshPhysicalMaterial({color:new THREE.Color().setHSL(hue/360,1,.5),roughness:.18,clearcoat:1,emissive:new THREE.Color().setHSL(hue/360,.9,.55),emissiveIntensity:0});
  const g=new THREE.Group();const tor=new THREE.Mesh(torG,mat);tor.castShadow=true;g.add(tor);
  g.position.copy(f.p);g.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(f.side,f.nrm,f.tg.clone().negate()));s.add(g);
  const hits=D.ev.filter(e=>e.ring===k).map(e=>e.t);rings.push({g,mat,hits,base:hue})});
 // brass balls with an engraved band so rolling is visible
-const bc=document.createElement('canvas');bc.width=512;bc.height=256;const bq=bc.getContext('2d');bq.fillStyle='#d6a24a';bq.fillRect(0,0,512,256);
+const bc=document.createElement('canvas');bc.width=512;bc.height=256;const bq=bc.getContext('2d');bq.fillStyle='#c9a24a';bq.fillRect(0,0,512,256);
 bq.fillStyle='#b07a2c';bq.fillRect(0,122,512,12);bq.fillStyle='#f3d38b';bq.fillRect(0,112,512,4);bq.fillRect(0,140,512,4);
 const btex=new THREE.CanvasTexture(bc);btex.colorSpace=THREE.SRGBColorSpace;
-const ballMat=new THREE.MeshPhysicalMaterial({map:btex,metalness:1,roughness:.07,clearcoat:.8,envMapIntensity:2.3});
+const ballMat=new THREE.MeshPhysicalMaterial({map:btex,metalness:1,roughness:.18,clearcoat:.8,envMapIntensity:2.3});
 const balls=[];const bg=new THREE.SphereGeometry(BR,64,40);
 for(let j=0;j<NB;j++){const b=new THREE.Mesh(bg,ballMat);b.castShadow=true;s.add(b);balls.push(b)}
 const sprC=document.createElement('canvas');sprC.width=sprC.height=128;{const q=sprC.getContext('2d');const g=q.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(255,255,240,1)');g.addColorStop(.25,'rgba(255,230,170,.7)');g.addColorStop(1,'rgba(255,200,120,0)');q.fillStyle=g;q.fillRect(0,0,128,128)}
@@ -78,18 +78,18 @@ function draw(t){
  const tm=((t%T)+T)%T;
  for(const R of rings){let d=1e9;for(const h of R.hits){const dd=((tm-h)%T+T)%T;if(dd<d)d=dd}
   const gl_=Math.exp(-d*5.5);R.mat.emissiveIntensity=gl_*2.4;R.g.scale.setScalar(1+.28*gl_);R.sp.scale.setScalar(.01+3.2*gl_);R.sp.material.opacity=gl_}
- const ph=2*Math.PI*t/(2*T),ang=ph+.6,RC=36.5;
- cam.position.set(Math.sin(ang)*RC,25+.6*Math.sin(2*ph),Math.cos(ang)*RC);cam.lookAt(0,.6,0);cam.setViewOffset(W,H,80,-30,W,H);
+ const ph=2*Math.PI*t/(2*T),ang=ph+.6,RC=38;
+ cam.position.set(Math.sin(ang)*RC,25+.6*Math.sin(2*ph),Math.cos(ang)*RC);cam.lookAt(0,.6,0);cam.setViewOffset(W,H,40,-70,W,H);
  r.render(s,cam)}
 function txt(str,y,size,col,stroke){x.save();x.font='800 '+size+'px "Inter","DejaVu Sans",sans-serif';x.textAlign='center';x.lineJoin='round';
  let w=x.measureText(str).width;if(w>800){size*=800/w;x.font='800 '+size+'px "Inter","DejaVu Sans",sans-serif'}
  x.lineWidth=size/5;x.strokeStyle=stroke;x.strokeText(str,495,y);x.fillStyle=col;x.fillText(str,495,y);x.restore()}
 const L1=P.get('l1')||'INFINITE LOOP #1',L2=P.get('l2')||'Where does it restart?';
 function frame(t,SUB){SUB=SUB||1;x.globalAlpha=1;x.clearRect(0,0,W,H);
- for(let k=0;k<SUB;k++){draw(t+k/(60*SUB)-(SUB>1?.25/30:0));x.globalAlpha=1/(k+1);x.drawImage(gl,0,0)}
- x.globalAlpha=1;
+ for(let k=0;k<SUB;k++){draw(t+k/(60*SUB)-(SUB>1?.25/30:0));x.globalAlpha=1/(k+1);x.filter='contrast(1.12) saturate(1.15)';x.drawImage(gl,0,0);x.filter='none'}
+ x.globalAlpha=1;x.filter='none';
  // soft vignette + warm grade
- const v=x.createRadialGradient(W/2,H*.52,H*.25,W/2,H*.52,H*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(50,18,14,.45)');x.fillStyle=v;x.fillRect(0,0,W,H);
+ const v=x.createRadialGradient(W/2,H*.52,H*.25,W/2,H*.52,H*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(50,18,14,.22)');x.fillStyle=v;x.fillRect(0,0,W,H);
  txt(L1,385,68,'#fff8f0','rgba(60,25,20,.95)');txt(L2,480,80,'#ffffff','rgba(90,45,40,.9)');
  return out.toDataURL('image/jpeg',.93)}
 window.frame=frame;window.draw=draw;
