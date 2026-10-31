@@ -56,6 +56,9 @@ for h in d['hits']:
 FIN=d['finish']
 for i,f in enumerate([261.63,329.63,392.0,523.25,659.25]):add(FIN+.04+i*.045,marimba(f,.13,.8),(i-2)*.25)
 for i,f in enumerate([1046.5,1318.5,1568.0,1046.5,1318.5,1568.0,2093.0/2*1.5]):add(FIN+.45+i*.16,glock(f,.035),(-1)**i*.4)
+# second, softer chord when the camera reveals the whole course
+for i,f in enumerate([523.25,659.25,783.99,1046.5]):add(FIN+1.7+i*.07,marimba(f,.08,.6),(i-1.5)*.3)
+for i,f in enumerate([261.63,392.0]):add(FIN+1.7,marimba(f,.07,.5),(i-.5)*.4)
 # generated stereo reverb (exp-decaying low-passed noise, 1.0 s), ~20 % wet
 def ir(seed):
     r=np.random.default_rng(seed);m=int(SR*1.0);tt=np.arange(m)/SR
