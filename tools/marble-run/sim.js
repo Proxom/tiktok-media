@@ -2,7 +2,7 @@
 // node sim.js <out.js> [seed]  -> window.DATA={pieces, frames:[[x,y,rot]], hits:[{t,kind,id,v}], finish}
 const fs=require('fs');
 const OUT=process.argv[2]||'data.js',SEED=+process.argv[3]||1;
-const FPS=30,SUB=24,DT=1/(FPS*SUB),G=1500,BR=13,TMAX=50;
+const FPS=30,SUB=24,DT=1/(FPS*SUB),G=1500,BR=+process.env.BR||13,TMAX=50,TAIL=+process.env.TAIL||2.5;
 function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 function build(seed){
  // xylophone staircase: runs of short bars stepping down; the marble hops bar to bar (one note per hop);
@@ -36,10 +36,10 @@ function run(seed){
   if(Math.hypot(vx,vy)<8)still++;else still=0;
   if(finish===null&&still>45)return{fail:'stuck',t,x:bx,y:by};
   if(by>cup.y+400)return{fail:'fell',t,x:bx,pieces:P,frames,hits,cup};
-  if(finish!==null&&t>finish+2.5)break;
+  if(finish!==null&&t>finish+TAIL)break;
  }
  if(finish===null)return{fail:'timeout'};
- return{pieces:P,frames,hits,finish,cup,fps:FPS,BR,seed};
+ return{pieces:P,frames,hits,finish,cup,fps:FPS,BR,seed,song:process.env.SONG||undefined,theme:process.env.THEME||undefined};
 }
 let res,log=[];for(let s=SEED;s<SEED+300;s++){res=run(s);log.push(s+':'+(res.fail||res.finish.toFixed(1)));if(!res.fail&&res.finish>12&&res.finish<+(process.env.MAXT||30)){const g=res.hits.slice(1).map((h,i)=>h.t-res.hits[i].t),mx=Math.max(...g);res.maxGap=mx;res.first=res.hits[0].t;log[log.length-1]+='/g'+mx.toFixed(2)+'/n'+res.hits.length;if(mx<+(process.env.MAXGAP||.75)&&res.hits[0].t<+(process.env.FIRST||.4))break}res=null}
 if(!res){console.log(log.slice(0,30).join(' '));if(process.env.DEBUG){fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(run(SEED))+';\n')}process.exit(1)}

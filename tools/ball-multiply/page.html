@@ -1,0 +1,55 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="data.js"></script><script>
+// Format D "Every bounce = 1 more ball" renderer: neon ring with a rotating gap, glossy glowing balls, live counter, ring shatters at the end.
+const W=1080,H=1920,D=DATA,FPS=D.fps,CX=D.CX,CY=D.CY,R=D.R,HT=D.HT,BR=D.BR,BT=D.breakT;
+const c=document.getElementById('c'),x=c.getContext('2d');
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
+const spawns=D.events.filter(e=>e.type==='spawn'),escs=D.events.filter(e=>e.type==='escape');
+function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;{const g=bg.getContext('2d');const rg=g.createRadialGradient(CX,CY,40,CX,CY,1150);rg.addColorStop(0,'#1a1238');rg.addColorStop(.5,'#0a0820');rg.addColorStop(1,'#020208');g.fillStyle=rg;g.fillRect(0,0,W,H);
+ for(let i=0;i<140;i++){g.fillStyle=`rgba(255,255,255,${.03+.05*((i*37)%7)/7})`;g.beginPath();g.arc((i*7919)%W,(i*104729)%H,1+(i%3)*.6,0,7);g.fill()}}
+// pre-rendered glossy ball sprites per hue bucket
+const spr={};function sprite(h){h=Math.round(h/10)*10%360;if(spr[h])return spr[h];const s=document.createElement('canvas'),S=BR*2+40;s.width=s.height=S;const g=s.getContext('2d'),m=S/2;
+ g.shadowColor=`hsl(${h},100%,60%)`;g.shadowBlur=18;const rg=g.createRadialGradient(m-BR*.35,m-BR*.4,BR*.1,m,m,BR);rg.addColorStop(0,`hsl(${h},100%,88%)`);rg.addColorStop(.45,`hsl(${h},95%,60%)`);rg.addColorStop(1,`hsl(${h},90%,32%)`);
+ g.fillStyle=rg;g.beginPath();g.arc(m,m,BR,0,7);g.fill();g.shadowBlur=0;g.fillStyle='rgba(255,255,255,.85)';g.beginPath();g.ellipse(m-BR*.38,m-BR*.42,BR*.28,BR*.18,-.6,0,7);g.fill();return spr[h]=s}
+const SEG=28;
+function draw(t){
+ const f=Math.min(D.frames.length-1,Math.max(0,Math.round(t*FPS))),fr=D.frames[f];
+ x.globalAlpha=1;x.drawImage(bg,0,0);
+ const br=t>=BT?t-BT:-1,nIn=br<0?countAt(spawns,t)+1-countAt(escs,t):D.BREAK,nEsc=countAt(escs,t);
+ const lastSp=spawns[Math.max(0,countAt(spawns,t)-1)],pulse=lastSp&&t>=lastSp.t?Math.max(0,1-(t-lastSp.t)/.15):0;
+ x.save();if(br>=0&&br<.5){const sh=(1-br/.5)*14;x.translate(Math.sin(t*93)*sh,Math.cos(t*71)*sh)}
+ // ring (hue drifts with count) or its flying shards
+ const gc=D.a0+D.OM*Math.min(t,BT),hue=(200+nIn*2.2)%360;
+ x.save();x.lineCap='round';x.lineWidth=HT*2;
+ for(let k=0;k<SEG;k++){const a1=gc+D.GAP+(Math.PI*2-2*D.GAP)*k/SEG,a2=gc+D.GAP+(Math.PI*2-2*D.GAP)*(k+1)/SEG-.004;
+  let ox=0,oy=0,rot=0,al=1;if(br>=0){const am=(a1+a2)/2,sp=420+((k*97)%260);ox=Math.cos(am)*sp*br;oy=Math.sin(am)*sp*br+500*br*br;rot=(k%2?1:-1)*br*2.5;al=cl(1-br/2.2)}
+  if(al<=0)continue;x.globalAlpha=al;x.strokeStyle=`hsl(${hue},95%,${62+25*pulse}%)`;x.shadowColor=`hsl(${hue},100%,62%)`;x.shadowBlur=22+30*pulse+(br>=0?20:0);
+  x.save();const am=(a1+a2)/2,mx=CX+Math.cos(am)*R,my=CY+Math.sin(am)*R;x.translate(mx+ox,my+oy);x.rotate(rot);x.translate(-mx,-my);x.beginPath();x.arc(CX,CY,R,a1,a2);x.stroke();x.restore()}
+ x.restore();x.globalAlpha=1;
+ // balls (escaped ones dimmer), new balls pop in
+ for(let i=0;i<fr.length;i++){const b=fr[i];if(b[3]===2||b[1]>2100)continue;const sp=spawns.find?null:null;const s=sprite(b[2]);
+  const born=i>0&&spawns[i-1]?t-spawns[i-1].t:9;const sc=born<.18?.4+.6*ease(born/.18)+.25*Math.sin(cl(born/.18)*Math.PI):1;
+  const sz=s.width*sc;x.globalAlpha=b[3]===1&&br<0?.8:1;x.drawImage(s,b[0]-sz/2,b[1]-sz/2,sz,sz)}
+ x.globalAlpha=1;
+ // break flash + burst ring
+ if(br>=0&&br<1.2){x.save();x.globalAlpha=.5*(1-br/1.2);x.strokeStyle='#fff';x.lineWidth=14*(1-br/1.2);x.beginPath();x.arc(CX,CY,R+600*ease(br/1.2),0,7);x.stroke();x.restore()}
+ if(br>=0&&br<.25){x.fillStyle=`rgba(255,255,255,${.22*(1-br/.25)})`;x.fillRect(0,0,W,H)}
+ x.restore();
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ // top panel
+ x.save();x.fillStyle='rgba(8,6,26,.82)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(80,330,820,250,30);x.fill();x.stroke();x.restore();
+ if(br<0){txt('Every bounce = +1 ball',400,60,'#fff',1);
+  const pop=1+.18*pulse;x.save();x.textAlign='center';x.font=`900 ${Math.round(92*pop)}px "DejaVu Sans"`;x.lineWidth=14;x.strokeStyle='rgba(6,4,20,.92)';x.lineJoin='round';const s=String(nIn);x.strokeText(s,330,548);x.fillStyle=`hsl(${hue},100%,72%)`;x.fillText(s,330,548);
+  x.font='900 34px "DejaVu Sans"';x.fillStyle='#cfd3ff';x.fillText('INSIDE',330,462);x.restore();
+  x.save();x.textAlign='center';x.font='900 78px "DejaVu Sans"';x.lineWidth=12;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(String(nEsc),680,545);x.fillStyle='#ffd23f';x.fillText(String(nEsc),680,545);x.font='900 34px "DejaVu Sans"';x.fillStyle='#cfd3ff';x.fillText('ESCAPED',680,462);x.restore()}
+ else{txt(D.BREAK+' balls…',405,62,'#fff',ease(br/.2));txt('the ring BROKE! 💥',495,70,'#ffd23f',ease((br-.15)/.25))}
+ if(br>=.9)txt('Did you see that coming? 💬',1370,56,'#fff',ease((br-.9)/.3));
+ return c.toDataURL('image/jpeg',0.93)}
+window.draw=draw;
+</script>

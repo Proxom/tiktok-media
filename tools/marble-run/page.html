@@ -4,7 +4,8 @@
 const W=1080,H=1920,D=DATA,FPS=D.fps,S=.01,FIN=D.finish; // 1 sim px = 0.01 world units
 const r=new THREE.WebGLRenderer({canvas:document.createElement('canvas'),antialias:true,preserveDrawingBuffer:true});
 r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=.8;r.outputColorSpace=THREE.SRGBColorSpace;
-const s=new THREE.Scene();s.background=new THREE.Color(0xf0b9cc);
+const TH=D.theme||'pastel',WOOD=TH==='walnut';
+const s=new THREE.Scene();s.background=new THREE.Color(WOOD?0x3a2414:0xf0b9cc);
 const cam=new THREE.PerspectiveCamera(42,W/H,.05,60);
 // soft studio env
 const ec=document.createElement('canvas');ec.width=512;ec.height=256;const eg=ec.getContext('2d');let gr=eg.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#ffffff');gr.addColorStop(.5,'#efe6df');gr.addColorStop(1,'#b9aea6');eg.fillStyle=gr;eg.fillRect(0,0,512,256);eg.fillStyle='#fff';eg.fillRect(60,30,160,70);eg.fillRect(330,40,120,60);
@@ -13,11 +14,18 @@ const key=new THREE.DirectionalLight(0xfff4ea,4.2);key.castShadow=true;key.shado
 Object.assign(key.shadow.camera,{left:-6,right:6,top:6,bottom:-6,near:.1,far:30});s.add(key);s.add(key.target);
 s.add(new THREE.HemisphereLight(0xffffff,0xb8c4d4,.45));
 // plaster wall
-const wc=document.createElement('canvas');wc.width=1024;wc.height=1024;const wg=wc.getContext('2d');wg.fillStyle='#f3bfd1';wg.fillRect(0,0,1024,1024);
-for(let i=0;i<9000;i++){const v=200+((i*53)%55);wg.fillStyle=`rgba(${v},${v-40},${v-25},.10)`;wg.fillRect((i*7919)%1024,(i*104729)%1024,2+(i%3),2+(i%2))}
-const wt=new THREE.CanvasTexture(wc);wt.colorSpace=THREE.SRGBColorSpace;wt.wrapS=wt.wrapT=THREE.RepeatWrapping;wt.repeat.set(6,12);
-const yMax=Math.max(...D.frames.map(f=>f[1]))*S;
-const wall=new THREE.Mesh(new THREE.PlaneGeometry(30,yMax+30),new THREE.MeshStandardMaterial({map:wt,roughness:.95}));wall.position.set(0,-yMax/2,0);wall.receiveShadow=true;s.add(wall);
+const wc=document.createElement('canvas');wc.width=1024;wc.height=1024;const wg=wc.getContext('2d');
+if(!WOOD){wg.fillStyle='#f3bfd1';wg.fillRect(0,0,1024,1024);
+for(let i=0;i<9000;i++){const v=200+((i*53)%55);wg.fillStyle=`rgba(${v},${v-40},${v-25},.10)`;wg.fillRect((i*7919)%1024,(i*104729)%1024,2+(i%3),2+(i%2))}}
+else{// vertical walnut boards with flowing grain
+ for(let b=0;b<4;b++){const bx=b*256;const tone=[[92,58,34],[104,66,38],[86,54,31],[98,62,36]][b];wg.fillStyle=`rgb(${tone})`;wg.fillRect(bx,0,256,1024);
+  for(let k=0;k<70;k++){const x0=bx+((k*37+b*91)%256),amp=4+(k*13%9),ph=k*1.7+b,dk=(k%3)*12;wg.strokeStyle=`rgba(${40+dk},${24+dk},${12},${.18+.12*((k*7)%5)/5})`;wg.lineWidth=.6+((k*5)%3)*.7;wg.beginPath();
+   for(let y=0;y<=1024;y+=8){const xx=x0+amp*Math.sin(y/90+ph)+2*Math.sin(y/23+ph*2);y?wg.lineTo(xx,y):wg.moveTo(xx,y)}wg.stroke()}
+  wg.fillStyle='rgba(20,10,4,.55)';wg.fillRect(bx,0,3,1024)}
+ for(let i=0;i<5000;i++){wg.fillStyle=`rgba(255,220,180,${.02+.02*(i%3)})`;wg.fillRect((i*7919)%1024,(i*104729)%1024,1,3)}}
+const wt=new THREE.CanvasTexture(wc);wt.colorSpace=THREE.SRGBColorSpace;wt.wrapS=wt.wrapT=THREE.RepeatWrapping;wt.repeat.set(WOOD?4:6,WOOD?8:12);
+const yMax=Math.max(...D.frames.map(f=>f[1]))*S;const CMIN=Math.min(...D.pieces.map(p=>p.x1??p.x))*S,CMAX=Math.max(...D.pieces.map(p=>p.x2??p.x))*S,YMID=(yMax-.6)/2,PBZ=Math.max(0,(yMax+1.6)/(2*Math.tan(21*Math.PI/180))-5.6);
+const wall=new THREE.Mesh(new THREE.PlaneGeometry(30,yMax+30),new THREE.MeshStandardMaterial({map:wt,roughness:WOOD?.6:.95}));wall.position.set(0,-yMax/2,0);wall.receiveShadow=true;s.add(wall);
 const metal=new THREE.MeshPhysicalMaterial({color:0xdfe3e8,metalness:1,roughness:.22});
 const white=new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.35,clearcoat:.6});
 const pieceMesh=[];
@@ -49,8 +57,10 @@ function render3d(t){
  D.hits.forEach(h=>{if(h.kind!=='bell'&&h.kind!=='pin')return;const dt=t-h.t;const m=pieceMesh[h.id];if(!m.userData.z0)m.userData.z0=m.position.z;
   if(dt>=0&&dt<.6)m.position.z=m.userData.z0+.012*Math.sin(dt*60)*Math.exp(-dt*7)});
  const [sx,sy]=smooth(t,18);const fin=FIN&&t>FIN?ease((t-FIN)/1.5):0;
- let cx=sx*S*.75,cy=-sy*S;cx=cx*(1-fin)+(D.cup.x*S+.2)*fin;cy=cy*(1-fin)+(-D.cup.y*S+.5)*fin;cam.position.set(cx+2.0+.25*Math.sin(t*.4),cy+2.3,7.0-1.4*fin);cam.lookAt(cx,cy-.3,0);
- key.position.set(cx-2.5,cy+4,4);key.target.position.set(cx,cy,0);
+ let cx,cy;if(WOOD){const pb=FIN&&t>FIN+.6?ease((t-FIN-.6)/2.2):0;cx=sx*S*.88;cy=-sy*S;cx=cx*(1-fin)+(D.cup.x*S)*fin;cy=cy*(1-fin)+(-D.cup.y*S+.3)*fin;
+  const mx=(CMIN+CMAX)/2,my=-YMID;cx=cx*(1-pb)+mx*pb;cy=cy*(1-pb)+my*pb;cam.position.set(cx+1.5*(1-pb)+.2*Math.sin(t*.4),cy+1.8*(1-pb)+1.2*pb,5.6+PBZ*pb);cam.lookAt(cx,cy-.25*(1-pb),0)}
+ else{cx=sx*S*.75;cy=-sy*S;cx=cx*(1-fin)+(D.cup.x*S+.2)*fin;cy=cy*(1-fin)+(-D.cup.y*S+.5)*fin;cam.position.set(cx+2.0+.25*Math.sin(t*.4),cy+2.3,7.0-1.4*fin);cam.lookAt(cx,cy-.3,0)}
+ key.position.set(cx-2.5,cy+4,4);key.target.position.set(cx,cy,0);if(WOOD){const sz=6+(FIN&&t>FIN?ease((t-FIN-.6)/2.2):0)*12;const sc=key.shadow.camera;if(sc.right!==sz){sc.left=-sz;sc.right=sz;sc.top=sz;sc.bottom=-sz;sc.far=60;sc.updateProjectionMatrix()}}
  r.render(s,cam)}
 const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');document.getElementById('c').replaceWith(o);o.id='c';
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
@@ -61,8 +71,14 @@ function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,
 function drawF(t){render3d(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(20,30,50,.30)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
- if(!FIN||t<FIN){const a=t<4?1:Math.max(0,1-ease((t-4)/.5)),fo=FIN?1-ease((t-(FIN-1.2))/.3):1;txt('Marble music:\nguess the song 🎵',405,70,'#fff',Math.min(a,fo));if(t>=4.5)txt('🎵 guess the song',395,52,'#fff',.85*fo)}
- else{txt('FINISH! 🏁',420,110,'#ffd23f',ease((t-FIN)/.25));txt(D.song||'Ode to Joy 🎵',540,60,'#fff',ease((t-FIN-.6)/.3))}
+ if(!FIN||t<FIN){const a=t<4?1:Math.max(0,1-ease((t-4)/.5)),fo=FIN?1-ease((t-(FIN-1.2))/.3):1;
+  if(WOOD){txt('Guess the song\nbefore the FINISH 🎹',400,74,'#fff',Math.min(a,fo));if(t>=4.5)txt('🎵 guess the song',390,50,'#fff',.85*fo)}
+  else{txt('Marble music:\nguess the song 🎵',405,70,'#fff',Math.min(a,fo));if(t>=4.5)txt('🎵 guess the song',395,52,'#fff',.85*fo)}}
+ else{const pop=1+.25*Math.exp(-(t-FIN)*6)*Math.sin((t-FIN)*30);txt('FINISH! 🏁',420,110*pop,'#ffd23f',ease((t-FIN)/.25));txt(D.song||'Ode to Joy 🎵',545,62,'#fff',ease((t-FIN-.6)/.3));
+  if(WOOD)txt('Did you get it? 💬',1380,60,'#fff',ease((t-FIN-1.6)/.3));
+  if(WOOD){const dt=t-FIN;for(let i=0;i<70;i++){const an=i*2.399,sp=380+((i*97)%300),life=1.8+((i*31)%10)/10;if(dt>life)continue;
+   const px=540+Math.cos(an)*sp*dt,py=760+Math.sin(an)*sp*dt+420*dt*dt,a2=1-dt/life,r2=6+(i%4)*3;
+   x.save();x.globalAlpha=a2;x.fillStyle=['#ffd23f','#ffffff','#ff8fab','#7ae0ff','#b8ff6a'][i%5];x.translate(px,py);x.rotate(dt*6+i);x.beginPath();for(let k=0;k<10;k++){const rr=k%2?r2*.45:r2;x.lineTo(Math.cos(k*Math.PI/5)*rr,Math.sin(k*Math.PI/5)*rr)}x.fill();x.restore()}}}
  return o}
 const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
 window.frame=(t,SUB)=>{if(SUB<=1){drawF(t);return o.toDataURL('image/jpeg',0.93)}
