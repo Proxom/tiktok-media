@@ -52,8 +52,11 @@ function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,
  str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
   let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
   let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(40,24,14,.9)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
-function drawF(t){render3d(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
- const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(40,20,5,.30)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+function drawScene(t){render3d(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(40,20,5,.30)');x.fillStyle=vg;x.fillRect(0,0,W,H)}
+function drawF(t){drawScene(t);drawText(t);return o}
+// text is drawn ONCE per output frame, after the motion-blur accumulation, so counter digits never ghost
+function drawText(t){
  const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
  const f=frontIdx(t);
  txt('420 dominoes.\nOne tap. 🌈',385,68,'#fff',t<.1?1:fd(-1,D.t[0]+5.5));
@@ -63,6 +66,7 @@ function drawF(t){render3d(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
  return o}
 const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
 window.frame=(t,SUB)=>{if(SUB<=1){drawF(t);return o.toDataURL('image/jpeg',0.93)}
- for(let k=0;k<SUB;k++){drawF(Math.max(0,t+(k/SUB-.5)/60));ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;return acc.toDataURL('image/jpeg',0.93)};
+ for(let k=0;k<SUB;k++){drawScene(Math.max(0,t+(k/SUB-.5)/60));ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;
+ x.globalAlpha=1;x.clearRect(0,0,W,H);x.drawImage(acc,0,0);drawText(t);return o.toDataURL('image/jpeg',0.93)};
 window.draw=t=>{drawF(t);return o.toDataURL('image/jpeg',0.93)};
 </script>
