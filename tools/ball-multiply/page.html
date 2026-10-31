@@ -4,7 +4,7 @@
 const W=1080,H=1920,D=DATA,FPS=D.fps,CX=D.CX,CY=D.CY,R=D.R,HT=D.HT,BR=D.BR,BT=D.breakT;
 const c=document.getElementById('c'),x=c.getContext('2d');
 const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
-const spawns=D.events.filter(e=>e.type==='spawn'),escs=D.events.filter(e=>e.type==='escape');
+const spawns=D.events.filter(e=>e.type==='spawn'),escs=D.events.filter(e=>e.type==='escape'),N0=D.n0||1,E0=D.esc0||0,born={};spawns.forEach(e=>born[e.i]=e.t);
 function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
 function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
@@ -21,7 +21,7 @@ const SEG=28;
 function draw(t){
  const f=Math.min(D.frames.length-1,Math.max(0,Math.round(t*FPS))),fr=D.frames[f];
  x.globalAlpha=1;x.drawImage(bg,0,0);
- const br=t>=BT?t-BT:-1,nIn=br<0?countAt(spawns,t)+1-countAt(escs,t):D.BREAK,nEsc=countAt(escs,t);
+ const br=t>=BT?t-BT:-1,tq=t+1/FPS,nIn=br<0?N0+countAt(spawns,tq)-countAt(escs,tq):D.BREAK,nEsc=E0+countAt(escs,tq);
  const lastSp=spawns[Math.max(0,countAt(spawns,t)-1)],pulse=lastSp&&t>=lastSp.t?Math.max(0,1-(t-lastSp.t)/.15):0;
  x.save();if(br>=0&&br<.5){const sh=(1-br/.5)*14;x.translate(Math.sin(t*93)*sh,Math.cos(t*71)*sh)}
  // ring (hue drifts with count) or its flying shards
@@ -34,22 +34,23 @@ function draw(t){
  x.restore();x.globalAlpha=1;
  // balls (escaped ones dimmer), new balls pop in
  for(let i=0;i<fr.length;i++){const b=fr[i];if(b[3]===2||b[1]>2100)continue;const sp=spawns.find?null:null;const s=sprite(b[2]);
-  const born=i>0&&spawns[i-1]?t-spawns[i-1].t:9;const sc=born<.18?.4+.6*ease(born/.18)+.25*Math.sin(cl(born/.18)*Math.PI):1;
+  const bt=born[i]!==undefined?t-born[i]:9;const sc=bt>=0&&bt<.18?.6+.4*ease(bt/.18)+.25*Math.sin(cl(bt/.18)*Math.PI):1;
   const sz=s.width*sc;x.globalAlpha=b[3]===1&&br<0?.8:1;x.drawImage(s,b[0]-sz/2,b[1]-sz/2,sz,sz)}
  x.globalAlpha=1;
  // break flash + burst ring
  if(br>=0&&br<1.2){x.save();x.globalAlpha=.5*(1-br/1.2);x.strokeStyle='#fff';x.lineWidth=14*(1-br/1.2);x.beginPath();x.arc(CX,CY,R+600*ease(br/1.2),0,7);x.stroke();x.restore()}
- if(br>=0&&br<.25){x.fillStyle=`rgba(255,255,255,${.22*(1-br/.25)})`;x.fillRect(0,0,W,H)}
+ if(br>=0&&br<.25){x.fillStyle=`rgba(255,255,255,${.12*(1-br/.25)})`;x.fillRect(0,0,W,H)}
  x.restore();
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel
- x.save();x.fillStyle='rgba(8,6,26,.82)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(80,330,820,250,30);x.fill();x.stroke();x.restore();
- if(br<0){txt('Every bounce = +1 ball',400,60,'#fff',1);
-  const pop=1+.18*pulse;x.save();x.textAlign='center';x.font=`900 ${Math.round(92*pop)}px "DejaVu Sans"`;x.lineWidth=14;x.strokeStyle='rgba(6,4,20,.92)';x.lineJoin='round';const s=String(nIn);x.strokeText(s,330,548);x.fillStyle=`hsl(${hue},100%,72%)`;x.fillText(s,330,548);
-  x.font='900 34px "DejaVu Sans"';x.fillStyle='#cfd3ff';x.fillText('INSIDE',330,462);x.restore();
-  x.save();x.textAlign='center';x.font='900 78px "DejaVu Sans"';x.lineWidth=12;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(String(nEsc),680,545);x.fillStyle='#ffd23f';x.fillText(String(nEsc),680,545);x.font='900 34px "DejaVu Sans"';x.fillStyle='#cfd3ff';x.fillText('ESCAPED',680,462);x.restore()}
- else{txt(D.BREAK+' balls…',405,62,'#fff',ease(br/.2));txt('the ring BROKE! 💥',495,70,'#ffd23f',ease((br-.15)/.25))}
- if(br>=.9)txt('Did you see that coming? 💬',1370,56,'#fff',ease((br-.9)/.3));
+ x.save();x.fillStyle='rgba(8,6,26,.82)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(80,330,820,280,30);x.fill();x.stroke();x.restore();
+ const pop=1+.18*pulse;
+ if(br<0){txt('Every bounce = +1 ball',398,58,'#fff',1);txt('At '+D.BREAK+', the ring breaks 💥',452,38,'#ffd23f',1)}
+ else{txt('the ring BROKE! 💥',420,66*(1+.2*Math.exp(-br*5)),'#ffd23f',1)}
+ x.save();x.textAlign='center';x.lineJoin='round';x.font='900 30px "DejaVu Sans"';x.fillStyle='#cfd3ff';x.fillText('INSIDE',330,498);x.fillText('ESCAPED',680,498);
+ const s1=String(nIn)+'/'+D.BREAK;x.font=`900 ${Math.round(68*(br<0?pop:1))}px "DejaVu Sans"`;x.lineWidth=12;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(s1,330,575);x.fillStyle=`hsl(${hue},100%,72%)`;x.fillText(s1,330,575);
+ const fe=br>=0?1+.25*Math.exp(-br*4)*Math.sin(br*25):1;x.font=`900 ${Math.round(68*fe)}px "DejaVu Sans"`;x.strokeText(String(nEsc),680,575);x.fillStyle='#ffd23f';x.fillText(String(nEsc),680,575);x.restore();
+ if(br>=.9)txt('Did you guess '+nEsc+'? 💬',1370,56,'#fff',ease((br-.9)/.3));
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
