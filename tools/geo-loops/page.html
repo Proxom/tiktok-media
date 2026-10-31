@@ -1,0 +1,96 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000">
+<canvas id="g" width="1080" height="1920" style="display:none"></canvas><canvas id="c" width="1080" height="1920"></canvas>
+<script src="three.min.js"></script><script src="data.js"></script><script>
+// E "Infinite geometric loop" renderer: pastel hex-tile world, white ceramic rails on a lobed closed track,
+// brass balls rolling forever through chime rings that glow on each pass. frame(t) is periodic in T; camera orbits once per 2T.
+const D=DATA,W=1080,H=1920,T=D.T,NB=D.NB,NR=D.NR;
+const P=new URLSearchParams(location.search);const THEME=P.get('theme')||'peach';
+const TH={peach:{bg:'#c98b78',bg2:'#a8604f',tiles:['#c98a74','#d6a088','#b8735f','#ddb29c','#b98073'],rail:0xfbf6ef,ring:[12,28,350,200,160,265]},
+ mint:{bg:'#cfeee2',bg2:'#a7d8c9',tiles:['#bfe6d7','#d8f2e8','#a9dccb','#e6f7f0','#b7d9d3'],rail:0xfbfbf6,ring:[150,190,40,330,260,10]},
+ lilac:{bg:'#e3d9f6',bg2:'#c4b4ea',tiles:['#d7cbf2','#e9e1fa','#c9b8ee','#f2edfc','#d3c6e6'],rail:0xfcfaff,ring:[270,320,180,40,200,350]}}[THEME];
+const gl=document.getElementById('g'),out=document.getElementById('c'),x=out.getContext('2d');
+const r=new THREE.WebGLRenderer({canvas:gl,antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=.92;r.outputColorSpace=THREE.SRGBColorSpace;
+const s=new THREE.Scene();s.background=new THREE.Color(TH.bg);s.fog=new THREE.Fog(TH.bg,26,60);
+const cam=new THREE.PerspectiveCamera(30,W/H,0.1,120);
+// studio env map (soft boxes) for brass/ceramic reflections
+const ec=document.createElement('canvas');ec.width=1024;ec.height=512;const eg=ec.getContext('2d');
+let gr=eg.createLinearGradient(0,0,0,512);gr.addColorStop(0,'#fff8f0');gr.addColorStop(.45,TH.bg);gr.addColorStop(.55,TH.bg2);gr.addColorStop(1,'#6b4c44');eg.fillStyle=gr;eg.fillRect(0,0,1024,512);
+eg.fillStyle='#ffffff';eg.fillRect(120,60,220,110);eg.fillRect(600,40,160,140);eg.fillRect(380,150,60,40);eg.fillStyle='rgba(255,240,220,.8)';eg.fillRect(860,90,120,60);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+s.add(new THREE.HemisphereLight(0xfff4ea,0x8a5a4a,.7));
+const key=new THREE.DirectionalLight(0xfff1e0,2.4);key.position.set(-7,16,9);key.castShadow=true;key.shadow.mapSize.set(2048,2048);
+Object.assign(key.shadow.camera,{left:-11,right:11,top:11,bottom:-11,near:1,far:50});key.shadow.radius=5;key.shadow.bias=-0.0003;key.shadow.normalBias=.02;s.add(key);
+// terrazzo texture for tiles
+function terrazzo(base,seed){const c=document.createElement('canvas');c.width=c.height=256;const q=c.getContext('2d');q.fillStyle=base;q.fillRect(0,0,256,256);
+ let z=seed;const rnd=()=>(z=(z*16807)%2147483647)/2147483647;const chips=['#ffffff','#d98f7a','#8fb3c9','#f1c46b','#b8a1d9','#6d5a55'];
+ for(let i=0;i<260;i++){q.fillStyle=chips[(rnd()*chips.length)|0];q.globalAlpha=.25+.45*rnd();const px=rnd()*256,py=rnd()*256,rr=1+rnd()*4;q.beginPath();
+  for(let a=0;a<6;a++){const an=a/6*6.283+rnd();q.lineTo(px+Math.cos(an)*rr*(.6+rnd()),py+Math.sin(an)*rr*(.6+rnd()))}q.fill()}
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;return t}
+// hex tile floor
+const HEX=1.15,hg=new THREE.CylinderGeometry(HEX*.97,HEX*.97,.5,6);
+let seed=D.SEED*977+13;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+const tileMats=TH.tiles.map((c,i)=>new THREE.MeshStandardMaterial({color:0xffffff,map:terrazzo(c,D.SEED*31+i*7),roughness:.55,metalness:0}));
+for(let q=-12;q<=12;q++)for(let rr=-12;rr<=12;rr++){const px=HEX*Math.sqrt(3)*(q+rr/2),pz=HEX*1.5*rr;if(Math.hypot(px,pz)>24)continue;
+ const m=new THREE.Mesh(hg,tileMats[(rnd()*tileMats.length)|0]);const hh=Math.hypot(px,pz)<7.5?.06*rnd():.03*rnd();
+ m.position.set(px,-.25+hh,pz);m.receiveShadow=true;m.castShadow=false;s.add(m)}
+// track: lobed closed curve with gentle hills, arc-length parametrised
+const R0=4.1,A=.30,LOB=D.LOBES,NS=3000;const P0=[],cum=[0];
+function raw(th){const rr=R0*(1+A*Math.cos(LOB*th));return new THREE.Vector3(rr*Math.cos(th),1.55+.75*Math.sin(LOB*th+.9)+.25*Math.sin(2*th),rr*Math.sin(th))}
+for(let i=0;i<=NS;i++){P0.push(raw(i/NS*Math.PI*2));if(i)cum.push(cum[i-1]+P0[i].distanceTo(P0[i-1]))}
+const L=cum[NS];
+function at(u){u=((u%1)+1)%1;const sL=u*L;let lo=0,hi=NS;while(hi-lo>1){const m=(lo+hi)>>1;if(cum[m]<=sL)lo=m;else hi=m}
+ const f=(sL-cum[lo])/(cum[hi]-cum[lo]);return P0[lo].clone().lerp(P0[hi],f)}
+function frameAt(u){const p=at(u),tg=at(u+.0007).sub(at(u-.0007)).normalize();const up=new THREE.Vector3(0,1,0);const side=new THREE.Vector3().crossVectors(tg,up).normalize();const nrm=new THREE.Vector3().crossVectors(side,tg).normalize();return {p,tg,side,nrm}}
+const BR=(()=>{const n=Math.round(L/(2*Math.PI*.5));return L/(2*Math.PI*n)})(); // ball radius: whole number of turns per lap -> seamless spin
+const RO=BR*.72,RD=Math.sqrt(BR*BR-RO*RO)+.035; // rail lateral offset and depth below ball centre
+const railMat=new THREE.MeshPhysicalMaterial({color:TH.rail,roughness:.22,metalness:0,clearcoat:1,clearcoatRoughness:.12});
+for(const sd of [-1,1]){const pts=[];for(let i=0;i<400;i++){const f=frameAt(i/400);pts.push(f.p.clone().addScaledVector(f.side,sd*RO).addScaledVector(f.nrm,-RD))}
+ const crv=new THREE.CatmullRomCurve3(pts,true);const m=new THREE.Mesh(new THREE.TubeGeometry(crv,1200,.055,12,true),railMat);m.castShadow=true;m.receiveShadow=true;s.add(m)}
+// sleepers + slim columns
+const slG=new THREE.BoxGeometry(RO*2.5,.05,.09),colG=new THREE.CylinderGeometry(.045,.06,1,10);
+const colMat=new THREE.MeshPhysicalMaterial({color:0xfffaf4,roughness:.3,clearcoat:.6});
+for(let i=0;i<120;i++){const f=frameAt(i/120);const sl=new THREE.Mesh(slG,railMat);sl.position.copy(f.p).addScaledVector(f.nrm,-RD-.06);
+ sl.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(f.side,f.nrm,f.tg.clone().negate()));sl.castShadow=true;s.add(sl);
+ if(i%4===0){const c=new THREE.Mesh(colG,colMat);const top=f.p.y-RD-.08;c.scale.y=top;c.position.set(f.p.x,top/2,f.p.z);c.castShadow=true;c.receiveShadow=true;s.add(c)}}
+// chime rings (torus around the track) with a tiny bell plate on top
+const rings=[];const torG=new THREE.TorusGeometry(BR*1.8,.11,20,72);
+D.rings.forEach((u,k)=>{const f=frameAt(u);const hue=TH.ring[k%TH.ring.length];
+ const mat=new THREE.MeshPhysicalMaterial({color:new THREE.Color().setHSL(hue/360,.95,.55),roughness:.18,clearcoat:1,emissive:new THREE.Color().setHSL(hue/360,.9,.55),emissiveIntensity:0});
+ const g=new THREE.Group();const tor=new THREE.Mesh(torG,mat);tor.castShadow=true;g.add(tor);
+ g.position.copy(f.p);g.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(f.side,f.nrm,f.tg.clone().negate()));s.add(g);
+ const hits=D.ev.filter(e=>e.ring===k).map(e=>e.t);rings.push({g,mat,hits,base:hue})});
+// brass balls with an engraved band so rolling is visible
+const bc=document.createElement('canvas');bc.width=512;bc.height=256;const bq=bc.getContext('2d');bq.fillStyle='#d6a24a';bq.fillRect(0,0,512,256);
+bq.fillStyle='#b07a2c';bq.fillRect(0,122,512,12);bq.fillStyle='#f3d38b';bq.fillRect(0,112,512,4);bq.fillRect(0,140,512,4);
+const btex=new THREE.CanvasTexture(bc);btex.colorSpace=THREE.SRGBColorSpace;
+const ballMat=new THREE.MeshPhysicalMaterial({map:btex,metalness:1,roughness:.07,clearcoat:.8,envMapIntensity:2.3});
+const balls=[];const bg=new THREE.SphereGeometry(BR,64,40);
+for(let j=0;j<NB;j++){const b=new THREE.Mesh(bg,ballMat);b.castShadow=true;s.add(b);balls.push(b)}
+const sprC=document.createElement('canvas');sprC.width=sprC.height=128;{const q=sprC.getContext('2d');const g=q.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(255,255,240,1)');g.addColorStop(.25,'rgba(255,230,170,.7)');g.addColorStop(1,'rgba(255,200,120,0)');q.fillStyle=g;q.fillRect(0,0,128,128)}
+const sprT=new THREE.CanvasTexture(sprC);rings.forEach(R=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:sprT,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending}));sp.position.copy(R.g.position);sp.scale.setScalar(.01);s.add(sp);R.sp=sp});
+const ease=v=>v*v*(3-2*v);
+function draw(t){
+ for(let j=0;j<NB;j++){const u=j/NB+t/T;const f=frameAt(u);const b=balls[j];b.position.copy(f.p);
+  const roll=new THREE.Quaternion().setFromAxisAngle(f.side.clone().negate(),((u%1+1)%1)*L/BR);
+  const base=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(f.side,f.tg,f.nrm));
+  b.quaternion.copy(roll).multiply(base).normalize()}
+ const tm=((t%T)+T)%T;
+ for(const R of rings){let d=1e9;for(const h of R.hits){const dd=((tm-h)%T+T)%T;if(dd<d)d=dd}
+  const gl_=Math.exp(-d*5.5);R.mat.emissiveIntensity=gl_*2.4;R.g.scale.setScalar(1+.28*gl_);R.sp.scale.setScalar(.01+3.2*gl_);R.sp.material.opacity=gl_}
+ const ph=2*Math.PI*t/(2*T),ang=ph+.6,RC=36.5;
+ cam.position.set(Math.sin(ang)*RC,25+.6*Math.sin(2*ph),Math.cos(ang)*RC);cam.lookAt(0,.6,0);cam.setViewOffset(W,H,80,-30,W,H);
+ r.render(s,cam)}
+function txt(str,y,size,col,stroke){x.save();x.font='800 '+size+'px "Inter","DejaVu Sans",sans-serif';x.textAlign='center';x.lineJoin='round';
+ let w=x.measureText(str).width;if(w>800){size*=800/w;x.font='800 '+size+'px "Inter","DejaVu Sans",sans-serif'}
+ x.lineWidth=size/5;x.strokeStyle=stroke;x.strokeText(str,495,y);x.fillStyle=col;x.fillText(str,495,y);x.restore()}
+const L1=P.get('l1')||'INFINITE LOOP #1',L2=P.get('l2')||'Where does it restart?';
+function frame(t,SUB){SUB=SUB||1;x.globalAlpha=1;x.clearRect(0,0,W,H);
+ for(let k=0;k<SUB;k++){draw(t+k/(60*SUB)-(SUB>1?.25/30:0));x.globalAlpha=1/(k+1);x.drawImage(gl,0,0)}
+ x.globalAlpha=1;
+ // soft vignette + warm grade
+ const v=x.createRadialGradient(W/2,H*.52,H*.25,W/2,H*.52,H*.75);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(50,18,14,.45)');x.fillStyle=v;x.fillRect(0,0,W,H);
+ txt(L1,385,68,'#fff8f0','rgba(60,25,20,.95)');txt(L2,480,80,'#ffffff','rgba(90,45,40,.9)');
+ return out.toDataURL('image/jpeg',.93)}
+window.frame=frame;window.draw=draw;
+</script></body></html>
