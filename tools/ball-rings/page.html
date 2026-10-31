@@ -36,7 +36,7 @@ function draw(t){
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: question + scoreboard of rings passed
  x.save();x.fillStyle='rgba(8,6,26,.82)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(80,330,820,215,30);x.fill();x.stroke();x.restore();
- if(fin<0)txt('Which colour escapes\nfirst? 🏁',388,54,'#fff',1);
+ if(fin<0)txt('Which color escapes\nfirst? 🏁',388,54,'#fff',1);
  else txt(D.balls[D.winner].name+' ESCAPED! 🏁',420,66,D.balls[D.winner].col,ease(fin/.25));
  // scoreboard dots
  for(let b=0;b<NB;b++){const cx=490-(NB-1)*80+b*160,n=D.frames[f][b][2];
