@@ -1,0 +1,63 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="data.js"></script><script>
+// Format D "It grows every bounce" renderer: neon ring with a rotating gap, one glossy ball with a short motion trail,
+// squash on impact, ripple at the contact point, BALL vs GAP meter (truthful: 2r / free gap width), payoff when it escapes.
+const W=1080,H=1920,D=DATA,FPS=D.fps,CX=D.CX,CY=D.CY,R=D.R,HT=D.HT,ET=D.escT;
+const c=document.getElementById('c'),x=c.getContext('2d');
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
+const bo=D.events.filter(e=>e.type==='bounce'),esc=D.events.find(e=>e.type==='escape');
+function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,col,a,cx=500,maxw=800){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+ let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
+ let px=cx-w/2;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=col;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;{const g=bg.getContext('2d');const rg=g.createRadialGradient(CX,CY,40,CX,CY,1200);rg.addColorStop(0,'#16224a');rg.addColorStop(.5,'#0a0c26');rg.addColorStop(1,'#03030b');g.fillStyle=rg;g.fillRect(0,0,W,H);
+ for(let i=0;i<160;i++){g.fillStyle=`rgba(255,255,255,${.03+.05*((i*37)%7)/7})`;g.beginPath();g.arc((i*7919)%W,(i*104729)%H,1+(i%3)*.6,0,7);g.fill()}
+ const fl=g.createLinearGradient(0,1560,0,H);fl.addColorStop(0,'rgba(80,90,180,0)');fl.addColorStop(1,'rgba(80,90,180,.10)');g.fillStyle=fl;g.fillRect(0,1560,W,H-1560)}
+// ratio colour: calm cyan -> yellow -> hot red near 100%
+const rcol=(q,l=60)=>`hsl(${Math.round(190-190*cl((q-.3)/.7))},95%,${l}%)`;
+function ball(bx,by,r,q,sqx,sqy,sq,al){x.save();x.globalAlpha=al;x.translate(bx,by);
+ if(sq>0){const a=Math.atan2(sqy,sqx);x.rotate(a);x.scale(1-sq,1+sq*.6);x.rotate(-a)}
+ x.shadowColor=rcol(q,60);x.shadowBlur=26;const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);g.addColorStop(0,rcol(q,90));g.addColorStop(.45,rcol(q,58));g.addColorStop(1,rcol(q,26));
+ x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.8)';x.beginPath();x.ellipse(-r*.38,-r*.42,r*.27,r*.17,-.6,0,7);x.fill();x.restore()}
+function draw(tv){
+ const t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*30)))],FF=D.ffps,f=Math.min(D.frames.length-1,Math.max(0,Math.round(t*FF))),fr=D.frames[f];
+ x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
+ const tq=t+.5/FF,nb=countAt(bo,tq),lastB=nb>0?bo[nb-1]:null,since=lastB?t-lastB.t:9,pulse=Math.max(0,1-since/.16);
+ const er=t>=ET?t-ET:-1;
+ const r=fr[2],q=lastB?lastB.ratio:2*D.R0/D.CLEAR;
+ // ring
+ const gc=D.a0+D.OM*t,glowGold=er>=0?Math.exp(-er*1.3):0;
+ x.save();x.lineCap='round';x.lineWidth=HT*2;
+ const hue=er>=0?45:200;x.strokeStyle=er>=0?`hsl(45,100%,${62+20*glowGold}%)`:`hsl(${hue},95%,${62+22*pulse}%)`;x.shadowColor=er>=0?'hsl(45,100%,60%)':`hsl(${hue},100%,60%)`;x.shadowBlur=22+26*pulse+40*glowGold;
+ x.beginPath();x.arc(CX,CY,R,gc+D.GAP,gc-D.GAP+Math.PI*2);x.stroke();x.restore();
+ // gap caps + dashed gate (shows the free width the ball has to fit through)
+ const p1=[CX+R*Math.cos(gc-D.GAP),CY+R*Math.sin(gc-D.GAP)],p2=[CX+R*Math.cos(gc+D.GAP),CY+R*Math.sin(gc+D.GAP)];
+ x.save();x.fillStyle='#fff';x.shadowColor='#fff';x.shadowBlur=14;[p1,p2].forEach(p=>{x.beginPath();x.arc(p[0],p[1],HT*.75,0,7);x.fill()});
+ x.shadowBlur=0;x.setLineDash([10,10]);x.lineWidth=3;x.strokeStyle=er>=0?`rgba(255,220,120,${.5*(1-cl(er/1.5))})`:'rgba(255,255,255,.28)';x.beginPath();x.moveTo(p1[0],p1[1]);x.lineTo(p2[0],p2[1]);x.stroke();x.restore();
+ // ripple at the last contact point
+ if(lastB&&since<.35){const k=since/.35;x.save();x.globalAlpha=.7*(1-k);x.strokeStyle=rcol(lastB.ratio,75);x.lineWidth=5*(1-k)+1;x.beginPath();x.arc(lastB.x,lastB.y,10+60*ease(k),0,7);x.stroke();x.restore()}
+ // trail (previous frames), then the ball with a short squash after each bounce
+ for(let k=5;k>=1;k--){const p=D.frames[Math.max(0,f-2*k)];x.save();x.globalAlpha=.10*(6-k)/5;x.fillStyle=rcol(q,60);x.beginPath();x.arc(p[0],p[1],p[2]*(1-.06*k),0,7);x.fill();x.restore()}
+ const sq=lastB&&since<.12?.10*Math.sin(Math.PI*since/.12):0;
+ ball(fr[0],fr[1],r,q,lastB?lastB.nx:0,lastB?lastB.ny:1,sq,1);
+ // escape burst
+ if(er>=0&&er<1.4){const k=er/1.4;x.save();for(let i=0;i<18;i++){const a=gc+(i-8.5)*.11,dd=R+40+380*ease(k)*(0.6+0.4*((i*7)%5)/4);x.globalAlpha=(1-k)*.9;x.fillStyle=i%2?'#ffd23f':'#fff';x.beginPath();x.arc(CX+Math.cos(a)*dd,CY+Math.sin(a)*dd,6*(1-k)+2,0,7);x.fill()}x.restore()}
+ if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.10*(1-er/.25)})`;x.fillRect(0,0,W,H)}
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ // top panel: hook + meter
+ x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,290,30);x.fill();x.stroke();x.restore();
+ const qd=er>=0?esc.ratio:q,pct=Math.round(qd*100);
+ if(er<0){txt('It GROWS every bounce 🎵',390,58,'#fff',1);txt('Can it escape before 100%?',448,46,'#ffd23f',1)}
+ else{const s=1+.25*Math.exp(-er*5);txt('ESCAPED at '+pct+'%! 🎉',416,64*s,'#ffd23f',1)}
+ x.save();x.textAlign='left';x.lineJoin='round';x.font='900 44px "DejaVu Sans"';x.lineWidth=9;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText('BALL vs GAP',110,520);x.fillStyle='#cfd8ff';x.fillText('BALL vs GAP',110,520);
+ x.textAlign='right';const pp=1+.16*pulse*(er<0?1:0);x.font=`900 ${Math.round(62*pp)}px "DejaVu Sans"`;x.strokeText(pct+'%',890,525);x.fillStyle=rcol(qd,68);x.fillText(pct+'%',890,525);
+ // bar
+ const bx=110,bw=780,by=546,bh=40;x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(bx,by,bw,bh,20);x.fill();
+ x.fillStyle=rcol(qd,58);x.shadowColor=rcol(qd,60);x.shadowBlur=14;x.beginPath();x.roundRect(bx,by,Math.max(bh,bw*cl(qd)),bh,20);x.fill();x.shadowBlur=0;
+ x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=3;x.beginPath();x.roundRect(bx,by,bw,bh,20);x.stroke();x.restore();
+ if(er>=1.0)txt('What % did you guess? 💬',CY+10,54,'#fff',ease((er-1.0)/.35),CX,680);
+ return c.toDataURL('image/jpeg',0.93)}
+window.draw=draw;
+</script>
