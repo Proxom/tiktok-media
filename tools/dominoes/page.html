@@ -32,7 +32,7 @@ function place(t){for(let i=0;i<N;i++){const [x,z,tx,tz]=D.pos[i];const a=ang(i,
   // right-handed: columns are X=(tx,0,tz), Y=(0,1,0), Z=(-tz,0,tx)
   B.set(tx,0,-tz,x, 0,1,0,0, tz,0,tx,z, 0,0,0,1);
   P.makeTranslation(DT/2,0,0);Rz.makeRotationZ(-a);C.makeTranslation(-DT/2,DH/2,0);
-  M.copy(B).multiply(P).multiply(Rz).multiply(C);mesh.setMatrixAt(i,M)}mesh.instanceMatrixNeedsUpdate=true;mesh.instanceColor.needsUpdate=true}
+  M.copy(B).multiply(P).multiply(Rz).multiply(C);mesh.setMatrixAt(i,M)}mesh.instanceMatrix.needsUpdate=true;/* QC 1 Nov: was "instanceMatrixNeedsUpdate" (not a three.js property), so dominoes only moved on the first frame of each render process */mesh.instanceColor.needsUpdate=true}
 // starter ball rolling in to tip the first domino
 const ball=new THREE.Mesh(new THREE.SphereGeometry(.42,40,28),new THREE.MeshPhysicalMaterial({color:0xffe27a,emissive:0xffb300,emissiveIntensity:1.2,metalness:.6,roughness:.2}));ball.castShadow=true;s.add(ball);
 const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
