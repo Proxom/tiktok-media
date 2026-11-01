@@ -1,5 +1,9 @@
 # TIKTOK GROWTH AGENT (@dipnotscom) - standing instructions
 
+## PUBLISHING SCHEDULE — 4 PER DAY (Erkan, 1 Nov 08:57) — OVERRIDES EVERY OLDER SLOT RULE IN THIS FILE
+All three channels (Instagram, TikTok, YouTube) now publish exactly 4 videos per day at 03:00, 09:00, 15:00 and 21:00 Europe/London (Metricool publicationDate exactly these times, timezone Europe/London). Wherever this file says 6 per day, or names the old slots 01:00 / 05:00 / 09:00 / 13:00 / 17:00 / 21:00, read it as 4 per day at 03:00 / 09:00 / 15:00 / 21:00. Fewer videos means each one must be better: more time per video, the full quality gate, slower pacing, no filler. Rules that still apply: no empty slot (fill the next free slot of the new schedule), no double posts in a slot, queue cap and PRODUCE/PAUSE hysteresis (counts are in videos), the zero-defect gate.
+On 1 Nov 08:59 the existing queue was already moved to the new slots in the same order (nothing was dropped). Your first job in the next run: getScheduledPosts for the next 3 days, confirm every queued post of your network is on 03/09/15/21, move any stray post to the next free new slot with updateScheduledPost (keep the full original content), and then continue. Do not publish to the old times again. The old 6 runs per day are unchanged; they only check, repair and produce.
+
 Routine prompt: "Read AGENT.md in the Proxom/tiktok-media repository and follow it." This repo is the working directory. Runs 6 times a day at 23:22, 03:22, 07:22, 11:22, 15:22 and 19:22 Europe/London, each run starting about 2 hours before a publishing slot. Everything Erkan reads (dashboard, messages) is in Turkish; video text, captions and hashtags are in English.
 
 ## SKILLS AND PLUGINS (genel müdür, 31 Oct 2026 — Erkan added hundreds of plugins/skills to the account; they load in every session including this routine)
@@ -124,8 +128,8 @@ STATE ON 1 NOV 07:50 (07:22 run): QUEUE was 5 TikTok -> MODE = PRODUCE. NEW: 2 N
   2. MUSICAL MARBLE RUNS: marbles hit bars/strings/keys and play a melody or rhythm (xylophone/music-box/marble-machine look, warm orange or pastel 3D). Engine ready: tools/marble-run (public-domain tunes only). Add a "marble machine" variant with many marbles dropping onto a rotating drum/xylophone.
   3. DOMINO CHAIN REACTIONS: very long chains, spirals, rainbow colour waves, branching, a click per domino; end with a satisfying finish (last domino rings a bell / reveals a pattern). Engine: tools/dominoes (three.js instanced boxes along a path; precompute topple timing as a wave with small randomness, not full rigid-body if too slow).
   4. INFINITE GEOMETRIC LOOPS: seamless looping tile tracks (hexagon/spiral/ring modules in pastel marble/wood/terrazzo textures, brass balls rolling through endlessly, camera slowly orbiting). Perfect loop (first frame = last frame), calm ASMR sound. Engine: tools/geo-loops (three.js, parametric track on a repeating tile).
-  Rotation per day: the 6 slots cycle through these 4 plus S1 merge arena (Erkan likes MergeDrop too); never the same format twice in a row.
-- No more illusions, mini stories, sorting races, fact videos or other old formats. Only the series below, ranked by the view counts seen on the reference profiles. Daily mix of the 6 slots (rotate so every type appears; give the top ones more slots):
+  Rotation per day: the 4 slots cycle through these 4 plus S1 merge arena (Erkan likes MergeDrop too); never the same format twice in a row.
+- No more illusions, mini stories, sorting races, fact videos or other old formats. Only the series below, ranked by the view counts seen on the reference profiles. Daily mix of the 4 slots (rotate so every type appears; give the top ones more slots):
   1. S5 Marble Music wall run (Victor de Martrin style, 94-138M): 2 slots/day once the engine exists (HERO).
   2. S1 "Will it evolve?" merge arena (tinycollider 1-12M, mergedrop 2.6-5.9M): 1-2 slots/day.
   3. S6 press/roller/spikes vs soft object and "Softness/Viscosity X%" (kawaken 2-4.6M, goblin 1.5M; named contestants with scores): 1 slot/day.
@@ -235,7 +239,7 @@ Check: for every video, export the frame at 0.5 s and the frame with the most te
 
 ## NO EMPTY SLOT — TOP PRIORITY (Erkan, 30 Oct 07:43: "never skip a single posting time")
 This rule is above every other rule, including the quality bar. A missed slot is the worst possible outcome.
-1. FIRST THING EVERY RUN, before any new production: getScheduledPosts (Metricool brand 7675089, Europe/London) from now to +48 h for your network and list every empty slot among 01:00, 05:00, 09:00, 13:00, 17:00, 21:00.
+1. FIRST THING EVERY RUN, before any new production: getScheduledPosts (Metricool brand 7675089, Europe/London) from now to +48 h for your network and list every empty slot among 03:00, 09:00, 15:00, 21:00.
 2. If the next slot (within 3 h) is empty: fill it before doing anything else — from a ready bank video if one exists, otherwise make the fastest good video you can with your existing generators (new content, not a near-duplicate) and schedule it before the run ends.
 3. Never end a run with any slot in the next 24 h empty. (The old targets 'keep 4 ready videos in the bank' and 'produce 2 videos per run until the bank holds 8' are CANCELLED by the 30 Oct 21:11 QUEUE CAP: scheduled + ready-unscheduled videos together never exceed 10; produce only while in PRODUCE mode.)
 4. Quality: aim for 8+/10. If 90 minutes before a slot no 8+ video is ready, publish your best 7+ video instead of leaving the slot empty, and note it in the dashboard.
@@ -271,7 +275,7 @@ Realistic limits: no live-action footage, no human voice, no licensed memes or c
 Code-drawn animation (HTML canvas + Playwright, see tools/anim-template.html and tools/render.js: copy, change draw(t), render frames, ffmpeg) -> 9:16 mp4, 15-40 s, the first 1 s already in motion with a hook line (TikTok viewers decide in 1-2 s), burned-in captions, one clear gag or satisfying idea per video, loop-friendly ending, original synthesized audio (numpy) or silence; never commercial music (the commercial music library is not allowed), no real-person voices. Original visuals only; no copyrighted footage, no stock clips unless licensed. A separate reviewer subagent that did not make the video must check any factual claim against sources you read (store URLs in the video doc), humour/originality, TikTok Community Guidelines, hook strength, caption accuracy; fix before publishing. Captions 1-3 short sentences + 3-5 hashtags; title under 90 chars.
 
 ## Publishing slots (Erkan, 29 Oct)
-6 videos a day at 01:00, 05:00, 09:00, 13:00, 17:00, 21:00 Europe/London (Erkan, 29 Oct 22:56) (Metricool exact times). Each run fills the NEXT slot and the following 2 days; a missed slot is refilled at the next possible time. Keep a bank of ~10 ready videos. Quality over count: never near-duplicates; if you cannot make a good video, reuse a bank item. Start: first slot tomorrow 30 Oct 09:00 unless Erkan says otherwise.
+4 videos a day at 03:00, 09:00, 15:00, 21:00 Europe/London (Erkan, 29 Oct 22:56) (Metricool exact times). Each run fills the NEXT slot and the following 2 days; a missed slot is refilled at the next possible time. Keep a bank of ~10 ready videos. Quality over count: never near-duplicates; if you cannot make a good video, reuse a bank item. Start: first slot tomorrow 30 Oct 09:00 unless Erkan says otherwise.
 
 ## Hosting media (this repository)
 1. Put each finished video in media/<video-id>/ (mp4 <= ~30 MB + cover jpg). Commit with user.name "TikTok agent".
