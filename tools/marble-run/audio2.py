@@ -9,6 +9,7 @@ NAMES='C D E F G A B'.split();SEMI=[0,2,4,5,7,9,11]
 def hz(n):return 440*2**((SEMI[NAMES.index(n[0])]+12*(int(n[-1])+1)-69)/12)
 MELODIES={  # public-domain melodies, one note per plank hit
  'twinkle':'C5 C5 G5 G5 A5 A5 G5 F5 F5 E5 E5 D5 D5 C5 G5 G5 F5 F5 E5 E5 D5 G5 G5 F5 F5 E5 E5 D5 C5 C5 G5 G5 A5 A5 G5 F5 F5 E5 E5 D5 D5 C5',
+ 'jingle':'E5 E5 E5 E5 E5 E5 E5 G5 C5 D5 E5 F5 F5 F5 F5 F5 E5 E5 E5 E5 D5 D5 E5 D5 G5 E5 E5 E5 E5 E5 E5 E5 G5 C5 D5 E5 G5 G5 F5 D5 C5 C5',
  'ode':'E5 E5 F5 G5 G5 F5 E5 D5 C5 C5 D5 E5 E5 D5 D5 E5 E5 F5 G5 G5 F5 E5 D5 C5 C5 D5 E5 D5 C5 C5',
 }
 notes=[hz(n) for n in MELODIES[MEL].split()]
