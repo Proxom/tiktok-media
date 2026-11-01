@@ -35,7 +35,7 @@ function draw(tv){
  // gap caps + dashed gate (shows the free width the ball has to fit through)
  const p1=[CX+R*Math.cos(gc-D.GAP),CY+R*Math.sin(gc-D.GAP)],p2=[CX+R*Math.cos(gc+D.GAP),CY+R*Math.sin(gc+D.GAP)];
  x.save();x.fillStyle='#fff';x.shadowColor='#fff';x.shadowBlur=14;[p1,p2].forEach(p=>{x.beginPath();x.arc(p[0],p[1],HT*.75,0,7);x.fill()});
- x.shadowBlur=0;x.setLineDash([10,10]);x.lineWidth=3;x.strokeStyle=er>=0?`rgba(255,220,120,${.5*(1-cl(er/1.5))})`:'rgba(255,255,255,.28)';x.beginPath();x.moveTo(p1[0],p1[1]);x.lineTo(p2[0],p2[1]);x.stroke();x.restore();
+ x.restore();
  // ripple at the last contact point
  if(lastB&&since<.35){const k=since/.35;x.save();x.globalAlpha=.7*(1-k);x.strokeStyle=rcol(lastB.ratio,75);x.lineWidth=5*(1-k)+1;x.beginPath();x.arc(lastB.x,lastB.y,10+60*ease(k),0,7);x.stroke();x.restore()}
  // trail (previous frames), then the ball with a short squash after each bounce
@@ -49,7 +49,7 @@ function draw(tv){
  // top panel: hook + meter
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,290,30);x.fill();x.stroke();x.restore();
  const qd=er>=0?esc.ratio:q,pct=Math.round(qd*100);
- if(er<0){txt('It GROWS every bounce 🎵',390,58,'#fff',1);txt('Can it escape before 100%?',448,46,'#ffd23f',1)}
+ if(er<0){txt('It GROWS every bounce 😬',390,58,'#fff',1);txt('Can it escape before 100%?',448,46,'#ffd23f',1)}
  else{const s=1+.25*Math.exp(-er*5);txt('ESCAPED at '+pct+'%! 🎉',416,64*s,'#ffd23f',1)}
  x.save();x.textAlign='left';x.lineJoin='round';x.font='900 44px "DejaVu Sans"';x.lineWidth=9;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText('BALL vs GAP',110,520);x.fillStyle='#cfd8ff';x.fillText('BALL vs GAP',110,520);
  x.textAlign='right';const pp=1+.16*pulse*(er<0?1:0);x.font=`900 ${Math.round(62*pp)}px "DejaVu Sans"`;x.strokeText(pct+'%',890,525);x.fillStyle=rcol(qd,68);x.fillText(pct+'%',890,525);

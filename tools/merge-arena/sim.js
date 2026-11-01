@@ -8,7 +8,8 @@ const CHAINS={
  dino:{items:['🦴','🥚','🦎','🐢','🐊','🦕','🦖'],r0:30,f:1.36},
  fruit:{items:['🍒','🍓','🍊','🍎','🍑','🍍','🍉'],r0:30,f:1.36},
  ocean:{items:['🐚','🦐','🐟','🐠','🐙','🦈','🐋'],r0:30,f:1.36},
- balls:{items:['🎱','⚾','🥎','🏐','⚽','🏀'],r0:32,f:1.45}, // no 🎾: Noto draws it with a racket
+ balls:{items:['🎱','⚾','🥎','🏐','⚽','🏀'],r0:32,f:1.45},
+ rocket:{items:['🛴','🚲','🛵','🚗','✈️','🚀'],r0:32,f:1.45}, // all checked at 110 px in Noto (1 Nov) // no 🎾: Noto draws it with a racket
 };
 const chainName=process.argv[4]||'dragon',CC=CHAINS[chainName],CH=CC.items,TOP=CH.length-1;
 const CX=540,CY=+(process.env.CY||1010),R=+(process.env.R||400),G=2600,E=.25,FPS=30,SUB=16,DT=1/(FPS*SUB),TMAX=+(process.env.TMAX||30);
