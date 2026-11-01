@@ -8,13 +8,20 @@ const CHAINS={
  dino:{items:['🦴','🥚','🦎','🐢','🐊','🦕','🦖'],r0:30,f:1.36},
  fruit:{items:['🍒','🍓','🍊','🍎','🍑','🍍','🍉'],r0:30,f:1.36},
  ocean:{items:['🐚','🦐','🐟','🐠','🐙','🦈','🐋'],r0:30,f:1.36},
+ balls:{items:['🎱','⚾','🥎','🏐','⚽','🏀'],r0:32,f:1.45}, // no 🎾: Noto draws it with a racket
 };
 const chainName=process.argv[4]||'dragon',CC=CHAINS[chainName],CH=CC.items,TOP=CH.length-1;
-const CX=540,CY=1010,R=400,G=2600,E=.25,FPS=30,SUB=16,DT=1/(FPS*SUB),TMAX=30;
+const CX=540,CY=1010,R=400,G=2600,E=.25,FPS=30,SUB=16,DT=1/(FPS*SUB),TMAX=+(process.env.TMAX||30);
+// DROP = seconds between drops (0.27 = old fast pace; 0.5+ for the 40 s+ readable pace).
+// COOL = a freshly merged/dropped item cannot merge again for COOL s, so every tier is visible on screen
+// (QC 1 Nov: with COOL 0 two merges could happen in the same frame and the final form appeared from ONE shark).
+const DROP=+(process.env.DROP||.27),COOL=+(process.env.COOL||.4),FMIN=+(process.env.FMIN||14),FMAX=+(process.env.FMAX||24);
+// MGAP = at most one merge every MGAP s (one event at a time, readable pacing; PACING rule max ~4-5 events/s).
+const MGAP=+(process.env.MGAP||0);
 const rad=k=>CC.r0*Math.pow(CC.f,k);
 function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 function run(seed){
- const rnd=rng(seed);let items=[],nid=1,t=0,next=.35,frames=[],events=[],final=null,queue=[];
+ const rnd=rng(seed);let lastM=-9,items=[],nid=1,t=0,next=.35,frames=[],events=[],final=null,queue=[];
  const pick=()=>{const u=rnd();return u<.5?0:u<.85?1:2};
  for(let i=0;i<8;i++)queue.push(pick());
  const spawn=()=>{const k=queue.shift();queue.push(pick());const r=rad(k);
@@ -22,14 +29,14 @@ function run(seed){
  for(let f=0;f<FPS*TMAX;f++){
   for(let s=0;s<SUB;s++){
    t+=DT;
-   if(final===null&&t>=next){spawn();next=t+.27}
+   if(final===null&&t>=next){spawn();next=t+DROP}
    for(const it of items){it.vy+=G*DT;it.x+=it.vx*DT;it.y+=it.vy*DT;it.a+=it.vx/rad(it.k)*DT}
    for(let pass=0;pass<3;pass++){
     // circle-circle
     for(let i=0;i<items.length;i++)for(let j=i+1;j<items.length;j++){const a=items[i],b=items[j];if(a.dead||b.dead)continue;
      const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1e-6,ra=rad(a.k),rb=rad(b.k),ov=ra+rb-d;
      if(ov>0){
-      if(a.k===b.k&&a.k<TOP&&final===null){ // merge
+      if(a.k===b.k&&a.k<TOP&&final===null&&t-a.born>=COOL&&t-b.born>=COOL&&t-lastM>=MGAP){lastM=t; // merge
        const k=a.k+1,nx=(a.x+b.x)/2,ny=(a.y+b.y)/2;a.dead=b.dead=true;
        const m={id:nid++,k,x:nx,y:ny,vx:(a.vx+b.vx)/2,vy:(a.vy+b.vy)/2-250,a:(a.a+b.a)/2,born:t};items.push(m);
        events.push({t,type:'merge',k,x:nx,y:ny});if(k===TOP){final=t;events.push({t,type:'final',k,x:nx,y:ny})}continue}
@@ -53,7 +60,7 @@ function run(seed){
  return{final,frames,events,seed,chain:CH,r0:CC.r0,rf:CC.f,R,CX,CY,fps:FPS};
 }
 let seed=+process.argv[3]||0,res;
-const s0=seed||1,stats=[];for(let s=s0;s<s0+400;s++){res=run(s);stats.push(res.fail||(res.final?res.final.toFixed(1):"none"));if(res.final&&res.final>14&&res.final<24){seed=s;break}res=null}
+const s0=seed||1,stats=[];for(let s=s0;s<s0+400;s++){res=run(s);stats.push(res.fail||(res.final?res.final.toFixed(1):"none"));if(res.final&&res.final>FMIN&&res.final<FMAX){seed=s;break}res=null}
 if(!res)console.log(stats.slice(0,40).join(" "));
 if(!res){console.log('no good seed');process.exit(1)}
 console.log('seed',res.seed,'final at',res.final.toFixed(2),'frames',res.frames.length,'events',res.events.length,'merges',res.events.filter(e=>e.type==='merge').length);
