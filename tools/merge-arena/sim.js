@@ -6,6 +6,7 @@ const CHAINS={
  dragon:{items:['🥚','🐣','🐥','🐔','🦃','🦚','🦅','🐉'],r0:30,f:1.3},
  sun:{items:['✨','🪨','☄️','🌑','🌍','🪐','☀️'],r0:30,f:1.36},
  dino:{items:['🦴','🥚','🦎','🐢','🐊','🦕','🦖'],r0:30,f:1.36},
+ fruit:{items:['🍒','🍓','🍊','🍎','🍑','🍍','🍉'],r0:30,f:1.36},
  ocean:{items:['🐚','🦐','🐟','🐠','🐙','🦈','🐋'],r0:30,f:1.36},
 };
 const chainName=process.argv[4]||'dragon',CC=CHAINS[chainName],CH=CC.items,TOP=CH.length-1;
