@@ -9,15 +9,22 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 from sfx import Mix, hz, SR
 d = json.loads(open(sys.argv[1]).read().split('=', 1)[1].rstrip(';\n'))
 T0 = float(sys.argv[3]) if len(sys.argv) > 3 else d.get('t0', 2.0)
-FIN = d['final']; D = len(d['frames']) / d['fps'] - T0
+FIN = d['final']; SL = d.get('slow')
+# simulation time -> video time (inverse of page.html simT, incl. the optional slow motion before the final)
+def vt(ts):
+    if not SL or ts <= SL['s0']: return ts - T0
+    L = (SL['s1'] - SL['s0']) / SL['sp']
+    if ts <= SL['s1']: return SL['s0'] - T0 + (ts - SL['s0']) / SL['sp']
+    return SL['s0'] - T0 + L + (ts - SL['s1'])
+D = vt(len(d['frames']) / d['fps'])
 mx = Mix(D, seed=int(d.get('seed', 1)))
 PENTA = ['C4', 'D4', 'E4', 'G4', 'A4', 'C5', 'D5', 'E5', 'G5', 'A5', 'C6']
 pan = lambda x: float(np.clip((x - d['CX']) / d['R'], -1, 1)) * .7
-def at(te): return te - T0
+def at(te): return vt(te)
 # bed: warm pad (C major add9), slow swell, very quiet
-t = mx.t; sw = .6 + .4 * np.sin(2 * np.pi * t / 9.0)
+t = mx.t; sw = .78 + .22 * np.sin(2 * np.pi * t / 9.0)
 pad = sum(a * np.sin(2 * np.pi * hz(n) * t + .4 * np.sin(2 * np.pi * .11 * t + i)) for i, (n, a) in enumerate([('C3', 1), ('G3', .7), ('E4', .45), ('D4', .3)]))
-mx.bed(.010 * sw * pad * np.clip(t / 1.5, 0, 1))
+mx.bed(.016 * sw * pad * np.clip(t / 1.5, 0, 1))
 last = -1; seen = set(e['k'] for e in d['events'] if e['type'] == 'drop')
 for e in d['events']:
     ty, te = e['type'], e['t']
@@ -36,7 +43,7 @@ for e in d['events']:
 # final: marimba roll climbing into the chord, glock shimmer on top
 roll = ['C5', 'E5', 'G5', 'C6', 'E5', 'G5', 'C6', 'E6']
 for i, n in enumerate(roll):
-    mx.add(at(FIN) - 1.2 + i * .15, mx.marimba(hz(n), .10 + .03 * i, .8), (-.4 + .1 * i))
+    mx.add(at(FIN) - 1.25 + i * .15, mx.marimba(hz(n), .10 + .03 * i, .8), (-.4 + .1 * i))
 for n, p in [('C3', 0), ('C4', -.3), ('E4', .3), ('G4', -.2), ('C5', .2), ('E5', 0)]:
     mx.add(at(FIN) + .02, mx.marimba(hz(n), .55, 1.0), p)
 for i in range(10):

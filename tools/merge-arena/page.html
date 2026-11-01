@@ -17,11 +17,19 @@ function txt(str,y,size,col,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,
  str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
   let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
   let px=500-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,yy);x.fillStyle=col;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
-function emoji(k,px,py,r,ang,alpha){x.save();x.globalAlpha=alpha;x.translate(px,py);x.rotate(k===TOP?0:ang);x.font=(r*1.7)+'px "Noto Color Emoji"';x.textAlign='center';x.textBaseline='middle';x.fillText(CH[k],0,r*.08);x.restore()}
+// QC 1 Nov: reset state here; a leaked canvas state drew every emoji washed-out except on the first frame of a page
+// (one-frame colour pop at each render-chunk seam)
+function emoji(k,px,py,r,ang,alpha){if(D.vectorFinal&&k===TOP&&CH[k]==='🏀'){vball(px,py,r*.97,alpha);return}x.save();x.globalAlpha=alpha;x.filter='none';x.shadowBlur=0;x.shadowColor='rgba(0,0,0,0)';x.globalCompositeOperation='source-over';x.fillStyle='#fff';x.translate(px,py);x.rotate(k===TOP?0:ang);x.font=(r*1.7)+'px "Noto Color Emoji"';x.textAlign='center';x.textBaseline='middle';x.fillText(CH[k],0,r*.08);x.restore()}
+// crisp vector basketball for the big final form (a bitmap emoji scaled to 600 px looks soft)
+function vball(px,py,r,alpha){x.save();x.globalAlpha=alpha;x.filter='none';x.shadowBlur=0;const g=x.createRadialGradient(px-r*.35,py-r*.4,r*.1,px,py,r);g.addColorStop(0,'#ffa860');g.addColorStop(.6,'#e8742a');g.addColorStop(1,'#a8461a');x.fillStyle=g;x.beginPath();x.arc(px,py,r,0,7);x.fill();
+ x.save();x.beginPath();x.arc(px,py,r,0,7);x.clip();x.strokeStyle='#2a1408';x.lineWidth=Math.max(2,r*.035);x.lineCap='round';
+ x.beginPath();x.moveTo(px,py-r);x.lineTo(px,py+r);x.stroke();x.beginPath();x.moveTo(px-r,py);x.lineTo(px+r,py);x.stroke();
+ [-1,1].forEach(sd=>{x.beginPath();x.ellipse(px+sd*r*1.05,py,r*.62,r*1.0,0,0,7);x.stroke()});x.restore();
+ const hl=x.createRadialGradient(px-r*.4,py-r*.45,0,px-r*.4,py-r*.45,r*.7);hl.addColorStop(0,'rgba(255,255,255,.28)');hl.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=hl;x.beginPath();x.arc(px,py,r,0,7);x.fill();x.restore()}
 function ball(k,px,py,r,ang,alpha,glow){
  x.save();x.globalAlpha=alpha;
- const g=x.createRadialGradient(px,py,r*.2,px,py,r*1.25);g.addColorStop(0,`hsla(${HUE[k]},70%,30%,.55)`);g.addColorStop(.7,`hsla(${HUE[k]},85%,55%,.28)`);g.addColorStop(.95,`hsla(${HUE[k]},90%,70%,.35)`);g.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g;x.beginPath();x.arc(px,py,r*1.25,0,7);x.fill();
- x.strokeStyle=`rgba(255,255,255,${.5+.3*glow})`;x.lineWidth=2;x.shadowColor=`hsl(${HUE[k]},100%,70%)`;x.shadowBlur=10+20*glow;x.beginPath();x.arc(px,py,r-1,0,7);x.stroke();
+ const HR=D.tightHalo?1.0:1.25;const g=x.createRadialGradient(px,py,r*.2,px,py,r*HR);g.addColorStop(0,`hsla(${HUE[k]},70%,30%,.55)`);g.addColorStop(.7,`hsla(${HUE[k]},85%,55%,.28)`);g.addColorStop(.95,`hsla(${HUE[k]},90%,70%,.35)`);g.addColorStop(1,D.tightHalo?`hsla(${HUE[k]},90%,70%,.35)`:'rgba(0,0,0,0)');x.fillStyle=g;x.beginPath();x.arc(px,py,r*HR,0,7);x.fill();
+ x.strokeStyle=`rgba(255,255,255,${.5+.3*glow})`;x.lineWidth=2;x.shadowColor=`hsl(${HUE[k]},100%,70%)`;x.shadowBlur=D.tightHalo?4+14*glow:10+20*glow;x.beginPath();x.arc(px,py,r-1,0,7);x.stroke();
  x.restore();emoji(k,px,py,r*.9,ang,alpha)}
 function arena(t){
  const gap=Math.asin(46/R);x.save();x.lineWidth=10;x.lineCap='round';
@@ -33,17 +41,25 @@ function arena(t){
  const top=CY-R-Math.cos(gap)*0;x.lineWidth=6;x.strokeStyle='#ffd166';x.shadowColor='#ffd166';x.shadowBlur=20;
  [-46,46].forEach(o=>{x.beginPath();x.moveTo(CX+o,CY-R+4);x.lineTo(CX+o,0);x.stroke()});x.restore()}
 function chuteQueue(t,q){ // next items waiting in the chute, sliding down between drops
- if(FIN&&t>FIN)return;const last=drops.filter(d=>d.t<=t).pop();const fr=last?cl((t-last.t)/.27):1;
+ if(D.noQueue||(FIN&&t>FIN))return;const last=drops.filter(d=>d.t<=t).pop();const fr=last?cl((t-last.t)/.27):1;
  q.forEach((k,i)=>{const y0=CY-R-40-(i+1-ease(fr)*1)*84+84;if(y0<-40)return;emoji(k,CX,y0,30,0,1)})}
 function tierRow(t){const n=CH.length,sp=94,x0=500-sp*(n-1)/2,y=542;
  for(let k=0;k<n;k++){const got=t>=firstTier[k],p=got?eob((t-firstTier[k])/.35):0,cx=x0+k*sp;
   x.save();if(got){x.fillStyle=`hsla(${HUE[k]},90%,60%,.25)`;x.beginPath();x.arc(cx,y,40,0,7);x.fill()}
-  x.globalAlpha=got?1:.45;x.filter=got?'none':'grayscale(1)';x.translate(cx,y);const s=got?(.8+.2*p+(t-firstTier[k]<.35?.3*Math.sin(p*Math.PI):0)):.8;x.scale(s,s);
+  x.globalAlpha=got?1:.62;x.filter=got?'none':'grayscale(1)';x.translate(cx,y);
+  // the goal icon pulses once the tier before it exists (keeps the long middle tense)
+  const goal=D.tightHalo&&!got&&k===TOP&&t>=firstTier[TOP-1];if(goal){x.globalAlpha=.75+.25*Math.sin(t*4);x.filter='none'}
+  const s=got?(.8+.2*p+(t-firstTier[k]<.35?.3*Math.sin(p*Math.PI):0)):(goal?.85+.08*Math.sin(t*4):.8);x.scale(s,s);
   x.font='58px "Noto Color Emoji"';x.textAlign='center';x.textBaseline='middle';x.fillText(CH[k],0,4);x.restore();
   if(k<n-1){x.fillStyle='rgba(255,255,255,.35)';x.beginPath();x.arc(cx+sp/2,y,3,0,7);x.fill()}}}
 function panel(){x.save();x.fillStyle='rgba(8,6,26,.86)';x.strokeStyle='rgba(255,209,102,.8)';x.lineWidth=3;x.shadowColor='#c77dff';x.shadowBlur=24;x.beginPath();x.roundRect(80,338,840,250,34);x.fill();x.stroke();x.restore()}
-function draw(t){t+=T0;
- const f=Math.min(D.frames.length-1,Math.max(0,Math.round(t*FPS)));const fr=D.frames[f];
+// video time -> simulation time; optional slow motion (D.slow={s0,s1,sp}) around the final chain reaction
+function simT(tv){let ts=tv+T0;const S=D.slow;if(!S)return ts;if(ts<=S.s0)return ts;const L=(S.s1-S.s0)/S.sp;if(ts-S.s0<=L)return S.s0+(ts-S.s0)*S.sp;return S.s1+(ts-S.s0-L)}
+// positions interpolated between simulation frames (smooth, and needed for slow motion)
+function frameAt(t){const fx=Math.min(D.frames.length-1,Math.max(0,t*FPS)),f0=Math.floor(fx),f1=Math.min(D.frames.length-1,f0+1),u=fx-f0,A=D.frames[f0],B=D.frames[f1];
+ if(u<1e-6||!D.slow)return D.frames[Math.round(fx)];const m=new Map(B.it.map(a=>[a[0],a]));return{q:A.q,it:A.it.map(a=>{const b=m.get(a[0]);return b&&b[1]===a[1]?[a[0],a[1],a[2]+(b[2]-a[2])*u,a[3]+(b[3]-a[3])*u,a[4]+(b[4]-a[4])*u,a[5]]:a})}}
+function draw(tv){const t=simT(tv);
+ const fr=frameAt(t);
  x.globalAlpha=1;x.filter='none';x.drawImage(bg,0,0);
  // camera punch on the final
  const fin=FIN&&t>=FIN?t-FIN:-1;
@@ -52,12 +68,12 @@ function draw(t){t+=T0;
  arena(t);chuteQueue(t,fr.q);
  const recent=merges.filter(e=>t>=e.t&&t-e.t<.35);
  for(const [id,k,px,py,a,born] of fr.it){const r=rad(k);const age=t-born;let s=1,glow=0,al=1;
-  if(age<.3&&born>0.05){s=.6+.4*eob(age/.3);glow=1-age/.3}
+  const GI=D.cool||.3;if(age<GI&&born>0.05){s=.6+.4*eob(age/GI);glow=1-age/GI}
   let X=px,Y=py;
   if(fin>=0){if(k===TOP){const fg=Math.max(0,fin-GD),m=ease(fg/.9),big=(R*.8)/r-1;X=px+(CX-px)*m;Y=py+(CY-py)*m+10*Math.sin(fg*3)*m;s*=1+big*eob(fg/1.0)+.05*Math.sin(fg*6)*m;glow=Math.max(glow,.6+.4*Math.sin(fin*5));
     // keep the growing final form INSIDE the arena (quality gate: it used to spill past the ring for ~0.3 s)
-    let rr=r*s;const cap=R*.84;if(rr>cap){s*=cap/rr;rr=cap}
-    const dx=X-CX,dy=Y-CY,dd=Math.hypot(dx,dy),mx=Math.max(0,R+4-rr*1.25);if(dd>mx){X=CX+dx/dd*mx;Y=CY+dy/dd*mx}}
+    let rr=r*s;const cap=R*(D.tightHalo?.9:.84);if(rr>cap){s*=cap/rr;rr=cap}
+    const dx=X-CX,dy=Y-CY,dd=Math.hypot(dx,dy),mx=Math.max(0,(D.tightHalo?R-8-rr:R+4-rr*1.25));if(dd>mx){X=CX+dx/dd*mx;Y=CY+dy/dd*mx}}
    else{const d=Math.hypot(px-CX,py-CY);const pt=.02+d/R*.25;al=1-cl((fin-pt)/.15);if(al<=0)continue;s*=1+.3*cl((fin-pt)/.15)}}
   ball(k,X,Y,r*s,a,al,glow)}
  // merge flashes + sparkles
@@ -68,13 +84,13 @@ function draw(t){t+=T0;
  if(fin>=0){for(let i=0;i<90;i++){const an=i*2.39996,sp=300+((i*97)%260),p=cl((fin-.1)/1.6),dd=sp*p;x.save();x.globalAlpha=(1-p)*.9;x.fillStyle=`hsl(${(i*37)%360},100%,70%)`;
   x.beginPath();x.arc(CX+Math.cos(an)*dd*1.6,CY+Math.sin(an)*dd*1.3-200*p*p,4,0,7);x.fill();x.restore()}}
  x.restore();
- if(fin>=0&&fin<.15){x.fillStyle=D.flash||'rgba(255,255,255,1)';x.globalAlpha=.55*(1-fin/.15);x.fillRect(0,0,W,H);x.globalAlpha=1}
+ {const fd=D.flashDelay||0,fa=D.flashAlpha||.55;if(fin>=fd&&fin<fd+.15){x.fillStyle=D.flash||'rgba(255,255,255,1)';x.globalAlpha=fa*(1-(fin-fd)/.15);x.fillRect(0,0,W,H);x.globalAlpha=1}}
  // vignette
  const vg=x.createRadialGradient(W/2,H*.52,H*.3,W/2,H*.52,H*.85);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.35)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // text: question until the final, then the payoff
 panel();
  if(fin<0)txt(D.q||'Will the egg become\na DRAGON? 🐉',398,66,'#fff',1);
- else txt(D.win||'IT EVOLVED! 🐉',452,96,D.winCol||'#7CFF6B',ease(fin/.25));
+ else txt(D.win||'IT EVOLVED! 🐉',452,96,D.winCol||'#7CFF6B',D.tightHalo?Math.min(1,.5+fin/.2):ease(fin/.25)); // no empty panel between the two texts
  tierRow(t);
  return c.toDataURL('image/jpeg',0.93);}
 window.draw=draw;
