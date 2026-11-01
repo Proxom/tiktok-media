@@ -47,8 +47,11 @@ function camNew(t){const C=D.cam,f=smoothFront(Math.max(t,D.t[0])),e=ease(cl((t-
  const px=lx,py=C.h*(1-e)+C.oh*e,pz=lz+C.back*(1-e)+C.ob*e;
  cam.position.set(px,py,pz);cam.lookAt(lx,0,lz)}
 function render3d(t){place(t);
- const p0=D.pos[0],tx=p0[2],tz=p0[3];const bt=cl(t/D.t[0]);const dist=-2.4+(2.4+DT/2+.42)*ease(bt);
- ball.position.set(p0[0]+tx*dist,.42,p0[1]+tz*dist);ball.visible=t<D.t[0]+1.2;
+ const p0=D.pos[0],tx=p0[2],tz=p0[3];const bt=cl(t/D.t[0]);
+ // QC 1 Nov: the ball used to end at +0.485 (inside the gap, through dominoes 0 and 1). It now rolls in from behind at a
+ // steady speed and stops with its front touching domino 0's back face (centre at -(DT/2+radius)).
+ const dist=D.ang?-2.4+(2.4-DT/2-.42)*bt:-2.4+(2.4+DT/2+.42)*ease(bt);
+ ball.position.set(p0[0]+tx*dist,.42,p0[1]+tz*dist);ball.visible=D.ang?true:t<D.t[0]+1.2; // new episodes: the ball stays where it stopped (never vanishes)
  if(D.cam){camNew(t);r.render(s,cam);return}
  const f=frontIdx(t),fp=D.pos[f];const done=cl((t-(D.tEnd-1.2))/2.6),e=ease(done);
  // camera: follow the wave front, then pull back to show the whole rainbow
