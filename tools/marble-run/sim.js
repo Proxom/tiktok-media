@@ -8,9 +8,9 @@ function build(seed){
  // xylophone staircase: runs of short bars stepping down; the marble hops bar to bar (one note per hop);
  // a metal deflector at the end of each run sends it back the other way onto the next run.
  const rnd=rng(seed),P=[];const COL=['#ffbe0b','#06a77d','#ff4d3d','#7b2cbf','#1f7ae0','#ff8500','#00b4d8','#e5007e'];
- const RUNS=+process.env.RUNS||6,K=+process.env.STEPS||7,BL=58,DX=82+rnd()*8,DY=40+rnd()*8,TL=.16+rnd()*.05;
+ const SL=process.env.STEPLIST?process.env.STEPLIST.split(',').map(Number):null,RUNS=SL?SL.length:(+process.env.RUNS||6),K0=+process.env.STEPS||7,BL=58,DX=82+rnd()*8,DY=40+rnd()*8,TL=.16+rnd()*.05;
  let dir=1,x=-300,y=60,ci=0;
- for(let r=0;r<RUNS;r++){
+ for(let r=0;r<RUNS;r++){const K=SL?SL[r]:K0;
   for(let k=0;k<K;k++){const x1=x,y1=y,x2=x+dir*BL*Math.cos(TL),y2=y+BL*Math.sin(TL);
    P.push({type:'plank',x1,y1,x2,y2,r:8,col:COL[ci++%COL.length],e:.2,fr:+process.env.FR||.35});x+=dir*DX;y+=DY}
   if(r<RUNS-1){const wx=x+dir*10;P.push({type:'bell',x1:wx+dir*10,y1:y-90,x2:wx,y2:y+40,r:7,col:'#d9dde3',e:.5});
@@ -41,7 +41,8 @@ function run(seed){
  if(finish===null)return{fail:'timeout'};
  return{pieces:P,frames,hits,finish,cup,fps:FPS,BR,seed,song:process.env.SONG||undefined,theme:process.env.THEME||undefined};
 }
-let res,log=[];for(let s=SEED;s<SEED+300;s++){res=run(s);log.push(s+':'+(res.fail||res.finish.toFixed(1)));if(!res.fail&&res.finish>12&&res.finish<+(process.env.MAXT||30)){const g=res.hits.slice(1).map((h,i)=>h.t-res.hits[i].t),mx=Math.max(...g);res.maxGap=mx;res.first=res.hits[0].t;log[log.length-1]+='/g'+mx.toFixed(2)+'/n'+res.hits.length;if(mx<+(process.env.MAXGAP||.75)&&res.hits[0].t<+(process.env.FIRST||.4))break}res=null}
+let res,log=[];for(let s=SEED;s<SEED+300;s++){res=run(s);log.push(s+':'+(res.fail||res.finish.toFixed(1)));if(!res.fail){const ph=res.hits.filter(h=>h.kind==='plank').map(h=>h.id),pl=res.pieces.map((p,i)=>p.type==='plank'?i:-1).filter(i=>i>=0);res.order=ph.length===pl.length&&ph.every((v,i)=>v===pl[i]);if(!res.order)log[log.length-1]+='/order';}
+ if(!res.fail&&res.order&&res.finish>+(process.env.MINT||12)&&res.finish<+(process.env.MAXT||30)){const g=res.hits.slice(1).map((h,i)=>h.t-res.hits[i].t),mx=Math.max(...g);res.maxGap=mx;res.first=res.hits[0].t;log[log.length-1]+='/g'+mx.toFixed(2)+'/n'+res.hits.length;if(mx<+(process.env.MAXGAP||.75)&&res.hits[0].t<+(process.env.FIRST||.4))break}res=null}
 if(!res){console.log(log.slice(0,30).join(' '));if(process.env.DEBUG){fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(run(SEED))+';\n')}process.exit(1)}
 console.log('seed',res.seed,'finish',res.finish.toFixed(2),'hits',res.hits.length,'frames',res.frames.length);
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');

@@ -40,6 +40,15 @@ for e in d['events']:
         mx.add(at(te), mx.marimba(f, .42, 1.0), pan(e['x']))
         if k not in seen:
             seen.add(k); mx.add(at(te) + .03, mx.glock(f * 2, .22), pan(e['x']))
+# finale pops: every other item bursts (page.html popFx), one soft wood pop each, nearest the centre first
+if d.get('popFx'):
+    fi = min(len(d['frames']) - 1, int(round(FIN * d['fps'])))
+    TOPK = len(d['chain']) - 1
+    for it in d['frames'][fi]['it']:
+        k, px, py = it[1], it[2], it[3]
+        if k == TOPK: continue
+        pt = .02 + np.hypot(px - d['CX'], py - d['CY']) / d['R'] * d.get('popSpread', .25)
+        mx.add(at(FIN + pt), mx.wood(hz('G5') * (0.93 ** k), .07), pan(px))
 # final: marimba roll climbing into the chord, glock shimmer on top
 roll = ['C5', 'E5', 'G5', 'C6', 'E5', 'G5', 'C6', 'E6']
 for i, n in enumerate(roll):

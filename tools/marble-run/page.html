@@ -25,6 +25,9 @@ else{// vertical walnut boards with flowing grain
  for(let i=0;i<5000;i++){wg.fillStyle=`rgba(255,220,180,${.02+.02*(i%3)})`;wg.fillRect((i*7919)%1024,(i*104729)%1024,1,3)}}
 const wt=new THREE.CanvasTexture(wc);wt.colorSpace=THREE.SRGBColorSpace;wt.wrapS=wt.wrapT=THREE.RepeatWrapping;wt.repeat.set(WOOD?4:6,WOOD?8:12);
 const yMax=Math.max(...D.frames.map(f=>f[1]))*S;const CMIN=Math.min(...D.pieces.map(p=>p.x1??p.x))*S,CMAX=Math.max(...D.pieces.map(p=>p.x2??p.x))*S,YMID=(yMax-.6)/2,PBZ=Math.max(0,(yMax+1.6)/(2*Math.tan(21*Math.PI/180))-4.9);
+const TN=Math.tan(21*Math.PI/180);let PBF=(CMAX-CMIN+.6)/(D.pbFit||.9)/(W/H)/2/TN,PBY=-D.cup.y*S+(D.pbCup||.4)*PBF*TN,PBX=null;
+if(D.pbFit)for(let it=0;it<3;it++){const top=PBY+PBF*TN,vis=D.pieces.filter(p=>-Math.min(p.y1??p.y,p.y2??p.y)*S<top),xs=vis.flatMap(p=>[p.x1??p.x,p.x2??p.x]).map(v=>v*S);
+ const a=Math.min(...xs),b=Math.max(...xs);PBX=(a+b)/2;PBF=Math.max(PBF*.6,(b-a+.6)/D.pbFit/(W/H)/2/TN);PBY=-D.cup.y*S+(D.pbCup||.4)*PBF*TN}
 const wall=new THREE.Mesh(new THREE.PlaneGeometry(30,yMax+30),new THREE.MeshStandardMaterial({map:wt,roughness:WOOD?.6:.95}));wall.position.set(0,-yMax/2,0);wall.receiveShadow=true;s.add(wall);
 const metal=new THREE.MeshPhysicalMaterial({color:0xdfe3e8,metalness:1,roughness:.22});
 const white=new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.35,clearcoat:.6});
@@ -58,7 +61,7 @@ function render3d(t){
   if(dt>=0&&dt<.6)m.position.z=m.userData.z0+.012*Math.sin(dt*60)*Math.exp(-dt*7)});
  const [sx,sy]=smooth(t,18);const fin=FIN&&t>FIN?ease((t-FIN)/1.5):0;
  let cx,cy;if(WOOD){const pb=FIN&&t>FIN+.1?ease((t-FIN-.1)/1.4):0;cx=sx*S*.88;cy=-sy*S;cx=cx*(1-fin)+(D.cup.x*S)*fin;cy=cy*(1-fin)+(-D.cup.y*S+.3)*fin;
-  const mx=(CMIN+CMAX)/2,my=-YMID-6.4;cx=cx*(1-pb)+mx*pb;cy=cy*(1-pb)+my*pb;cam.position.set(cx+1.3*(1-pb)+.2*Math.sin(t*.4),cy+1.6*(1-pb)+1.2*pb,4.9+(PBZ+8.5)*pb);cam.lookAt(cx,cy-.25*(1-pb),0)}
+  const mx=D.pbFit?PBX:(CMIN+CMAX)/2,my=D.pbFit?PBY:-YMID-6.4;cx=cx*(1-pb)+mx*pb;cy=cy*(1-pb)+my*pb;cam.position.set(cx+1.3*(1-pb)+.2*Math.sin(t*.4),cy+1.6*(1-pb)+1.2*pb,4.9+((D.pbFit?PBF-4.9:PBZ+8.5))*pb);cam.lookAt(cx,cy-.25*(1-pb),0)}
  else{cx=sx*S*.75;cy=-sy*S;cx=cx*(1-fin)+(D.cup.x*S+.2)*fin;cy=cy*(1-fin)+(-D.cup.y*S+.5)*fin;cam.position.set(cx+2.0+.25*Math.sin(t*.4),cy+2.3,7.0-1.4*fin);cam.lookAt(cx,cy-.3,0)}
  key.position.set(cx-2.5,cy+4,4);key.target.position.set(cx,cy,0);if(WOOD){const sz=6+(FIN&&t>FIN?ease((t-FIN-.1)/1.4):0)*14;const sc=key.shadow.camera;if(sc.right!==sz){sc.left=-sz;sc.right=sz;sc.top=sz;sc.bottom=-sz;sc.far=60;sc.updateProjectionMatrix()}}
  r.render(s,cam)}
@@ -79,21 +82,27 @@ function render3dGuarded(t){render3d(t);let L=luma3d();
   for(const dt of [.004,-.004,.008,-.008]){render3d(t+dt);const L2=luma3d();if(Math.abs(L2-lastL)<=.12*lastL){best=dt;L=L2;break}}
   window.glitches.push([+t.toFixed(4),best]);if(best===null){render3d(t);L=luma3d()}}
  lastL=L;lastT=t}
-function drawF(t){render3dGuarded(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
+function drawF(t,noText){render3dGuarded(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(20,30,50,.30)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ if(!noText)drawT(t);return o}
+// text + burst overlay: drawn ONCE per output frame, never inside the motion-blur accumulation (lesson 31 Oct)
+const EXT=((D.song||'').split('\n').length-1)*(D.songSize||62)*1.15;
+const NPL=D.pieces.filter(p=>p.type==='plank').length;
+function drawT(t){
  const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
  if(!FIN||t<FIN){const a=t<4?1:Math.max(0,1-ease((t-4)/.5)),fo=FIN?1-ease((t-(FIN-1.2))/.3):1;
-  if(WOOD){txt('Guess the song\nbefore the FINISH 🎹',400,74,'#fff',Math.min(a,fo));if(t>=4.5){const nn=D.hits.filter(h=>h.kind==='plank'&&h.t<=t).length;txt('🎵 note '+nn+' / 42',390,54,'#fff',fo)}}
+  if(WOOD){txt('Guess the song\nbefore the FINISH 🎹',400,74,'#fff',Math.min(a,fo));if(t>=4.5){const nn=D.hits.filter(h=>h.kind==='plank'&&h.t<=t).length;txt((D.noteEmo||'🎵')+' note '+nn+' / '+NPL,390,54,'#fff',fo)}}
   else{txt('Marble music:\nguess the song 🎵',405,70,'#fff',Math.min(a,fo));if(t>=4.5)txt('🎵 guess the song',395,52,'#fff',.85*fo)}}
- else{const pv=ball.position.clone().project(cam),BX=(pv.x+1)/2*W,BY=(1-pv.y)/2*H;x.save();x.globalAlpha=.55*ease((t-FIN)/.3);x.fillStyle='#1c1008';x.beginPath();x.roundRect(70,322,860,(t>FIN+1.1?372:262),34);x.fill();x.restore();
-  const pop=1+.25*Math.exp(-(t-FIN)*6)*Math.sin((t-FIN)*30);txt('FINISH! 🏁',420,110*pop,'#ffd23f',ease((t-FIN)/.25));txt(D.song||'Ode to Joy 🎵',545,62,'#fff',ease((t-FIN-.6)/.3));
-  if(WOOD)txt('Did you get it? 💬',650,58,'#fff',ease((t-FIN-1.2)/.3));
+ else{const pv=ball.position.clone().project(cam),BX=(pv.x+1)/2*W,BY=(1-pv.y)/2*H;x.save();x.globalAlpha=.55*ease((t-FIN)/.3);x.fillStyle='#1c1008';x.beginPath();x.roundRect(70,322,860,(t>FIN+1.1?372+EXT:262+EXT),34);x.fill();x.restore();
+  const pop=1+.25*Math.exp(-(t-FIN)*6)*Math.sin((t-FIN)*30);txt('FINISH! 🏁',420,110*pop,'#ffd23f',ease((t-FIN)/.25));txt(D.song||'Ode to Joy 🎵',545,D.songSize||62,'#fff',ease((t-FIN-.6)/.3));
+  if(WOOD)txt('Did you get it? 💬',650+EXT,58,'#fff',ease((t-FIN-1.2)/.3));
   if(WOOD){const dt=t-FIN;for(let i=0;i<110;i++){const an=i*2.399,sp=520+((i*97)%520),life=2.2+((i*31)%10)/8;if(dt>life)continue;
    const px=BX+Math.cos(an)*sp*dt*(1-.25*dt),py=BY+Math.sin(an)*sp*dt*(1-.25*dt)+300*dt*dt,a2=1-dt/life,r2=12+(i%4)*5;
    x.save();x.globalAlpha=a2;x.fillStyle=['#ffd23f','#ffffff','#ff8fab','#7ae0ff','#b8ff6a'][i%5];x.translate(px,py);x.rotate(dt*6+i);x.beginPath();for(let k=0;k<10;k++){const rr=k%2?r2*.45:r2;x.lineTo(Math.cos(k*Math.PI/5)*rr,Math.sin(k*Math.PI/5)*rr)}x.fill();x.restore()}}}
  return o}
 const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
 window.frame=(t,SUB)=>{if(FIN&&t>FIN+.25)SUB=1;if(SUB<=1){drawF(t);return o.toDataURL('image/jpeg',0.93)}
- for(let k=0;k<SUB;k++){drawF(Math.max(0,t+(k/SUB-.5)/60));ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;return acc.toDataURL('image/jpeg',0.93)};
+ for(let k=0;k<SUB;k++){drawF(Math.max(0,t+(k/SUB-.5)/60),true);ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;
+ x.globalAlpha=1;x.drawImage(acc,0,0);drawT(t);return o.toDataURL('image/jpeg',0.93)};
 window.draw=t=>{drawF(t);return o.toDataURL('image/jpeg',0.93)};
 </script>

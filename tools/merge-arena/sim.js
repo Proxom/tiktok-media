@@ -9,6 +9,7 @@ const CHAINS={
  fruit:{items:['🍒','🍓','🍊','🍎','🍑','🍍','🍉'],r0:30,f:1.36},
  ocean:{items:['🐚','🦐','🐟','🐠','🐙','🦈','🐋'],r0:30,f:1.36},
  balls:{items:['🎱','⚾','🥎','🏐','⚽','🏀'],r0:32,f:1.45},
+ trex:{items:['🥚','🦎','🐢','🐊','🦕','🦖'],r0:32,f:1.45}, // egg drops only; 6 tiers like basketball (2 Nov)
  rocket:{items:['🛴','🚲','🛵','🚗','✈️','🚀'],r0:32,f:1.45}, // all checked at 110 px in Noto (1 Nov) // no 🎾: Noto draws it with a racket
 };
 const chainName=process.argv[4]||'dragon',CC=CHAINS[chainName],CH=CC.items,TOP=CH.length-1;

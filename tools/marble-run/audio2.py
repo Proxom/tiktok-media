@@ -6,13 +6,17 @@ import numpy as np, wave, sys, json
 d=json.loads(open(sys.argv[1]).read().split('=',1)[1].rstrip(';\n'))
 MEL=sys.argv[3] if len(sys.argv)>3 else 'twinkle'
 NAMES='C D E F G A B'.split();SEMI=[0,2,4,5,7,9,11]
-def hz(n):return 440*2**((SEMI[NAMES.index(n[0])]+12*(int(n[-1])+1)-69)/12)
+def hz(n):return 440*2**((SEMI[NAMES.index(n[0])]+('#' in n)-('b' in n[1:])+12*(int(n[-1])+1)-69)/12)
 MELODIES={  # public-domain melodies, one note per plank hit
  'twinkle':'C5 C5 G5 G5 A5 A5 G5 F5 F5 E5 E5 D5 D5 C5 G5 G5 F5 F5 E5 E5 D5 G5 G5 F5 F5 E5 E5 D5 C5 C5 G5 G5 A5 A5 G5 F5 F5 E5 E5 D5 D5 C5',
  'jingle':'E5 E5 E5 E5 E5 E5 E5 G5 C5 D5 E5 F5 F5 F5 F5 F5 E5 E5 E5 E5 D5 D5 E5 D5 G5 E5 E5 E5 E5 E5 E5 E5 G5 C5 D5 E5 G5 G5 F5 D5 C5 C5',
+ 'mountain':' '.join(['B4 C#5 D5 E5 F#5 D5 F#5 F5 C#5 F5 E5 C5 E5 B4 C#5 D5 E5 F#5 D5 F#5 B5 A5 F#5 D5 F#5 A5']*2),  # Grieg, In the Hall of the Mountain King (1875), theme x2
  'ode':'E5 E5 F5 G5 G5 F5 E5 D5 C5 C5 D5 E5 E5 D5 D5 E5 E5 F5 G5 G5 F5 E5 D5 C5 C5 D5 E5 D5 C5 C5',
 }
 notes=[hz(n) for n in MELODIES[MEL].split()]
+# harmony per melody (pad, finish arpeggio, sparkles, reveal chord); default = C major
+KEYS={'mountain':dict(pad=[123.47,185.0,246.94,293.66],arp=[246.94,293.66,369.99,493.88,587.33],spark=[987.77,1174.66,1479.98,987.77,1174.66,1479.98,1174.66],rev=[493.88,587.33,739.99,987.77],low=[246.94,369.99])}
+K=KEYS.get(MEL,dict(pad=[130.81,196.0,261.63,329.63],arp=[261.63,329.63,392.0,523.25,659.25],spark=[1046.5,1318.5,1568.0,1046.5,1318.5,1568.0,2093.0/2*1.5],rev=[523.25,659.25,783.99,1046.5],low=[261.63,392.0]))
 SR=44100;fps=d['fps'];D=len(d['frames'])/fps;n=int(SR*D);t=np.arange(n)/SR
 L=np.zeros(n);R=np.zeros(n);rng=np.random.default_rng(int(d.get('seed',1)))
 xs=[p.get('x1',p.get('x',0)) for p in d['pieces']];XC=(min(xs)+max(xs))/2;XW=(max(xs)-min(xs))/2 or 1
@@ -41,7 +45,7 @@ nz=rng.standard_normal(n)
 for w in (40,40):nz=np.convolve(nz,np.ones(w)/w,'same')  # ~ <600 Hz
 roll=nz*np.clip(sp/700,0,1)*.05;L+=roll;R+=roll
 # warm pad (C major, slow swell) far below the notes
-pad=sum(g*np.sin(2*np.pi*f*t+.3*np.sin(2*np.pi*.11*t+f)) for f,g in [(130.81,1),(196.0,.7),(261.63,.5),(329.63,.25)])
+pad=sum(g*np.sin(2*np.pi*f*t+.3*np.sin(2*np.pi*.11*t+f)) for f,g in zip(K['pad'],[1,.7,.5,.25]))
 pad*=.006*(.75+.25*np.sin(2*np.pi*t/9))*np.clip(t/1.0,0,1)
 L+=pad*1.02;R+=pad*.98
 k=0;prev=notes[0]
@@ -55,11 +59,11 @@ for h in d['hits']:
     else:
         add(h['t'],marimba(notes[-1]/2,.06+.05*v,.6),pan)  # soft wooden thud in the cup
 FIN=d['finish']
-for i,f in enumerate([261.63,329.63,392.0,523.25,659.25]):add(FIN+.04+i*.045,marimba(f,.13,.8),(i-2)*.25)
-for i,f in enumerate([1046.5,1318.5,1568.0,1046.5,1318.5,1568.0,2093.0/2*1.5]):add(FIN+.45+i*.16,glock(f,.035),(-1)**i*.4)
+for i,f in enumerate(K['arp']):add(FIN+.04+i*.045,marimba(f,.13,.8),(i-2)*.25)
+for i,f in enumerate(K['spark']):add(FIN+.45+i*.16,glock(f,.035),(-1)**i*.4)
 # second, softer chord when the camera reveals the whole course
-for i,f in enumerate([523.25,659.25,783.99,1046.5]):add(FIN+1.7+i*.07,marimba(f,.08,.6),(i-1.5)*.3)
-for i,f in enumerate([261.63,392.0]):add(FIN+1.7,marimba(f,.07,.5),(i-.5)*.4)
+for i,f in enumerate(K['rev']):add(FIN+1.7+i*.07,marimba(f,.08,.6),(i-1.5)*.3)
+for i,f in enumerate(K['low']):add(FIN+1.7,marimba(f,.07,.5),(i-.5)*.4)
 # generated stereo reverb (exp-decaying low-passed noise, 1.0 s), ~20 % wet
 def ir(seed):
     r=np.random.default_rng(seed);m=int(SR*1.0);tt=np.arange(m)/SR
