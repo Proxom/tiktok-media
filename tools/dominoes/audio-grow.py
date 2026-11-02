@@ -27,10 +27,10 @@ for i in range(1, N):
         k = min(len(PENTA) - 1, (i // 4) * len(PENTA) // (N // 4 + 1))
         mx.add(T[i], mx.marimba(hz(PENTA[k]), .15 + .05 * i / N, .9), 0)
 land = T[N - 1] + DI[N - 1]
-mx.add(land, mx.wood(hz('E3'), .07), 0)
-mx.add(land + .01, mx.wood(hz('A2'), .05), .1)
+mx.add(land, mx.wood(hz('E3'), .10), 0)
+mx.add(land + .01, mx.wood(hz('A2'), .07), .1)
 for j, (n, p) in enumerate([('C3', 0), ('G3', -.3), ('C4', .3), ('E4', -.2), ('G4', .2), ('C5', 0)]):  # gentle strum, not a stacked hit
-    mx.add(land + .03 + .045 * j, mx.marimba(hz(n), .07, 1.0), p)
+    mx.add(land + .03 + .045 * j, mx.marimba(hz(n), .10, 1.0), p)
 for i, n in enumerate(['C6', 'E6', 'G6', 'C7', 'G6', 'E6', 'C6']):
     mx.add(land + .2 + i * .13, mx.glock(hz(n), .05 * (1 - i / 10)), -.45 + .15 * i)
 t = mx.t; sw = .7 + .3 * np.clip(t / END, 0, 1)

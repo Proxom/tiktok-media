@@ -25,7 +25,7 @@ const mesh=new THREE.InstancedMesh(geo,mat,N);const baseCol=[];mesh.castShadow=t
 const col=new THREE.Color(),wcol=new THREE.Color(1,1,1);for(let i=0;i<N;i++){col.setHSL((.62-.62*i/(N-1)+1)%1,.95,.5);baseCol.push(col.clone());mesh.setColorAt(i,col)}mesh.instanceColor.needsUpdate=true;
 const M=new THREE.Matrix4(),B=new THREE.Matrix4(),P=new THREE.Matrix4(),Rz=new THREE.Matrix4(),C=new THREE.Matrix4(),Sm=new THREE.Matrix4();
 function ang(i,t){const fx=Math.max(0,Math.min(D.ang.length-1,t*D.fpsA)),f0=Math.floor(fx),f1=Math.min(D.ang.length-1,f0+1),u=fx-f0;return(D.ang[f0][i]*(1-u)+D.ang[f1][i]*u)/1000}
-function place(t){for(let i=0;i<N;i++){const [x,z,tx,tz]=D.pos[i],k=SC[i];const a=ang(i,t);const u=(t-D.t[i])/D.Di[i];const fl=u<=0||u>=.8?0:u<.08?u/.08:1-(u-.08)/.72;/* hit highlight fades IN over 8% of the fall (QC 2 Nov: an instant switch was a one-frame colour pop on the giant) */col.copy(baseCol[i]).lerp(wcol,.3*fl);mesh.setColorAt(i,col);
+function place(t){for(let i=0;i<N;i++){const [x,z,tx,tz]=D.pos[i],k=SC[i];const a=ang(i,t);const u=(t-D.t[i])/D.Di[i];const dt=t-D.t[i],fi=Math.max(.1,.08*D.Di[i]),fo=.8*D.Di[i],fl=dt<=0||dt>=fo?0:dt<fi?dt/fi:1-(dt-fi)/(fo-fi);/* hit highlight: fades in over >= 0.1 s (3 frames), fades out by 80% of the fall (QC 2 Nov: instant switch = one-frame pop) */col.copy(baseCol[i]).lerp(wcol,.3*fl);mesh.setColorAt(i,col);
   B.set(tx,0,-tz,x, 0,1,0,0, tz,0,tx,z, 0,0,0,1); // columns X=(tx,0,tz) forward, Y up, Z=(-tz,0,tx): right-handed
   P.makeTranslation(DT*k/2,0,0);Rz.makeRotationZ(-a);C.makeTranslation(-DT*k/2,DH*k/2,0);Sm.makeScale(k,k,k);
   M.copy(B).multiply(P).multiply(Rz).multiply(C).multiply(Sm);mesh.setMatrixAt(i,M)}mesh.instanceMatrix.needsUpdate=true;mesh.instanceColor.needsUpdate=true}
@@ -39,12 +39,15 @@ function front(t){t=Math.max(t,0);if(t<=D.t[0])return{z:D.pos[0][1],x:D.pos[0][0
  return{x:lerp(D.pos[i][0],D.pos[i2][0],u),z:lerp(D.pos[i][1],D.pos[i2][1],u),k:lerp(SC[i],SC[i2],u)}}
 // causal-ish smoothing (window -0.9..+0.3 s) so the camera never runs ahead of the action
 function smooth(t){let x=0,z=0,k=0,w=0;for(let j=-15;j<=5;j++){const g=Math.exp(-j*j/60),f=front(t+j*.06);x+=f.x*g;z+=f.z*g;k+=Math.log(f.k)*g;w+=g}return{x:x/w,z:z/w,k:Math.exp(k/w)}}
-const CM=Object.assign({h:3.0,back:4.6,side:1.4,ahead:.9,lookY:.3,p:1,a0:-.5},D.cam||{});
+const CM=Object.assign({p:.75,a0:-.5,ahead:.6,lookY:.35,beats:[[0,.75,3.2,8.5],[.30,.75,3.2,8.5],[.42,1.15,2.0,8.0],[.62,1.15,2.0,8.0],[.74,.55,1.5,9.5]]},D.cam||{});
 const last=N-1,kN=SC[last],zN=D.pos[last][1],xN=D.pos[last][0];
 const tFin=D.tEnd-.1; // last domino lands flat
-function follow(t){const f=smooth(t);const k=Math.pow(SC[0],1-CM.p)*Math.pow(f.k,CM.p);
- const sd=-CM.side*Math.cos(Math.PI*ease(cl(t/D.t[last]))); // camera drifts slowly from the left side to the right side over the run
- return{px:f.x+sd*k,py:CM.h*k,pz:f.z+CM.back*k,lx:f.x,ly:CM.lookY*k,lz:f.z-lerp(CM.a0,CM.ahead,ease((t-D.t[0]+.3)/1.6))*k,k}} // intro: look at the marble and domino 0, then ahead
+// camera beats (progress q of the run -> azimuth from behind towards +x, height and distance in units of the zoom kc):
+// 3/4 rear view -> lower side view (dominoes lean and touch in profile) -> low 3/4 view so the big ones tower
+function beat(q){const B=CM.beats;let i=0;while(i<B.length-1&&q>=B[i+1][0])i++;if(i===B.length-1)return B[i].slice(1);
+ const u=ease((q-B[i][0])/(B[i+1][0]-B[i][0]));return[1,2,3].map(j=>lerp(B[i][j],B[i+1][j],u))}
+function follow(t){const f=smooth(t);const k=Math.pow(SC[0],1-CM.p)*Math.pow(f.k,CM.p);const [az,h,dist]=beat(cl(t/D.t[last]));
+ return{px:f.x+Math.sin(az)*dist*k,py:h*k,pz:f.z+Math.cos(az)*dist*k,lx:f.x,ly:CM.lookY*f.k,lz:f.z-lerp(CM.a0,CM.ahead,ease((t-D.t[0]+.3)/1.6))*k,k}} // intro: look at the marble and domino 0, then ahead
 // finale in two moves (cylindrical coordinates around the giant): A) ease into a side view and watch the giant fall,
 // B) after it lands, orbit to the reverse view (whole fallen line shrinking back towards the first domino) and hold.
 const FO=Object.assign({ta:-1.7,da:1.9,phiS:1.75,RS:3.7,hS:1.3,lyS:.4,db:2.4,phi:3.0,R:4.4,h:2.7,lz:.7,ly:0},D.fin||{});
@@ -81,16 +84,21 @@ function drawScene(t){render3dGuarded(t);x.globalAlpha=1;x.drawImage(r.domElemen
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(40,20,5,.28)');x.fillStyle=vg;x.fillRect(0,0,W,H)}
 // text: hook -> live counter (fallen / N and how many times taller the domino at the front is) -> payoff held to the end
 const HK=D.hook||'Can the tiny one\ntopple the GIANT? 😱';
+function pill(y,h,a,w){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a)*.62;x.fillStyle='#24140a';const W2=w||780,X0=495-W2/2,r=34;
+ x.beginPath();x.moveTo(X0+r,y);x.arcTo(X0+W2,y,X0+W2,y+h,r);x.arcTo(X0+W2,y+h,X0,y+h,r);x.arcTo(X0,y+h,X0,y,r);x.arcTo(X0,y,X0+W2,y,r);x.closePath();x.fill();x.restore()}
 function drawText(t){
  const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
  const hookEnd=D.t[0]+2.6;
+ pill(318,232,t<.1?1:fd(-1,hookEnd));
  txt(HK,380,70,'#fff',t<.1?1:fd(-1,hookEnd));
- txt(D.sub||'Each one is 4% bigger',380+70*2.3,50,'#ffe9a8',t<.1?1:fd(-1,hookEnd));
+ txt(D.sub||'Each one is '+Math.round((SC[1]/SC[0]-1)*100)+'% bigger',380+70*2.3,50,'#ffe9a8',t<.1?1:fd(-1,hookEnd));
  const f=frontIdx(t),fallen=t<D.t[0]?0:Math.min(N,f+1),done=t>=tFin;
- const ca=ease((t-hookEnd-.2)/.25)*(1-ease((t-tFin)/.3));
+ const ca=t<tFin?ease((t-hookEnd-.2)/.25):0; // hard cut to the payoff text (no ghost under it)
+ pill(326,170,ca,420);
  txt(fallen+' / '+N,390,76,'#fff',ca);
  const kk=SC[Math.min(N-1,f)]/SC[0];txt((kk<9.95?kk.toFixed(1):Math.round(kk))+'× taller',390+84,52,'#ffe9a8',ca);
  const fa=ease((t-tFin)/.3);
+ pill(318,250,fa,800);
  txt('GIANT DOWN! 🏆',400,86,'#ffe08a',fa);
  txt(N+' dominoes. The last one\nis '+Math.round(SC[N-1]/SC[0])+'× taller than the first.',400+100,48,'#fff',ease((t-tFin-.5)/.3));
  return o}
