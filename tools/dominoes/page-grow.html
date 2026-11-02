@@ -50,7 +50,7 @@ function follow(t){const f=smooth(t);const k=Math.pow(SC[0],1-CM.p)*Math.pow(f.k
  return{px:f.x+Math.sin(az)*dist*k,py:h*k,pz:f.z+Math.cos(az)*dist*k,lx:f.x,ly:CM.lookY*f.k,lz:f.z-lerp(CM.a0,CM.ahead,ease((t-D.t[0]+.3)/1.6))*k,k}} // intro: look at the marble and domino 0, then ahead
 // finale in two moves (cylindrical coordinates around the giant): A) ease into a side view and watch the giant fall,
 // B) after it lands, orbit to the reverse view (whole fallen line shrinking back towards the first domino) and hold.
-const FO=Object.assign({ta:-1.7,da:1.9,phiS:1.75,RS:3.7,hS:1.3,lyS:.4,db:2.4,phi:3.0,R:4.4,h:2.7,lz:.7,ly:0},D.fin||{});
+const FO=Object.assign({ta:-1.7,da:1.9,phiS:1.75,RS:3.7,hS:1.3,lyS:.4,db:2.4,phi:3.0,R:7.0,h:4.2,lz:.3,ly:0},D.fin||{});
 const cO=[xN,zN-.45*kN],tA=D.t[last]+FO.ta,P0=follow(tA),phi0=Math.atan2(P0.px-cO[0],P0.pz-cO[1]),R0=Math.hypot(P0.px-cO[0],P0.pz-cO[1]),tB=tFin+.15;
 function cyl(phi,R,h,l){return{px:cO[0]+R*Math.sin(phi),py:h,pz:cO[1]+R*Math.cos(phi),lx:l[0],ly:l[1],lz:l[2]}}
 function camAt(t){if(t<=tA)return follow(t);
@@ -78,7 +78,7 @@ const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getConte
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
 function txt(str,y,size,colr,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';x.filter='none';x.shadowBlur=0;
  str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
-  let sz=size,wd=()=>parts.reduce((q,p)=>{x.font=f(p,sz);return q+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let sz=size,wd=()=>parts.reduce((q,p)=>{x.font=f(p,sz);return q+x.measureText(p).width},0),w=wd();if(w>740){sz=size*740/w;w=wd()}
   let px=495-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(40,24,14,.9)';x.strokeText(p,px,yy);x.fillStyle=colr;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
 function drawScene(t){render3dGuarded(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(40,20,5,.28)');x.fillStyle=vg;x.fillRect(0,0,W,H)}
@@ -89,7 +89,7 @@ function pill(y,h,a,w){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a)*.62;x
 function drawText(t){
  const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
  const hookEnd=D.t[0]+2.6;
- pill(318,232,t<.1?1:fd(-1,hookEnd));
+ pill(318,232,t<.1?1:fd(-1,hookEnd),860);
  txt(HK,380,70,'#fff',t<.1?1:fd(-1,hookEnd));
  txt(D.sub||'Each one is '+Math.round((SC[1]/SC[0]-1)*100)+'% bigger',380+70*2.3,50,'#ffe9a8',t<.1?1:fd(-1,hookEnd));
  const f=frontIdx(t),fallen=t<D.t[0]?0:Math.min(N,f+1),done=t>=tFin;
@@ -97,10 +97,10 @@ function drawText(t){
  pill(326,170,ca,420);
  txt(fallen+' / '+N,390,76,'#fff',ca);
  const kk=SC[Math.min(N-1,f)]/SC[0];txt((kk<9.95?kk.toFixed(1):Math.round(kk))+'× taller',390+84,52,'#ffe9a8',ca);
- const fa=ease((t-tFin)/.3);
- pill(318,250,fa,800);
- txt('GIANT DOWN! 🏆',400,86,'#ffe08a',fa);
- txt(N+' dominoes. The last one\nis '+Math.round(SC[N-1]/SC[0])+'× taller than the first.',400+100,48,'#fff',ease((t-tFin-.5)/.3));
+ const fa=ease((t-tFin)/.1),EY=D.endY||1180; // payoff card: quick cut (3 frames), title + subtitle together, on the empty floor below the giant
+ pill(EY,250,fa,860);
+ txt('GIANT DOWN! 🏆',EY+82,86,'#ffe08a',fa);
+ txt(N+' dominoes. The last one\nis '+Math.round(SC[N-1]/SC[0])+'× taller than the first.',EY+82+100,48,'#fff',fa);
  return o}
 const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
 window.frame=(t,SUB)=>{if(SUB<=1){drawScene(t);drawText(t);return o.toDataURL('image/jpeg',0.93)}
