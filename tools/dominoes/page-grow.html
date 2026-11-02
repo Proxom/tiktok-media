@@ -89,18 +89,19 @@ function pill(y,h,a,w){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a)*.62;x
 function drawText(t){
  const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
  const hookEnd=D.t[0]+2.6;
- pill(318,232,t<.1?1:fd(-1,hookEnd),860);
+ pill(306,268,t<.1?1:fd(-1,hookEnd),860);
  txt(HK,380,70,'#fff',t<.1?1:fd(-1,hookEnd));
  txt(D.sub||'Each one is '+Math.round((SC[1]/SC[0]-1)*100)+'% bigger',380+70*2.3,50,'#ffe9a8',t<.1?1:fd(-1,hookEnd));
  const f=frontIdx(t),fallen=t<D.t[0]?0:Math.min(N,f+1),done=t>=tFin;
- const ca=t<tFin?ease((t-hookEnd-.2)/.25):0; // hard cut to the payoff text (no ghost under it)
+ const tCard=tFin+(D.cardDelay||1.5); // card only once the orbit has carried the giant above it (v5 review: card over the giant in the side view)
+ const ca=t<tCard?ease((t-hookEnd-.3)/.25):0; // hard cut to the payoff text (no ghost under it)
  pill(326,170,ca,420);
  txt(fallen+' / '+N,390,76,'#fff',ca);
  const kk=SC[Math.min(N-1,f)]/SC[0];txt((kk<9.95?kk.toFixed(1):Math.round(kk))+'× taller',390+84,52,'#ffe9a8',ca);
- const fa=ease((t-tFin)/.1),EY=D.endY||1180; // payoff card: quick cut (3 frames), title + subtitle together, on the empty floor below the giant
- pill(EY,250,fa,860);
- txt('GIANT DOWN! 🏆',EY+82,86,'#ffe08a',fa);
- txt(N+' dominoes. The last one\nis '+Math.round(SC[N-1]/SC[0])+'× taller than the first.',EY+82+100,48,'#fff',fa);
+ const fa=ease((t-tCard)/.1),EY=D.endY||1192; // payoff card: quick cut (3 frames), title + subtitle together, on the empty floor below the giant
+ pill(EY,244,fa,860);
+ txt('GIANT DOWN! 🏆',EY+86,86,'#ffe08a',fa);
+ txt(N+' dominoes. The last one\nis '+Math.round(SC[N-1]/SC[0])+'× taller than the first.',EY+86+88,48,'#fff',fa);
  return o}
 const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
 window.frame=(t,SUB)=>{if(SUB<=1){drawScene(t);drawText(t);return o.toDataURL('image/jpeg',0.93)}
