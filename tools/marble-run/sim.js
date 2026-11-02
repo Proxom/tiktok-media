@@ -16,7 +16,7 @@ function build(seed){
   if(r<RUNS-1){const wx=x+dir*10;P.push({type:'bell',x1:wx+dir*10,y1:y-90,x2:wx,y2:y+40,r:7,col:'#d9dde3',e:.5});
    x=wx+dir*4;y+=75;dir=-dir}
  }
- const cx=x+dir*40,cy=y+120;
+ const cx=x+dir*(+process.env.CUPDX||40),cy=y+(+process.env.CUPDROP||120);
  P.push({type:'cupL',x1:cx-80,y1:cy-90,x2:cx-52,y2:cy,r:7,col:'#ffffff',e:.2},{type:'cupB',x1:cx-52,y1:cy,x2:cx+52,y2:cy,r:7,col:'#ffffff',e:.1},{type:'cupR',x1:cx+52,y1:cy,x2:cx+80,y2:cy-90,r:7,col:'#ffffff',e:.2});
  return{P,start:{x:-300+6,y:60-58},cup:{x:cx,y:cy}};
 }

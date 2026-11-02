@@ -44,7 +44,7 @@ function run(seed){
       if(a.k===b.k&&a.k<TOP&&final===null&&t-a.born>=COOL&&t-b.born>=COOL&&t-lastM>=MGAP){lastM=t; // merge
        const k=a.k+1,nx=(a.x+b.x)/2,ny=(a.y+b.y)/2;a.dead=b.dead=true;
        const m={id:nid++,k,x:nx,y:ny,vx:(a.vx+b.vx)/2,vy:(a.vy+b.vy)/2-250,a:(a.a+b.a)/2,born:t};items.push(m);
-       events.push({t,type:'merge',k,x:nx,y:ny});if(k===TOP){final=t;events.push({t,type:'final',k,x:nx,y:ny})}continue}
+       events.push({t,type:'merge',k,x:nx,y:ny,id:m.id});if(k===TOP){final=t;events.push({t,type:'final',k,x:nx,y:ny})}continue}
       const nx=dx/d,ny=dy/d,ma=ra*ra,mb=rb*rb,sum=ma+mb;
       a.x-=nx*ov*mb/sum;a.y-=ny*ov*mb/sum;b.x+=nx*ov*ma/sum;b.y+=ny*ov*ma/sum;
       const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){const jj=-(1+E)*rv/(1/ma+1/mb);a.vx-=jj*nx/ma;a.vy-=jj*ny/ma;b.vx+=jj*nx/mb;b.vy+=jj*ny/mb;
