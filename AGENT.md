@@ -1,3 +1,9 @@
+# STOP — THIS AGENT IS SUSPENDED (Erkan, 2 Nov 2026 20:34)
+Erkan has handed the management of the TikTok account to another agent outside Claude. Until Erkan writes in this file that the suspension is lifted, this routine must do NOTHING:
+1. Do not produce, schedule, move, draft, delete or edit any TikTok post or Metricool item, do not write to the TikTok dashboard, do not push media, do not message Erkan.
+2. Immediately disable your own routine: load the claude-code-remote tools with ToolSearch, call list_triggers, find 'Tiktok Ajani' (trig_01FhQgE6PErf6xwt6tSniypv) and call update_trigger with enabled=false for it (a routine's own session may disable itself).
+3. Then end the run at once. Everything below this section is suspended.
+
 # TIKTOK GROWTH AGENT (@dipnotscom) - standing instructions
 
 ## PUBLISHING SCHEDULE — 3 PER DAY (Erkan, 1 Nov 12:27) — OVERRIDES EVERY OLDER SLOT RULE IN THIS FILE
