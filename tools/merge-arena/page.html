@@ -69,7 +69,7 @@ function draw(tv){const t=simT(tv);
  const recent=merges.filter(e=>t>=e.t&&t-e.t<.35);
  const pops=[];
  for(const [id,k,px,py,a,born] of fr.it){const r=rad(k);const age=t-born;let s=1,glow=0,al=1;
-  const GI=D.cool||.3;if(age<GI&&born>0.05){s=.6+.4*(D.noOvershoot?Math.min(1,eob(age/GI)):eob(age/GI));glow=1-age/GI}
+  const GI=D.popIn||D.cool||.3,S0=D.popS0||.6;if(age<GI&&born>0.05){s=S0+(1-S0)*(D.noOvershoot?Math.min(1,eob(age/GI)):eob(age/GI));glow=1-age/GI}
   let X=px,Y=py;
   if(fin>=0){if(k===TOP){const fg=Math.max(0,fin-GD),m=ease(fg/.9),big=(R*(D.finalR||.8))/r-1;X=px+(CX-px)*m;Y=py+(CY-py)*m+10*Math.sin(fg*3)*m;s*=1+big*eob(fg/1.0)+.05*Math.sin(fg*6)*m;glow=Math.max(glow,.6+.4*Math.sin(fin*5));
     // keep the growing final form INSIDE the arena (quality gate: it used to spill past the ring for ~0.3 s)
