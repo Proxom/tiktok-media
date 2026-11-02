@@ -9,7 +9,7 @@ const CHAINS={
  fruit:{items:['🍒','🍓','🍊','🍎','🍑','🍍','🍉'],r0:30,f:1.36},
  ocean:{items:['🐚','🦐','🐟','🐠','🐙','🦈','🐋'],r0:30,f:1.36},
  balls:{items:['🎱','⚾','🥎','🏐','⚽','🏀'],r0:32,f:1.45},
- trex:{items:['🥚','🦎','🐢','🐊','🦕','🦖'],r0:32,f:1.45}, // egg drops only; 6 tiers like basketball (2 Nov)
+ trex:{items:['🥚','🦎','🐢','🐊','🦕','🦖'],r0:+(process.env.R0||32),f:+(process.env.RF||1.45)}, // egg drops only; 6 tiers like basketball (2 Nov)
  rocket:{items:['🛴','🚲','🛵','🚗','✈️','🚀'],r0:32,f:1.45}, // all checked at 110 px in Noto (1 Nov) // no 🎾: Noto draws it with a racket
 };
 const chainName=process.argv[4]||'dragon',CC=CHAINS[chainName],CH=CC.items,TOP=CH.length-1;
@@ -34,7 +34,7 @@ function run(seed){
  for(let f=0;f<FPS*TMAX;f++){
   for(let s=0;s<SUB;s++){
    t+=DT;
-   if(final===null&&t>=next){spawn();next=t+DROP}
+   if(final===null&&t>=next){spawn();next=t+DROP+((+process.env.DROP1||DROP)-DROP)*Math.min(1,t/(+process.env.DRAMP||1))}
    for(const it of items){it.vy+=G*DT;it.x+=it.vx*DT;it.y+=it.vy*DT;it.a+=it.vx/rad(it.k)*DT}
    for(let pass=0;pass<3;pass++){
     // circle-circle
@@ -65,8 +65,10 @@ function run(seed){
  return{final,frames,events,seed,chain:CH,r0:CC.r0,rf:CC.f,R,CX,CY,fps:FPS};
 }
 let seed=+process.argv[3]||0,res;
-const s0=seed||1,stats=[];for(let s=s0;s<s0+400;s++){res=run(s);stats.push(res.fail||(res.final?res.final.toFixed(1):"none"));if(res.final&&res.final>FMIN&&res.final<FMAX){seed=s;break}res=null}
-if(!res)console.log(stats.slice(0,40).join(" "));
+const s0=seed||1,stats=[];for(let s=s0;s<s0+400;s++){res=run(s);stats.push(res.fail||(res.final?res.final.toFixed(1):"none"));if(res.final&&res.final>FMIN&&res.final<FMAX){const ft=[];res.events.forEach(e=>{if(e.type==='merge'&&ft[e.k]===undefined)ft[e.k]=e.t});const g=ft.slice(2).map((v,i)=>v-ft[i+1]);res.tierGaps=g;
+  // TGMAX/TGMIN (2 Nov reviewer): no long stretch without a new tier, no 4-tier cascade in 0.6 s
+  if(Math.max(...g)<=+(process.env.TGMAX||99)&&Math.min(...g)>=+(process.env.TGMIN||0)){seed=s;break}stats[stats.length-1]+='/g'+Math.max(...g).toFixed(0)+','+Math.min(...g).toFixed(1)}res=null}
+if(!res)console.log(stats.filter(v=>v.includes("/g")).slice(0,60).join(" "));
 if(!res){console.log('no good seed');process.exit(1)}
 console.log('seed',res.seed,'final at',res.final.toFixed(2),'frames',res.frames.length,'events',res.events.length,'merges',res.events.filter(e=>e.type==='merge').length);
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');

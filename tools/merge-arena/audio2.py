@@ -47,7 +47,7 @@ if d.get('popFx'):
     for it in d['frames'][fi]['it']:
         k, px, py = it[1], it[2], it[3]
         if k == TOPK: continue
-        pt = .02 + np.hypot(px - d['CX'], py - d['CY']) / d['R'] * d.get('popSpread', .25)
+        pt = d.get('popDelay', .02) + np.hypot(px - d['CX'], py - d['CY']) / d['R'] * d.get('popSpread', .25)
         mx.add(at(FIN + pt), mx.wood(hz('G5') * (0.93 ** k), .07), pan(px))
 # final: marimba roll climbing into the chord, glock shimmer on top
 roll = ['C5', 'E5', 'G5', 'C6', 'E5', 'G5', 'C6', 'E6']
