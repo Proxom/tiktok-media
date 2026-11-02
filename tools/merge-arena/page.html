@@ -43,8 +43,8 @@ function arena(t){
 function chuteQueue(t,q){ // next items waiting in the chute, sliding down between drops
  if(D.noQueue||(FIN&&t>FIN))return;const last=drops.filter(d=>d.t<=t).pop();const fr=last?cl((t-last.t)/.27):1;
  q.forEach((k,i)=>{const y0=CY-R-40-(i+1-ease(fr)*1)*84+84;if(y0<-40)return;emoji(k,CX,y0,30,0,1)})}
-function tierRow(t){const n=CH.length,sp=94,x0=500-sp*(n-1)/2,y=542;
- for(let k=0;k<n;k++){const got=t>=firstTier[k],p=got?eob((t-firstTier[k])/.35):0,cx=x0+k*sp;
+function tierRow(t,won){const n=CH.length,sp=94,x0=500-sp*(n-1)/2,y=542;
+ for(let k=0;k<n;k++){const got=t>=firstTier[k]||(won&&k===TOP),p=got?eob(Math.max(0,t-firstTier[k])/.35):0,cx=x0+k*sp;
   x.save();if(got){x.fillStyle=`hsla(${HUE[k]},90%,60%,${D.litRow?.6:.25})`;x.beginPath();x.arc(cx,y,40,0,7);x.fill();if(D.litRow){x.strokeStyle='rgba(255,255,255,.9)';x.lineWidth=3;x.shadowColor=`hsl(${HUE[k]},100%,70%)`;x.shadowBlur=14;x.stroke();x.shadowBlur=0}}
   x.globalAlpha=got?1:(D.litRow?.38:.62);x.filter=got?'none':'grayscale(1)';x.translate(cx,y);
   // the goal icon pulses once the tier before it exists (keeps the long middle tense)
@@ -97,8 +97,8 @@ function draw(tv){const t=simT(tv);
 panel();
  const won=fin>=0||fr.it.some(a=>a[1]===TOP);
  if(!won)txt(D.q||'Will the egg become\na DRAGON? 🐉',398,66,'#fff',1);
- else txt(D.win||'IT EVOLVED! 🐉',452,96,D.winCol||'#7CFF6B',D.tightHalo?Math.min(1,.5+fin/.2):ease(fin/.25)); // no empty panel between the two texts
- tierRow(t);
+ else txt(D.win||'IT EVOLVED! 🐉',452,96,D.winCol||'#7CFF6B',(fin<0||D.winFull)?1:(D.tightHalo?Math.min(1,.5+fin/.2):ease(fin/.25))); // fin<0 here = final form exists 1-2 frames before the final event: full text, never a blank title (review 2 Nov) // no empty panel between the two texts
+ tierRow(t,won);
  return c.toDataURL('image/jpeg',0.93);}
 window.draw=draw;
 </script>
