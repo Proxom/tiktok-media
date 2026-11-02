@@ -1,5 +1,5 @@
 # Marble music v2 sound design (AUDIO QUALITY UPGRADE): modal-synthesis marimba on planks (melody notes),
-# soft glockenspiel echo on metal deflectors, low rolling rumble while in contact, quiet warm pad, generated stereo reverb,
+# very soft glockenspiel tick on metal deflectors (-12 dB vs the melody since 2 Nov: louder read as an extra note), low rolling rumble while in contact, quiet warm pad, generated stereo reverb,
 # equal-power pan from the marble x; the finish lands a rolled chord + sparkles held ~2.5 s.
 # python3 audio2.py data.js out.wav [melody]   (master/loudness is done in ffmpeg, see README)
 import numpy as np, wave, sys, json
@@ -10,12 +10,13 @@ def hz(n):return 440*2**((SEMI[NAMES.index(n[0])]+('#' in n)-('b' in n[1:])+12*(
 MELODIES={  # public-domain melodies, one note per plank hit
  'twinkle':'C5 C5 G5 G5 A5 A5 G5 F5 F5 E5 E5 D5 D5 C5 G5 G5 F5 F5 E5 E5 D5 G5 G5 F5 F5 E5 E5 D5 C5 C5 G5 G5 A5 A5 G5 F5 F5 E5 E5 D5 D5 C5',
  'jingle':'E5 E5 E5 E5 E5 E5 E5 G5 C5 D5 E5 F5 F5 F5 F5 F5 E5 E5 E5 E5 D5 D5 E5 D5 G5 E5 E5 E5 E5 E5 E5 E5 G5 C5 D5 E5 G5 G5 F5 D5 C5 C5',
+ 'elise':'E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 G#4 B4 C5 E4 E5 D#5 E5 D#5 E5 B4 D5 C5 A4 C4 E4 A4 B4 E4 C5 B4 A4',  # Beethoven, Fur Elise (1810, publ. 1867), theme A (35 notes)
  'mountain':' '.join(['B4 C#5 D5 E5 F#5 D5 F#5 F5 C#5 F5 E5 C5 E5 B4 C#5 D5 E5 F#5 D5 F#5 B5 A5 F#5 D5 F#5 A5']*2),  # Grieg, In the Hall of the Mountain King (1875), theme x2
  'ode':'E5 E5 F5 G5 G5 F5 E5 D5 C5 C5 D5 E5 E5 D5 D5 E5 E5 F5 G5 G5 F5 E5 D5 C5 C5 D5 E5 D5 C5 C5',
 }
 notes=[hz(n) for n in MELODIES[MEL].split()]
 # harmony per melody (pad, finish arpeggio, sparkles, reveal chord); default = C major
-KEYS={'mountain':dict(pad=[123.47,185.0,246.94,293.66],arp=[246.94,293.66,369.99,493.88,587.33],spark=[987.77,1174.66,1479.98,987.77,1174.66,1479.98,1174.66],rev=[493.88,587.33,739.99,987.77],low=[246.94,369.99])}
+KEYS={'elise':dict(pad=[110.0,164.81,220.0,261.63],arp=[220.0,261.63,329.63,440.0,523.25],spark=[880.0,1046.5,1318.51,880.0,1046.5,1318.51,1046.5],rev=[440.0,523.25,659.25,880.0],low=[220.0,329.63]),'mountain':dict(pad=[123.47,185.0,246.94,293.66],arp=[246.94,293.66,369.99,493.88,587.33],spark=[987.77,1174.66,1479.98,987.77,1174.66,1479.98,1174.66],rev=[493.88,587.33,739.99,987.77],low=[246.94,369.99])}
 K=KEYS.get(MEL,dict(pad=[130.81,196.0,261.63,329.63],arp=[261.63,329.63,392.0,523.25,659.25],spark=[1046.5,1318.5,1568.0,1046.5,1318.5,1568.0,2093.0/2*1.5],rev=[523.25,659.25,783.99,1046.5],low=[261.63,392.0]))
 SR=44100;fps=d['fps'];D=len(d['frames'])/fps;n=int(SR*D);t=np.arange(n)/SR
 L=np.zeros(n);R=np.zeros(n);rng=np.random.default_rng(int(d.get('seed',1)))
@@ -55,7 +56,7 @@ for h in d['hits']:
         f=notes[k];k+=1;prev=f
         add(h['t'],marimba(f,.20+.10*v,.7+.5*v),pan)
     elif h['kind']=='bell':
-        add(h['t'],glock(prev*2 if prev*2<1800 else prev,.045+.03*v),pan)
+        add(h['t'],glock(prev*2 if prev*2<1800 else prev,(.045+.03*v)*.25),pan)
     else:
         add(h['t'],marimba(notes[-1]/2,.06+.05*v,.6),pan)  # soft wooden thud in the cup
 FIN=d['finish']

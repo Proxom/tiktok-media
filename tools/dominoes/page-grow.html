@@ -1,0 +1,106 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="three.min.js"></script><script src="data.js"></script><script>
+// Format B, GROW layout: a straight line of dominoes, each G times bigger than the one before (gen.js LAYOUT=grow).
+// Angles/timing come from data.js (contact-based starts, each domino leans on the next, fall time ~ sqrt(size)).
+// Camera distance follows the (smoothed) size of the domino at the wave front, so the floor planks are the fixed scale
+// reference and the growth is visible. Overlay text is drawn ONCE per output frame (never inside motion blur).
+const W=1080,H=1920,D=DATA,N=D.N,SC=D.sc,T_END=D.tEnd+(D.tail||5.8);
+const r=new THREE.WebGLRenderer({canvas:document.createElement('canvas'),antialias:true,preserveDrawingBuffer:true});
+r.setSize(W,H,false);r.shadowMap.enabled=true;r.shadowMap.type=THREE.PCFSoftShadowMap;r.toneMapping=THREE.ACESFilmicToneMapping;r.toneMappingExposure=.8;r.outputColorSpace=THREE.SRGBColorSpace;
+const BG=0xe9dccb;const s=new THREE.Scene();s.background=new THREE.Color(BG);s.fog=new THREE.Fog(BG,40,70);
+const cam=new THREE.PerspectiveCamera(40,W/H,.05,400);
+const ec=document.createElement('canvas');ec.width=512;ec.height=256;const eg=ec.getContext('2d');let gr=eg.createLinearGradient(0,0,0,256);gr.addColorStop(0,'#fff8ee');gr.addColorStop(.55,'#e8d9c6');gr.addColorStop(1,'#8d7a66');eg.fillStyle=gr;eg.fillRect(0,0,512,256);eg.fillStyle='#fff';eg.fillRect(80,30,150,60);
+const et=new THREE.CanvasTexture(ec);et.mapping=THREE.EquirectangularReflectionMapping;et.colorSpace=THREE.SRGBColorSpace;s.environment=et;
+const key=new THREE.DirectionalLight(0xfff0dc,3.0);key.castShadow=true;key.shadow.mapSize.set(4096,4096);key.shadow.radius=4;s.add(key);s.add(key.target);
+s.add(new THREE.HemisphereLight(0xfff6e8,0xc9b79c,.55));
+// wooden floor (fixed plank size = the scale reference)
+const fc=document.createElement('canvas');fc.width=1024;fc.height=1024;const fg=fc.getContext('2d');fg.fillStyle='#9a6a3e';fg.fillRect(0,0,1024,1024);
+for(let i=0;i<8;i++){fg.fillStyle=`hsl(28,${42+i%3*4}%,${36+(i*5)%8}%)`;fg.fillRect(0,i*128,1024,124);fg.fillStyle='rgba(70,40,20,.35)';fg.fillRect(0,i*128+124,1024,4);for(let k=0;k<60;k++){fg.strokeStyle=`rgba(90,55,25,${.05+.04*(k%3)})`;fg.beginPath();const y0=i*128+((k*37)%120);fg.moveTo(0,y0);for(let xx=0;xx<=1024;xx+=64)fg.lineTo(xx,y0+2*Math.sin(xx*.02+k));fg.stroke()}}
+const ft=new THREE.CanvasTexture(fc);ft.colorSpace=THREE.SRGBColorSpace;ft.wrapS=ft.wrapT=THREE.RepeatWrapping;const FS=D.floorS||3.2;ft.repeat.set(300/FS/8,300/FS/8);ft.anisotropy=16;
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(300,300),new THREE.MeshStandardMaterial({map:ft,roughness:.6}));floor.rotation.x=-Math.PI/2;floor.position.z=-60;floor.receiveShadow=true;s.add(floor);
+// dominoes (unit box scaled per instance)
+const DH=1.0,DW=.55,DT=.13;
+const geo=new THREE.BoxGeometry(DT,DH,DW);const mat=new THREE.MeshPhysicalMaterial({roughness:.28,clearcoat:.7,clearcoatRoughness:.2});
+const mesh=new THREE.InstancedMesh(geo,mat,N);const baseCol=[];mesh.castShadow=true;mesh.receiveShadow=true;s.add(mesh);
+const col=new THREE.Color(),wcol=new THREE.Color(1,1,1);for(let i=0;i<N;i++){col.setHSL((.62-.62*i/(N-1)+1)%1,.95,.5);baseCol.push(col.clone());mesh.setColorAt(i,col)}mesh.instanceColor.needsUpdate=true;
+const M=new THREE.Matrix4(),B=new THREE.Matrix4(),P=new THREE.Matrix4(),Rz=new THREE.Matrix4(),C=new THREE.Matrix4(),Sm=new THREE.Matrix4();
+function ang(i,t){const fx=Math.max(0,Math.min(D.ang.length-1,t*D.fpsA)),f0=Math.floor(fx),f1=Math.min(D.ang.length-1,f0+1),u=fx-f0;return(D.ang[f0][i]*(1-u)+D.ang[f1][i]*u)/1000}
+function place(t){for(let i=0;i<N;i++){const [x,z,tx,tz]=D.pos[i],k=SC[i];const a=ang(i,t);const u=(t-D.t[i])/D.Di[i];const fl=u<=0||u>=.8?0:u<.08?u/.08:1-(u-.08)/.72;/* hit highlight fades IN over 8% of the fall (QC 2 Nov: an instant switch was a one-frame colour pop on the giant) */col.copy(baseCol[i]).lerp(wcol,.3*fl);mesh.setColorAt(i,col);
+  B.set(tx,0,-tz,x, 0,1,0,0, tz,0,tx,z, 0,0,0,1); // columns X=(tx,0,tz) forward, Y up, Z=(-tz,0,tx): right-handed
+  P.makeTranslation(DT*k/2,0,0);Rz.makeRotationZ(-a);C.makeTranslation(-DT*k/2,DH*k/2,0);Sm.makeScale(k,k,k);
+  M.copy(B).multiply(P).multiply(Rz).multiply(C).multiply(Sm);mesh.setMatrixAt(i,M)}mesh.instanceMatrix.needsUpdate=true;mesh.instanceColor.needsUpdate=true}
+// starter marble rolls in and taps domino 0 (stops touching its back face, stays there)
+const BR=.42*SC[0];
+const ball=new THREE.Mesh(new THREE.SphereGeometry(BR,40,28),new THREE.MeshPhysicalMaterial({color:0xffe27a,emissive:0xffb300,emissiveIntensity:.9,metalness:.6,roughness:.2}));ball.castShadow=true;s.add(ball);
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)},lerp=(a,b,u)=>a+(b-a)*u;
+const frontIdx=t=>{let lo=0,hi=N-1;while(lo<hi){const m=(lo+hi+1)>>1;if(D.t[m]<=t)lo=m;else hi=m-1}return lo};
+// continuous wave-front state: position along the line and size, interpolated between consecutive starts
+function front(t){t=Math.max(t,0);if(t<=D.t[0])return{z:D.pos[0][1],x:D.pos[0][0],k:SC[0]};const i=frontIdx(t),i2=Math.min(N-1,i+1),u=i2>i?cl((t-D.t[i])/(D.t[i2]-D.t[i])):0;
+ return{x:lerp(D.pos[i][0],D.pos[i2][0],u),z:lerp(D.pos[i][1],D.pos[i2][1],u),k:lerp(SC[i],SC[i2],u)}}
+// causal-ish smoothing (window -0.9..+0.3 s) so the camera never runs ahead of the action
+function smooth(t){let x=0,z=0,k=0,w=0;for(let j=-15;j<=5;j++){const g=Math.exp(-j*j/60),f=front(t+j*.06);x+=f.x*g;z+=f.z*g;k+=Math.log(f.k)*g;w+=g}return{x:x/w,z:z/w,k:Math.exp(k/w)}}
+const CM=Object.assign({h:3.0,back:4.6,side:1.4,ahead:.9,lookY:.3,p:1,a0:-.5},D.cam||{});
+const last=N-1,kN=SC[last],zN=D.pos[last][1],xN=D.pos[last][0];
+const tFin=D.tEnd-.1; // last domino lands flat
+function follow(t){const f=smooth(t);const k=Math.pow(SC[0],1-CM.p)*Math.pow(f.k,CM.p);
+ const sd=-CM.side*Math.cos(Math.PI*ease(cl(t/D.t[last]))); // camera drifts slowly from the left side to the right side over the run
+ return{px:f.x+sd*k,py:CM.h*k,pz:f.z+CM.back*k,lx:f.x,ly:CM.lookY*k,lz:f.z-lerp(CM.a0,CM.ahead,ease((t-D.t[0]+.3)/1.6))*k,k}} // intro: look at the marble and domino 0, then ahead
+// finale in two moves (cylindrical coordinates around the giant): A) ease into a side view and watch the giant fall,
+// B) after it lands, orbit to the reverse view (whole fallen line shrinking back towards the first domino) and hold.
+const FO=Object.assign({ta:-1.7,da:1.9,phiS:1.75,RS:3.7,hS:1.3,lyS:.4,db:2.4,phi:3.0,R:4.4,h:2.7,lz:.7,ly:0},D.fin||{});
+const cO=[xN,zN-.45*kN],tA=D.t[last]+FO.ta,P0=follow(tA),phi0=Math.atan2(P0.px-cO[0],P0.pz-cO[1]),R0=Math.hypot(P0.px-cO[0],P0.pz-cO[1]),tB=tFin+.15;
+function cyl(phi,R,h,l){return{px:cO[0]+R*Math.sin(phi),py:h,pz:cO[1]+R*Math.cos(phi),lx:l[0],ly:l[1],lz:l[2]}}
+function camAt(t){if(t<=tA)return follow(t);
+ if(t<=tB){const e=ease((t-tA)/FO.da);return Object.assign(cyl(lerp(phi0,FO.phiS,e),lerp(R0,FO.RS*kN,e),lerp(P0.py,FO.hS*kN,e),[lerp(P0.lx,xN,e),lerp(P0.ly,FO.lyS*kN,e),lerp(P0.lz,cO[1],e)]),{k:lerp(P0.k,kN,e)})}
+ const e=ease((t-tB)/FO.db);return Object.assign(cyl(lerp(FO.phiS,FO.phi,e),lerp(FO.RS,FO.R,e)*kN,lerp(FO.hS,FO.h,e)*kN,[xN,lerp(FO.lyS,FO.ly,e)*kN,lerp(cO[1],zN+FO.lz*kN,e)]),{k:kN})}
+function render3d(t){place(t);
+ const p0=D.pos[0],bt=cl(t/D.t[0]);const dist=-(D.ballD||1.6)*SC[0]+((D.ballD||1.6)*SC[0]-DT*SC[0]/2-BR)*bt;ball.position.set(p0[0]+p0[2]*dist,BR,p0[1]+p0[3]*dist);
+ const c=camAt(t);cam.position.set(c.px,c.py,c.pz);cam.lookAt(c.lx,c.ly,c.lz);
+ // shadow box and fog follow the camera scale
+ const K=c.k;key.target.position.set(c.lx,0,c.lz);key.position.set(c.lx-8*K,16*K,c.lz+9*K);
+ const sc=key.shadow.camera,E=9*K;sc.left=-E;sc.right=E;sc.top=E;sc.bottom=-E;sc.near=.5*K;sc.far=50*K;sc.updateProjectionMatrix();key.shadow.bias=-.0004;
+ s.fog.near=18*K;s.fog.far=40*K;
+ r.render(s,cam)}
+// GLITCH GUARD (lesson 1 Nov, marble-run): SwiftShader can render a ~2 ms window with a broken shadow pass. If the 3D luma
+// jumps >12% vs the previous rendered time, re-render at t+-4 ms and keep the one closest to the previous luma.
+const lc=document.createElement('canvas');lc.width=27;lc.height=48;const lg=lc.getContext('2d',{willReadFrequently:true});
+function luma3d(){lg.drawImage(r.domElement,0,0,27,48);const d=lg.getImageData(0,0,27,48).data;let q=0;for(let i=0;i<d.length;i+=4)q+=.299*d[i]+.587*d[i+1]+.114*d[i+2];return q/(d.length/4)}
+let lastL=null,lastT=-9;window.glitches=[];
+function render3dGuarded(t){render3d(t);let L=luma3d();
+ if(lastL!==null&&Math.abs(t-lastT)<.1&&Math.abs(L-lastL)>.12*lastL){let best=null;
+  for(const dt of [.004,-.004,.008,-.008]){render3d(t+dt);const L2=luma3d();if(Math.abs(L2-lastL)<=.12*lastL){best=dt;L=L2;break}}
+  window.glitches.push([+t.toFixed(4),best]);if(best===null){render3d(t);L=luma3d()}}
+ lastL=L;lastT=t}
+const o=document.createElement('canvas');o.width=W;o.height=H;const x=o.getContext('2d');document.getElementById('c').replaceWith(o);o.id='c';
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,colr,a){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';x.filter='none';x.shadowBlur=0;
+ str.split('\n').forEach((l,i)=>{const parts=l.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+  let sz=size,wd=()=>parts.reduce((q,p)=>{x.font=f(p,sz);return q+x.measureText(p).width},0),w=wd();if(w>800){sz=size*800/w;w=wd()}
+  let px=495-w/2;const yy=y+i*size*1.15;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(40,24,14,.9)';x.strokeText(p,px,yy);x.fillStyle=colr;x.fillText(p,px,yy)}else{x.fillStyle='#fff';x.fillText(p,px,yy)}px+=x.measureText(p).width})});x.restore()}
+function drawScene(t){render3dGuarded(t);x.globalAlpha=1;x.drawImage(r.domElement,0,0);
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(40,20,5,.28)');x.fillStyle=vg;x.fillRect(0,0,W,H)}
+// text: hook -> live counter (fallen / N and how many times taller the domino at the front is) -> payoff held to the end
+const HK=D.hook||'Can the tiny one\ntopple the GIANT? 😱';
+function drawText(t){
+ const fd=(a,b)=>ease((t-a)/.25)*(1-ease((t-b)/.25));
+ const hookEnd=D.t[0]+2.6;
+ txt(HK,380,70,'#fff',t<.1?1:fd(-1,hookEnd));
+ txt(D.sub||'Each one is 4% bigger',380+70*2.3,50,'#ffe9a8',t<.1?1:fd(-1,hookEnd));
+ const f=frontIdx(t),fallen=t<D.t[0]?0:Math.min(N,f+1),done=t>=tFin;
+ const ca=ease((t-hookEnd-.2)/.25)*(1-ease((t-tFin)/.3));
+ txt(fallen+' / '+N,390,76,'#fff',ca);
+ const kk=SC[Math.min(N-1,f)]/SC[0];txt((kk<9.95?kk.toFixed(1):Math.round(kk))+'× taller',390+84,52,'#ffe9a8',ca);
+ const fa=ease((t-tFin)/.3);
+ txt('GIANT DOWN! 🏆',400,86,'#ffe08a',fa);
+ txt(N+' dominoes. The last one\nis '+Math.round(SC[N-1]/SC[0])+'× taller than the first.',400+100,48,'#fff',ease((t-tFin-.5)/.3));
+ return o}
+const acc=document.createElement('canvas');acc.width=W;acc.height=H;const ax=acc.getContext('2d');
+window.frame=(t,SUB)=>{if(SUB<=1){drawScene(t);drawText(t);return o.toDataURL('image/jpeg',0.93)}
+ for(let k=0;k<SUB;k++){drawScene(Math.max(0,t+(k/SUB-.5)/60));ax.globalAlpha=1/(k+1);ax.drawImage(o,0,0)}ax.globalAlpha=1;
+ x.globalAlpha=1;x.clearRect(0,0,W,H);x.drawImage(acc,0,0);drawText(t);return o.toDataURL('image/jpeg',0.93)};
+window.draw=t=>{drawScene(t);drawText(t);return o.toDataURL('image/jpeg',0.93)};
+window.TEND=T_END;
+// debug: screen position of the domino at the wave front (its top centre) and of the marble
+window.proj=t=>{const c=camAt(t);cam.position.set(c.px,c.py,c.pz);cam.lookAt(c.lx,c.ly,c.lz);cam.updateMatrixWorld();const i=frontIdx(t),p=D.pos[Math.min(N-1,i+1)];
+ const v=new THREE.Vector3(p[0],SC[Math.min(N-1,i+1)]*.9,p[1]).project(cam),w=new THREE.Vector3(p[0],0,p[1]).project(cam);return[i,Math.round((v.x+1)*540),Math.round((1-v.y)*960),Math.round((1-w.y)*960)]};
+</script>
