@@ -81,7 +81,8 @@ function draw(tv){const t=simT(tv);
  for(const [k,px,py,p] of pops){const r=rad(k);x.save();x.globalAlpha=1-p;x.strokeStyle=`hsl(${HUE[k]},100%,72%)`;x.lineWidth=7*(1-p)+1;x.shadowColor='#fff';x.shadowBlur=18;
   x.beginPath();x.arc(px,py,r*(1+1.1*ease(p)),0,7);x.stroke();for(let i=0;i<8;i++){const an=i*.785+k,dd=r*(1.1+1.6*ease(p));x.fillStyle=`hsl(${HUE[k]},100%,85%)`;x.beginPath();x.arc(px+Math.cos(an)*dd,py+Math.sin(an)*dd,4*(1-p)+1,0,7);x.fill()}x.restore()}
  // merge flashes + sparkles
- for(const e0 of recent){const it=e0.id&&fr.it.find(a=>a[0]===e0.id),e=it?{...e0,x:it[2],y:it[3]}:e0; // ring follows the new item (2 Nov review)
+ for(const e0 of recent){const it=e0.id&&fr.it.find(a=>a[0]===e0.id);if(e0.id&&!it)continue; // item already merged on: no ghost ring at the old spot (review 2 Nov)
+  const e=it?{...e0,x:it[2],y:it[3]}:e0; // ring follows the new item (2 Nov review)
   const p=(t-e.t)/.45,r=rad(e.k);x.save();x.globalAlpha=1-p;x.strokeStyle=`hsl(${HUE[e.k]},100%,75%)`;x.lineWidth=6*(1-p);x.shadowColor='#fff';x.shadowBlur=20;
   x.beginPath();x.arc(e.x,e.y,D.ringAbs?r+D.ringAbs*ease(p):r*(1+(D.ringGrow||.9)*ease(p)),0,7);x.stroke();
   for(let i=0;i<6;i++){const an=i*.628+e.t*7,dd=r*(1+1.4*ease(p));x.fillStyle='#fff';x.beginPath();x.arc(e.x+Math.cos(an)*dd,e.y+Math.sin(an)*dd,3*(1-p)+1,0,7);x.fill()}x.restore()}
@@ -94,7 +95,8 @@ function draw(tv){const t=simT(tv);
  const vg=x.createRadialGradient(W/2,H*.52,H*.3,W/2,H*.52,H*.85);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.35)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // text: question until the final, then the payoff
 panel();
- if(fin<0)txt(D.q||'Will the egg become\na DRAGON? 🐉',398,66,'#fff',1);
+ const won=fin>=0||fr.it.some(a=>a[1]===TOP);
+ if(!won)txt(D.q||'Will the egg become\na DRAGON? 🐉',398,66,'#fff',1);
  else txt(D.win||'IT EVOLVED! 🐉',452,96,D.winCol||'#7CFF6B',D.tightHalo?Math.min(1,.5+fin/.2):ease(fin/.25)); // no empty panel between the two texts
  tierRow(t);
  return c.toDataURL('image/jpeg',0.93);}
