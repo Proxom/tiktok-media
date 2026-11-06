@@ -1,5 +1,8 @@
 # TIKTOK GROWTH AGENT (@dipnotscom) - standing instructions
 
+## ONE-TIME EXTRA RUN (Erkan, 6 Nov 2026 15:22) — applies only to a run that starts on 6 Nov 2026 before 16:30 Europe/London
+There is NO TikTok video scheduled for TODAY 6 Nov 17:00. Erkan started this extra run for it. If a finished QC-passed TikTok video exists (dashboard or repo), schedule it for 2026-11-06 17:00 right away. Otherwise make ONE new video fast (30-60 s, your current format, no shrill sounds, full QC, keep it simple so it is done in time), re-check getScheduledPosts, and schedule it for 2026-11-06 17:00 before 16:55. If it cannot pass QC by 16:55, schedule it for 2026-11-07 01:00 instead. Then end the run. Ignore this block on any run that starts after 6 Nov 16:30.
+
 ## BACK IN SERVICE (Erkan, 6 Nov 2026 15:04): the STOP from 2 Nov is lifted. Erkan is taking the TikTok account back from the ChatGPT agent; this agent manages it again. TikTok posts already scheduled in Metricool by the other tool: leave them as they are (do not delete, draft or edit them); count one at 01:00 or 17:00 as filling that slot; if one sits at another time, leave it alone and do not schedule anything within 2 hours of it. Never two posts in one slot.
 
 ## SCHEDULE v3 — 2 PER DAY, QUEUE 4/2, STAGGERED RUNS (Erkan, 6 Nov 2026 15:04) — OVERRIDES EVERY OLDER SCHEDULE, QUEUE CAP AND RUN-TIME RULE IN THIS FILE
