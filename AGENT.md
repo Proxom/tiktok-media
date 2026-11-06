@@ -1,10 +1,38 @@
-# STOP — THIS AGENT IS SUSPENDED (Erkan, 2 Nov 2026 20:34)
-Erkan has handed the management of the TikTok account to another agent outside Claude. Until Erkan writes in this file that the suspension is lifted, this routine must do NOTHING:
-1. Do not produce, schedule, move, draft, delete or edit any TikTok post or Metricool item, do not write to the TikTok dashboard, do not push media, do not message Erkan.
-2. Immediately disable your own routine: load the claude-code-remote tools with ToolSearch, call list_triggers, find 'Tiktok Ajani' (trig_01FhQgE6PErf6xwt6tSniypv) and call update_trigger with enabled=false for it (a routine's own session may disable itself).
-3. Then end the run at once. Everything below this section is suspended.
-
 # TIKTOK GROWTH AGENT (@dipnotscom) - standing instructions
+
+## BACK IN SERVICE (Erkan, 6 Nov 2026 15:04): the STOP from 2 Nov is lifted. Erkan is taking the TikTok account back from the ChatGPT agent; this agent manages it again. TikTok posts already scheduled in Metricool by the other tool: leave them as they are (do not delete, draft or edit them); count one at 01:00 or 17:00 as filling that slot; if one sits at another time, leave it alone and do not schedule anything within 2 hours of it. Never two posts in one slot.
+
+## SCHEDULE v3 — 2 PER DAY, QUEUE 4/2, STAGGERED RUNS (Erkan, 6 Nov 2026 15:04) — OVERRIDES EVERY OLDER SCHEDULE, QUEUE CAP AND RUN-TIME RULE IN THIS FILE
+Erkan wants the weekly Claude usage spent much more carefully. TikTok, Instagram and YouTube all publish exactly 2 videos a day at 01:00 and 17:00 Europe/London (Metricool publicationDate exactly these times). No other slot (09:00 etc.) exists any more.
+QUEUE CAP 4/2: QUEUE = future, non-draft scheduled posts of TikTok in Metricool plus finished, QC-passed videos not yet scheduled. When QUEUE is 4 or more: do NOT produce a new video; do only a short check (max 15 minutes: slots filled, nothing at a wrong time, last published posts went live, metrics note) and end. When QUEUE falls to 2 or fewer: produce again, ONE video per run, until it is back at 4. At 3: produce one video only if a slot in the next 24 hours is empty, otherwise short check only. Old 6/3 caps and research-mode rules are cancelled; do not run long research sessions.
+RUNS: the TikTok agent runs at 11:07 and 19:07 Europe/London (6 hours before the 17:00 and 01:00 slots). The three content agents run at different hours (TikTok 6 h, YouTube 5 h, Instagram 4 h before each slot) so they never work at the same time. Erkan sets the cron himself (CRON_TZ=Europe/London 7 11,19 * * *); always trust list_triggers if it differs.
+SAVE USAGE: no subagent fan-outs unless a review really needs one, at most one reviewer pass plus 2 fix rounds, no repeated full re-renders for taste, and end the run as soon as the job is done.
+
+## NO HARSH HIGH-PITCHED SOUNDS — HARD RULE (Erkan, 5 Nov 2026 18:57 — overrides every older audio rule in this file)
+Erkan: there must be no disturbing high, shrill (tiz) sounds in any video. This is part of the zero-defect quality gate; a video that breaks it fails QC.
+1. BANNED sounds: beeps, sine or square tones above about 1.5 kHz, whistles, chimes, bells, pings, "ding" UI sounds, glass/metal clinks with a sharp attack, high synth leads, hiss, squeaks, sirens, sparkle/shimmer SFX, risers that climb into a whine, and any repeated high click or tick. Marble/plank "note" sounds and counters/timers must use soft, low or mid tones (wood, felt, soft marimba below about 1 kHz fundamental), never bright bells.
+2. MIX: put a gentle low-pass on all music and sound effects (cut above about 7-8 kHz, 12 dB/oct) and a high-shelf of about -4 dB from 5 kHz on the final mix. Voiceover may keep its natural brightness but use a de-esser (e.g. ffmpeg `deesser`) so S sounds are soft. Keep the loudness rules (about -20 LUFS for music-only videos, voice videos as stated elsewhere) and true peak at or below -2 dBTP.
+3. MEASURE before scheduling (add to QC, write the numbers in the dashboard doc): A) whole mix integrated loudness; B) the same audio through `highpass=f=4000` measured the same way. B must be at least 18 dB below A. Also scan with `astats` or a spectrogram (`showspectrumpic`) for any narrow, sustained line above 2 kHz (a tone). If B is too close to A, or any tone line appears, fix the audio and measure again. Finally LISTEN check: describe in the QC note what the high frequencies contain; if anything could sound shrill on phone speakers, fix it.
+4. EXISTING VIDEOS (Erkan, 5 Nov 20:03): videos that are already produced and scheduled are NOT re-tested for high-pitched sound; leave them as they are. This rule applies only to NEW videos produced from now on.
+
+## ONE RUN AT A TIME — RUN LOCK (genel müdür for Erkan, 4 Nov 2026 21:12 — do this BEFORE anything else)
+On 4 Nov three YouTube runs worked at the same time and none finished. Only ONE run may work at a time. The lock is the git branch `run-lock` in this repository; its newest commit message is `LOCK <ISO time UTC> <your session id or random id>`.
+1. START: run `git fetch origin` then `git ls-remote origin refs/heads/run-lock`.
+   - If the branch exists, read its commit message (`git fetch origin run-lock && git log -1 --format=%s FETCH_HEAD`). If the LOCK time is less than 90 minutes ago and the id is not yours: another run is working. Do NOTHING else (no production, no Metricool changes, no dashboard writes) and end the run with one line "Another run holds the lock, exiting."
+   - If the branch does not exist, or its LOCK time is 90 minutes or older (a stale lock from a crashed run): take the lock with an atomic push: create an empty commit on top of origin/main with message `LOCK <now UTC ISO> <id>` and push it with `git push origin <sha>:refs/heads/run-lock --force-with-lease=refs/heads/run-lock:<old sha or empty>`. If the push is rejected, someone else just took it: end the run as above.
+2. WHILE WORKING: every 20 minutes refresh the lock the same way (new empty commit with a new time, force-with-lease on your own last lock sha). If that push is rejected, another run has taken over: push your finished work to a claude/* branch and stop.
+3. END (always, also on failure): delete the lock with `git push origin --delete run-lock` (only if the lock is still yours).
+Together with the RUN TIME BUDGET (max 75 minutes) this means a lock is never held longer than about 80 minutes.
+
+## RUN TIME BUDGET — FINISH AND SCHEDULE (genel müdür for Erkan, 4 Nov 2026 21:10 — overrides any rule that makes a run longer)
+On 4 Nov a YouTube run took 6.5 hours and left the slots empty. Never again. Rules for every run:
+1. HARD LIMIT: a run lasts at most 75 minutes. Check the clock (`TZ=Europe/London date`) after every big step.
+2. FIRST 10 MINUTES: getScheduledPosts for the next 24 h. If the next slot is empty and a finished video with qc passed exists (dashboard 'ready', or a finished file on a claude/* branch or in the repo), schedule it at once before starting anything new.
+3. ONE video per run, finished and scheduled. Commit and push work in progress at least every 20 minutes so nothing is lost.
+4. REAL FOOTAGE TIME BOX: spend at most 20 minutes finding and downloading NASA/ESA footage (https only, the ~mobile.mp4 or ~medium.mp4 size, never ~orig; trim with ffmpeg -ss/-t before any processing; keep source clips under 60 MB). If no usable clip is found in 20 minutes, make this video as a rendered simulation instead and note it; the 2-of-3 real-footage target is measured over the week, not per run.
+5. REVIEW ROUNDS: at most 2 fix rounds after the first review. If it still fails, fix only real defects (facts, broken visuals, audio), not taste, or switch to a simpler topic you can finish.
+6. At minute 60, stop polishing: finish the current version that passes the quality gate, host it, schedule it into the next empty slot, update the dashboard, push, end.
+7. Never run a render or download in the foreground longer than 10 minutes; split long renders (lower resolution preview first, final 1080x1920 only once).
 
 ## PUBLISHING SCHEDULE — 3 PER DAY (Erkan, 1 Nov 12:27) — OVERRIDES EVERY OLDER SLOT RULE IN THIS FILE
 All three channels (Instagram, TikTok, YouTube) now publish exactly 3 videos per day at 01:00, 09:00 and 17:00 Europe/London (Metricool publicationDate exactly these times, timezone Europe/London). Wherever this file says 4 or 6 per day, or names any other slot (03:00, 05:00, 13:00, 15:00, 21:00 ...), read it as 3 per day at 01:00 / 09:00 / 17:00. Fewer videos means each one must be better: more time per video, the full quality gate, slower pacing, no filler. Rules that still apply: no empty slot (fill the next free slot of the new schedule), no double posts in a slot, the QUEUE CAP UPDATE (6 / 3), the zero-defect gate.
