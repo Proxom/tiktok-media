@@ -22,7 +22,7 @@ function ball(bx,by,r,q,sqx,sqy,sq,al){x.save();x.globalAlpha=al;x.translate(bx,
  x.shadowColor=rcol(q,60);x.shadowBlur=26;const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);g.addColorStop(0,rcol(q,90));g.addColorStop(.45,rcol(q,58));g.addColorStop(1,rcol(q,26));
  x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.8)';x.beginPath();x.ellipse(-r*.38,-r*.42,r*.27,r*.17,-.6,0,7);x.fill();x.restore()}
 function draw(tv){
- const t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*30)))],FF=D.ffps,f=Math.min(D.frames.length-1,Math.max(0,Math.round(t*FF))),fr=D.frames[f];
+ const VF=D.vfps||30,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF)),f=Math.round(ff),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0,A0=D.frames[f0],A1=D.frames[f1],fr=(A0[3]===A1[3]&&!(D.events.some(e=>e.t>f0/FF&&e.t<=f1/FF)))?[A0[0]+(A1[0]-A0[0])*u,A0[1]+(A1[1]-A0[1])*u,A0[2]+(A1[2]-A0[2])*u,A0[3]]:D.frames[f];
  x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
  const tq=t+.5/FF,nb=countAt(bo,tq),lastB=nb>0?bo[nb-1]:null,since=lastB?t-lastB.t:9,pulse=Math.max(0,1-since/.16);
  const er=t>=ET?t-ET:-1;

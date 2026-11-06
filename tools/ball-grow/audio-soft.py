@@ -7,7 +7,7 @@
 import sys,json,numpy as np
 sys.path.insert(0,__file__.rsplit('/',2)[0]);from sfx import Mix,hz,SR
 d=json.loads(open(sys.argv[1]).read().split('=',1)[1].rstrip(';\n'))
-TM=np.array(d['tmap']);TV=np.arange(len(TM))/30.0;V=lambda s:float(np.interp(s,TM,TV));D=len(TM)/30;ET=V(d['escT']);CX=d['CX'];m=Mix(D,d['seed'])
+TM=np.array(d['tmap']);VF=d.get('vfps',30);TV=np.arange(len(TM))/VF;V=lambda s:float(np.interp(s,TM,TV));D=len(TM)/VF;ET=V(d['escT']);CX=d['CX'];m=Mix(D,d['seed'])
 SCALE=[hz(n) for n in 'C3 D3 E3 G3 A3 C4 D4 E4 G4 A4 C5 D5 E5'.split()]
 MOTIF=[0,2,1,3]
 bo=[e for e in d['events'] if e['type']=='bounce'];esc=[e for e in d['events'] if e['type']=='escape'][0]

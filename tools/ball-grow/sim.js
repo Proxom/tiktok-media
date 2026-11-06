@@ -54,7 +54,7 @@ for(let s=SEED;s<SEED+3000;s++){const r=run(s);
  const e=r.events.find(q=>q.type==='escape');log.push(s+':esc'+r.escT.toFixed(1)+'@'+e.ratio.toFixed(2));
  const first=r.events.find(q=>q.type==='bounce');
  const last=r.frames[r.frames.length-1];
- if(r.escT>MIN&&r.escT<MAX&&e.ratio>=MINRATIO&&r.maxPen<1.0&&r.teleport===0&&r.outsideTouch===0&&first.t<1.0&&last[1]>2000&&r.events.find(q=>q.type==="escape").y<(+process.env.ESCMAXY||9999)){res=r;break}}
+ if(r.escT>MIN&&r.escT<MAX&&e.ratio>=MINRATIO&&r.maxPen<1.0&&r.teleport===0&&r.outsideTouch===0&&first.t<1.0&&last[1]>2000&&r.events.find(q=>q.type==="escape").y<(+process.env.ESCMAXY||9999)&&r.frames.every(q=>q[1]-q[2]>(+process.env.TOPMIN||0))&&(e=>e.x-e.r>(+process.env.ESCXMIN||-1e9)&&e.x+e.r<(+process.env.ESCXMAX||1e9))(r.events.find(q=>q.type==="escape"))){res=r;break}}
 if(!res){console.log(log.slice(-60).join(' '));process.exit(1)}
 const bo=res.events.filter(e=>e.type==='bounce'),gaps=bo.slice(1).map((e,i)=>e.t-bo[i].t);
 const rate=[0,10,20,30,40].map(a=>bo.filter(e=>e.t>=a&&e.t<a+10).length/10);
@@ -62,6 +62,6 @@ console.log('seed',res.seed,'escape',res.escT.toFixed(2),'ratio',res.events.find
  'min gap',Math.min(...gaps).toFixed(2),'bounces/s per 10 s',rate.join(','),'maxPen',res.maxPen.toFixed(2),'frames',res.frames.length,'tried',log.length);
 // frames are sampled at 60 fps (two per 1/30 s step). Video time map: 1x, eased down to SLOW x around the escape, eased back.
 res.ffps=60;{const SP=+process.env.SLOW||.4,s0=res.escT-(+process.env.S0||1.2),s1=res.escT+(+process.env.S1||.5),end=res.frames.length/60-.02;
- const tm=[];let ts=0,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/30)/.12);ts+=sp/30}
- res.tmap=tm;console.log('video frames',tm.length,'video dur',(tm.length/30).toFixed(2),'escape at video t',(tm.findIndex(v=>v>=res.escT)/30).toFixed(2))}
+ const VF=+process.env.VFPS||30;res.vfps=VF;const tm=[];let ts=0,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
+ res.tmap=tm;console.log('video frames',tm.length,'video dur',(tm.length/VF).toFixed(2),'escape at video t',(tm.findIndex(v=>v>=res.escT)/VF).toFixed(2))}
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');
