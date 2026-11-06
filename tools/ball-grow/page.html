@@ -37,13 +37,13 @@ function draw(tv){
  x.save();x.fillStyle='#fff';x.shadowColor='#fff';x.shadowBlur=14;[p1,p2].forEach(p=>{x.beginPath();x.arc(p[0],p[1],HT*.75,0,7);x.fill()});
  x.restore();
  // ripple at the last contact point
- if(lastB&&since<.35){const k=since/.35;x.save();x.globalAlpha=.7*(1-k);x.strokeStyle=rcol(lastB.ratio,75);x.lineWidth=5*(1-k)+1;x.beginPath();x.arc(lastB.x,lastB.y,10+60*ease(k),0,7);x.stroke();x.restore()}
+ if(lastB&&since<.35){const k=since/.35;x.save();x.globalAlpha=.7*(1-k);x.strokeStyle=rcol(lastB.ratio,75);x.lineWidth=4*(1-k)+1;x.beginPath();x.arc(lastB.x,lastB.y,8+30*ease(k),0,7);x.stroke();x.restore()}
  // trail (previous frames), then the ball with a short squash after each bounce
  for(let k=5;k>=1;k--){const p=D.frames[Math.max(0,f-2*k)];x.save();x.globalAlpha=.10*(6-k)/5;x.fillStyle=rcol(q,60);x.beginPath();x.arc(p[0],p[1],p[2]*(1-.06*k),0,7);x.fill();x.restore()}
  const sq=lastB&&since<.12?.10*Math.sin(Math.PI*since/.12):0;
  ball(fr[0],fr[1],r,q,lastB?lastB.nx:0,lastB?lastB.ny:1,sq,1);
  // escape burst
- if(er>=0&&er<1.4){const k=er/1.4;x.save();for(let i=0;i<18;i++){const a=gc+(i-8.5)*.11,dd=R+40+380*ease(k)*(0.6+0.4*((i*7)%5)/4);x.globalAlpha=(1-k)*.9;x.fillStyle=i%2?'#ffd23f':'#fff';x.beginPath();x.arc(CX+Math.cos(a)*dd,CY+Math.sin(a)*dd,6*(1-k)+2,0,7);x.fill()}x.restore()}
+ if(er>=0&&er<1.6){const k=er/1.6;x.save();x.shadowColor='#ffd23f';x.shadowBlur=16;for(let i=0;i<44;i++){const a=i*2.39996,h=((i*37)%11)/10,sp=260+420*h,px=esc.x+Math.cos(a)*sp*er,py=esc.y+Math.sin(a)*sp*er+380*er*er;x.globalAlpha=Math.max(0,1-k)*.95;x.fillStyle=i%3?'#ffd23f':'#fff';x.beginPath();x.arc(px,py,10*(1-k)+2.5,0,7);x.fill()}x.restore();if(er<.6){const g2=x.createRadialGradient(esc.x,esc.y,0,esc.x,esc.y,280);g2.addColorStop(0,'rgba(255,220,120,'+(.5*(1-er/.6))+')');g2.addColorStop(1,'rgba(255,220,120,0)');x.fillStyle=g2;x.fillRect(esc.x-280,esc.y-280,560,560)}}
  if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.10*(1-er/.25)})`;x.fillRect(0,0,W,H)}
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: hook + meter
