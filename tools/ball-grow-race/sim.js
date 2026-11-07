@@ -2,7 +2,7 @@
 // Until someone escapes, every bounce OFF THE RING makes that ball a bit bigger (ball-ball hits do not grow). A ball escapes only if it passes the
 // gap while it is still narrower than the gap. First one out wins. Real 2D physics: gravity, elastic ring/cap bounces,
 // elastic ball-ball collisions (mass ~ r^2), 600 Hz sub-steps (max move per step << radius, so nothing can tunnel).
-// The game rule keeps each ball's speed between VMIN and VMAX. Seed search picks a close, late race.
+// frames[k] = state at sim time (k+1)/60 (renderer uses ff=t*60-1). The game rule keeps each ball's speed between VMIN and VMAX. Seed search picks a close, late race.
 // node sim.js <out.js> [seed]  (env R, CX, CY, GAP, GROW, R0, OM, MINT, MAXT, MINRATIO, LOSEMIN, TAIL)
 const fs=require('fs');
 const OUT=process.argv[2]||'data.js',SEED=+process.argv[3]||1;
@@ -63,7 +63,8 @@ for(let s=SEED;s<SEED+4000;s++){const r=run(s);
  const last=r.frames[r.frames.length-1][r.win];
  const firstB=[0,1,2].map(i=>bo.find(q=>q.ball===i)).every(q=>q&&q.t<1.2);
  if(r.escT>MIN&&r.escT<MAX&&e.ratio>=MINRATIO&&Math.min(...losers)>=LOSEMIN&&r.maxPen<1.0&&r.maxStep<.25&&r.teleport===0&&r.outsideTouch===0&&firstB&&last[1]>2000
-  &&r.frames.every(F=>F.every(q=>q[1]-q[2]>(+process.env.TOPMIN||640)))&&e.x-e.r>(+process.env.ESCXMIN||120)&&e.x+e.r<(+process.env.ESCXMAX||900)){res=r;res.loserRatios=losers;break}}
+  &&r.frames.every(F=>F.every(q=>q[1]-q[2]>(+process.env.TOPMIN||640)))&&e.x-e.r>(+process.env.ESCXMIN||120)&&e.x+e.r<(+process.env.ESCXMAX||900)
+  &&r.frames.every(F=>{const q=F[r.win];return q[3]===0||q[1]-q[2]>1920||(q[0]-q[2]>=0&&q[0]+q[2]<=1080)})/* winner leaves through the BOTTOM, fully in frame */){res=r;res.loserRatios=losers;break}}
 if(!res){console.log(log.slice(-50).join(' '));process.exit(1)}
 const bo=res.events.filter(e=>e.type==='bounce'),gaps=bo.slice(1).map((e,i)=>e.t-bo[i].t);
 console.log('seed',res.seed,'winner',res.win,'escape',res.escT.toFixed(2),'ratio',res.events.find(e=>e.type==='escape').ratio.toFixed(3),'losers',res.loserRatios.map(v=>v.toFixed(3)).join(','),
