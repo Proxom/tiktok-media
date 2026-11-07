@@ -18,10 +18,11 @@ v4 keeps what works (ring escape on tools/ball-grow and tools/ball-grow-race), d
 ## 2. ACCOUNT, SCHEDULE, QUEUE
 - TikTok account (tinychaos.hq in Metricool) on brand 7675089, timezone Europe/London. Only this agent posts to TikTok; the ChatGPT agent is off. Do not change the bio or account settings.
 - 2 videos a day at exactly 01:00 and 17:00 Europe/London. No other slot exists.
-- Runs at 11:07 and 19:07 (trust list_triggers if it differs).
+- Runs at 11:07 and 19:07 Europe/London, PLUS one extra daily QUEUE CHECK run at 03:07 (Erkan, 7 Nov 2026 14:53). Trust list_triggers if the times differ.
 - QUEUE = future non-draft TikTok posts + finished gate-passed videos not yet scheduled.
-  - QUEUE 4 or more: short check only (max 15 min), then end.
-  - QUEUE below 4: make ONE video. If it is scheduled before minute 60 and QUEUE is still below 2, make a second one; the engines are fast.
+  - QUEUE 3 or more: do NOT make a new video; short check only (max 15 min: slots right, last posts PUBLISHED, metrics note), then end.
+  - QUEUE 2 or less: make ONE video this run (every run, including the 03:07 queue-check run), then end.
+  - Exception: if the NEXT slot is empty (even with QUEUE 3+), fill it first. Goal: QUEUE stays at 3, so one bad run never empties a slot.
   - Goal: always 2 slots ahead.
 - LATE POST: if a video becomes ready after its slot time, schedule it for now + 3 minutes and confirm it is PUBLISHED. The next video goes to the next normal slot that is at least 4 hours later.
 - Before every createScheduledPost, call getScheduledPosts again; never two posts in one slot. After scheduling, confirm the post is PENDING at the exact time. Check that the slots since the last run are PUBLISHED; if one FAILED, re-post it at once and tell Erkan in one line.
