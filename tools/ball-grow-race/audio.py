@@ -29,4 +29,13 @@ pad=sum(g*np.sin(2*np.pi*f*t+.3*np.sin(2*np.pi*.11*t+f)) for f,g in [(130.81,1),
 m.bed(pad*.0065*(.5+.5*ten))
 for i,f in enumerate([130.81,164.81,196.0,261.63,329.63,392.0]):m.add(EV+.03+i*.05,m.marimba(f,.13,.9),(i-2.5)*.25)
 tt=np.arange(int(SR*.9))/SR;m.add(EV,.08*np.sin(2*np.pi*(70+30*np.exp(-tt*8))*tt)*(1-np.exp(-tt/.012))*np.exp(-tt*5))
+# soft low heartbeat in any quiet stretch (> .7 s without a note) during the last 4 s before the escape (keeps the tension)
+nt=sorted(V(e['t']) for e in bo if e['t']<=ET);hb=EV-4.0
+while hb<EV-.35:
+    prev=max([v for v in nt if v<=hb],default=-9);nxt=min([v for v in nt if v>hb],default=99)
+    if hb-prev>.35 and nxt-hb>.35 and (nxt-prev)>.7:
+        for dt,g in [(0,.10),(.16,.07)]:
+            tt=np.arange(int(SR*.35))/SR;m.add(hb+dt,g*np.sin(2*np.pi*(52+20*np.exp(-tt*25))*tt)*(1-np.exp(-tt/.006))*np.exp(-tt*11))
+        hb+=.62
+    else:hb+=.1
 m.reverb();m.write(sys.argv[2]);print('dur',round(D,2),'bounces',len(bo),'bb',len(bb),'notes before win',sum(1 for e in bo if e['t']<=ET))

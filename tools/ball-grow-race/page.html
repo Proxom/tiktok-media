@@ -24,14 +24,15 @@ function ball(i,bx,by,r,sqx,sqy,sq,al){x.save();x.globalAlpha=al;x.translate(bx,
  x.shadowColor=col(i,60);x.shadowBlur=24;const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);g.addColorStop(0,col(i,88));g.addColorStop(.45,col(i,56));g.addColorStop(1,col(i,24));
  x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.8)';x.beginPath();x.ellipse(-r*.38,-r*.42,r*.27,r*.17,-.6,0,7);x.fill();x.restore()}
 function draw(tv){
- const VF=D.vfps||30,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF)),f=Math.round(ff),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
- const evIn=i=>D.events.some(e=>e.t>f0/FF&&e.t<=f1/FF&&(e.ball===i||e.a===i||e.b===i));
- const pos=i=>{const A0=D.frames[f0][i],A1=D.frames[f1][i];return(A0[3]===A1[3]&&!evIn(i))?[A0[0]+(A1[0]-A0[0])*u,A0[1]+(A1[1]-A0[1])*u,A0[2]+(A1[2]-A0[2])*u,A0[3]]:D.frames[f][i]};
+ const VF=D.vfps||30,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)) /* frames[k] = sim time (k+1)/FF */,f=Math.round(ff),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
+ const evIn=i=>D.events.some(e=>e.t>(f0+1)/FF&&e.t<=(f1+1)/FF&&(e.ball===i||e.a===i||e.b===i));
+ let snap=false;const PP=[0,1,2].map(i=>{const A0=D.frames[f0][i],A1=D.frames[f1][i];if(A0[3]===A1[3]&&!evIn(i))return[A0[0]+(A1[0]-A0[0])*u,A0[1]+(A1[1]-A0[1])*u,A0[2]+(A1[2]-A0[2])*u,A0[3]];snap=true;return D.frames[f][i]});
+ const pos=i=>PP[i],tr=snap?(f+1)/FF:t; // on a collision frame the ball is a raw sim sample: draw the ring at that same sim time (no visible overlap)
  x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
  const tq=t+.5/FF,er=t>=ET?t-ET:-1;
  const nbAll=countAt(bo,tq),lastAll=nbAll>0?bo[nbAll-1]:null,pulse=lastAll?Math.max(0,1-(t-lastAll.t)/.16):0;
  // ring
- const gc=D.a0+D.OM*t,glowGold=er>=0?Math.exp(-er*1.3):0;
+ const gc=D.a0+D.OM*tr,glowGold=er>=0?Math.exp(-er*1.3):0;
  x.save();x.lineCap='round';x.lineWidth=HT*2;
  x.strokeStyle=er>=0?`hsl(45,100%,${62+20*glowGold}%)`:`hsl(${HUE},95%,${62+18*pulse}%)`;x.shadowColor=er>=0?'hsl(45,100%,60%)':`hsl(${HUE},100%,60%)`;x.shadowBlur=22+20*pulse+40*glowGold;
  x.beginPath();x.arc(CX,CY,R,gc+D.GAP,gc-D.GAP+Math.PI*2);x.stroke();x.restore();
@@ -60,9 +61,9 @@ function draw(tv){
   const bx=300,bw=470,by=y0+4,bh=28;x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(bx,by,bw,bh,14);x.fill();
   x.fillStyle=col(i,56);x.shadowColor=col(i,60);x.shadowBlur=12;x.beginPath();x.roundRect(bx,by,Math.max(bh,bw*cl(q)),bh,14);x.fill();x.shadowBlur=0;
   x.strokeStyle='rgba(255,255,255,.5)';x.lineWidth=2.5;x.beginPath();x.roundRect(bx,by,bw,bh,14);x.stroke();
-  x.textAlign='right';x.font=`900 ${Math.round(40*pp)}px "DejaVu Sans"`;x.lineWidth=8;x.strokeText(pct+'%',892,y0+33);x.fillStyle='#fff';x.fillText(pct+'%',892,y0+33);x.restore();
+  x.textAlign='right';x.font=`900 ${Math.round(40*pp)}px "DejaVu Sans"`;x.lineWidth=8;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(pct+'%',892,y0+33);x.fillStyle='#fff';x.fillText(pct+'%',892,y0+33);x.restore();
   if(er>=0&&i===WIN)txt('🏆',y0+32,28,'#fff',1,258,40,'left')}
- if(er>=1.0)txt('Did your color win? 💬',CY+10,54,'#fff',ease((er-1.0)/.35),CX,680);
+ if(er>=1.0){const a=ease((er-1.0)/.35);x.save();x.globalAlpha=a*.85;x.fillStyle='rgba(8,8,30,.9)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(CX-370,CY-58,740,96,30);x.fill();x.stroke();x.restore();txt('Did your color win? 💬',CY+10,54,'#fff',a,CX,680)}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
