@@ -8,6 +8,7 @@ const c=document.getElementById('c'),x=c.getContext('2d');
 const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
 const col=(i,l=58)=>`hsl(${HUES[i]},${SAT[i]}%,${i===2?Math.min(l+4,92):l}%)`;
 const cr=D.events.filter(e=>e.type==='crash'),outs=D.events.filter(e=>e.type==='out'),walls=D.events.filter(e=>e.type==='wall');
+const Rt=tt=>{let r=R;for(const k of (D.kos||[]))r-=(D.SHR||0)*R*cl((tt-k)/(D.SHT||1));return r};
 function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
 function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
@@ -35,39 +36,40 @@ function draw(tv){
  // arena ring (closed)
  const glowGold=er>=0?Math.exp(-er*1.3):0;
  x.save();x.lineWidth=HT*2;x.strokeStyle=er>=0?`hsl(45,100%,${62+20*glowGold}%)`:`hsl(${HUE},95%,${62+16*pulse}%)`;x.shadowColor=er>=0?'hsl(45,100%,60%)':`hsl(${HUE},100%,60%)`;x.shadowBlur=22+18*pulse+40*glowGold;
- x.beginPath();x.arc(CX,CY,R,0,Math.PI*2);x.stroke();x.restore();
+ const RR=Rt(t);x.beginPath();x.arc(CX,CY,RR,0,Math.PI*2);x.stroke();x.restore();
  // wall ripples (soft, fade fast)
  for(let k=countAt(walls,tq)-1;k>=0&&t-walls[k].t<.3;k--){const w=walls[k],q=(t-w.t)/.3;x.save();x.globalAlpha=.45*(1-q);x.strokeStyle=col(w.ball,75);x.lineWidth=3*(1-q)+1;x.beginPath();x.arc(w.x,w.y,5+18*ease(q),0,7);x.stroke();x.restore()}
+ // knock-outs: pop burst in the loser colour + OUT!
+ for(const o of outs){const s=t-o.t;if(s<0||s>1.4)continue;const k=s/1.4,fin=o.t===ET;x.save();x.beginPath();x.arc(CX,CY,RR-HT,0,7);x.clip();x.shadowColor=fin?'#ffd23f':col(o.ball,60);x.shadowBlur=12;
+  for(let i=0;i<(fin?44:30);i++){const a=i*2.39996,h=((i*37)%11)/10,sp=200+380*h,rr=o.r+sp*s,px=o.x+Math.cos(a)*rr,py=o.y+Math.sin(a)*rr+300*s*s;x.globalAlpha=Math.max(0,1-k)*.95;x.fillStyle=i%3===0?'#fff':i%3===1&&fin?'#ffd23f':col(o.ball,62);x.beginPath();x.arc(px,py,8*(1-k)+2.5,0,7);x.fill()}x.restore();
+  if(s<.35){const g2=x.createRadialGradient(o.x,o.y,0,o.x,o.y,200);g2.addColorStop(0,`hsla(${HUES[o.ball]},100%,75%,${.5*(1-s/.35)})`);g2.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g2;x.fillRect(o.x-200,o.y-200,400,400)}
+  const sc=1+.3*Math.exp(-s*6);txt(NAMES[o.ball]+' OUT!',CY-Rt(o.t+(D.SHT||0))+HT+92,54*sc,col(o.ball,72),s<1?1:1-(s-1)/.4,CX,440)}
  // trails then balls (dead balls are gone)
  for(let i=0;i<4;i++){if(PP[i][3]<=0)continue;for(let k=5;k>=1;k--){const p=D.frames[Math.max(0,f-2*k)][i];if(p[3]<=0)continue;x.save();x.globalAlpha=.08*(6-k)/5;x.fillStyle=col(i,60);x.beginPath();x.arc(p[0],p[1],p[2]*(1-.06*k),0,7);x.fill();x.restore()}}
  const lastHit=i=>{for(let k=nc-1;k>=0&&t-cr[k].t<.3;k--)if(cr[k].a===i||cr[k].b===i)return cr[k];return null};
  for(let i=0;i<4;i++){const p=PP[i];if(p[3]<=0)continue;const h=lastHit(i),since=h?t-h.t:9,sq=since<.12?.09*Math.sin(Math.PI*since/.12):0,nx=h?(h.x-p[0]):0,ny=h?(h.y-p[1]):1;
+  if(er>=0&&i===WIN){const a=ease(er/.6);x.save();x.globalAlpha=.55*a;const g3=x.createRadialGradient(p[0],p[1],p[2]*.8,p[0],p[1],p[2]*2.2);g3.addColorStop(0,'rgba(255,215,90,.9)');g3.addColorStop(1,'rgba(255,215,90,0)');x.fillStyle=g3;x.beginPath();x.arc(p[0],p[1],p[2]*2.2,0,7);x.fill();x.restore()}
   const fl=h&&h.loser===i&&since<.22?1-since/.22:0;ball(i,p[0],p[1],p[2],nx,ny,sq,1,p[3],fl)}
  // crash sparks + floating -1 over the loser
  for(let k=nc-1;k>=0&&t-cr[k].t<.75;k--){const e=cr[k],s=t-e.t;
   if(s<.25){const q=s/.25;x.save();x.globalAlpha=.85*(1-q);x.strokeStyle='#fff';x.lineWidth=3;for(let j=0;j<8;j++){const a=j*.785+k,r0=8+40*ease(q),r1=r0+14*(1-q);x.beginPath();x.moveTo(e.x+Math.cos(a)*r0,e.y+Math.sin(a)*r0);x.lineTo(e.x+Math.cos(a)*r1,e.y+Math.sin(a)*r1);x.stroke()}x.restore()}
-  if(e.hp>0){const p=PP[e.loser];txt('-1',p[1]-p[2]-16-60*ease(s/.75),46,col(e.loser,70),s<.5?1:1-(s-.5)/.25,p[0],200)}}
- // knock-outs: pop burst in the loser colour + OUT!
- for(const o of outs){const s=t-o.t;if(s<0||s>1.4)continue;const k=s/1.4,fin=o.t===ET;x.save();x.shadowColor=fin?'#ffd23f':col(o.ball,60);x.shadowBlur=12;
-  for(let i=0;i<(fin?44:30);i++){const a=i*2.39996,h=((i*37)%11)/10,sp=200+380*h,rr=o.r+sp*s,px=o.x+Math.cos(a)*rr,py=o.y+Math.sin(a)*rr+300*s*s;x.globalAlpha=Math.max(0,1-k)*.95;x.fillStyle=i%3===0?'#fff':i%3===1&&fin?'#ffd23f':col(o.ball,62);x.beginPath();x.arc(px,py,8*(1-k)+2.5,0,7);x.fill()}x.restore();
-  if(s<.35){const g2=x.createRadialGradient(o.x,o.y,0,o.x,o.y,200);g2.addColorStop(0,`hsla(${HUES[o.ball]},100%,75%,${.5*(1-s/.35)})`);g2.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g2;x.fillRect(o.x-200,o.y-200,400,400)}
-  const sc=1+.3*Math.exp(-s*6);txt(NAMES[o.ball]+' OUT!',cl(o.y-o.r-34,720,1400),52*sc,col(o.ball,72),s<1?1:1-(s-1)/.4,cl(o.x,280,700),400)}
+  if(e.hp>0){const p=PP[e.loser];txt('-1',Math.max(700,p[1]-p[2]-16-60*ease(s/.75)),46,col(e.loser,70),s<.5?1:1-(s-.5)/.25,p[0],200)}}
  if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.05*(1-er/.25)})`;x.fillRect(0,0,W,H)}
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: hook + rule + health rows
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
  if(er<0){txt('Pick a color 👇 Who survives?',385,54,'#fff',1);txt('Every crash: the SLOWER ball loses 1 HP',437,38,'#ffd23f',1)}
- else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' SURVIVES! 🏆',410,62*s,'#ffd23f',1)}
+ else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' SURVIVES! 🏆',390,60*s,'#ffd23f',1);if(er>=.8)txt('Did your color win? 💬',446,40,'#fff',ease((er-.8)/.35))}
  for(let i=0;i<4;i++){const cx0=i%2?505:95,y0=478+Math.floor(i/2)*64,hp=PP[i][3],dead=hp<=0,h=lastHit(i),hit=h&&h.loser===i?t-h.t:9,pp=hit<.2?1-hit/.2:0;
   x.save();x.globalAlpha=dead?.38:1;ball(i,cx0+22,y0+18,17,0,1,0,1,null,0);
   x.textAlign='left';x.lineJoin='round';x.font='900 28px "DejaVu Sans"';x.lineWidth=7;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(NAMES[i],cx0+50,y0+30);x.fillStyle=col(i,72);x.fillText(NAMES[i],cx0+50,y0+30);
-  const bx=cx0+188,bw=206,by=y0+5,bh=26,gw=(bw-(HP0-1)*4)/HP0;
-  for(let k=0;k<HP0;k++){const on=k<hp;x.fillStyle=on?col(i,56):'rgba(255,255,255,.12)';if(on){x.shadowColor=col(i,60);x.shadowBlur=8}else x.shadowBlur=0;x.beginPath();x.roundRect(bx+k*(gw+4),by,gw,bh,6);x.fill()}
-  x.shadowBlur=0;if(pp>0){x.fillStyle=`rgba(255,255,255,${.6*pp})`;x.beginPath();x.roundRect(bx+hp*(gw+4),by,gw,bh,6);x.fill()}
+  const bx=cx0+196,bw=198,by=y0+5,bh=26,gw=(bw-(HP0-1)*4)/HP0;
+  if(!dead)for(let k=0;k<HP0;k++){const on=k<hp;x.fillStyle=on?col(i,56):'rgba(255,255,255,.12)';if(on){x.shadowColor=col(i,60);x.shadowBlur=8}else x.shadowBlur=0;x.beginPath();x.roundRect(bx+k*(gw+4),by,gw,bh,6);x.fill()}
+  x.shadowBlur=0;if(pp>0&&!dead&&h.hp>=0){x.fillStyle=`rgba(255,255,255,${.6*pp})`;x.beginPath();x.roundRect(bx+h.hp*(gw+4),by,gw,bh,6);x.fill()}
   x.restore();
   if(dead){txt('OUT',y0+30,30,'#fff',.85,cx0+290,200)}
   }
- if(er>=1.0){const a=ease((er-1.0)/.35);x.save();x.globalAlpha=a*.85;x.fillStyle='rgba(8,8,30,.9)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(CX-370,CY-58,740,96,30);x.fill();x.stroke();x.restore();txt('Did your color win? 💬',CY+10,54,'#fff',a,CX,680)}
+
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
