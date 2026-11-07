@@ -8,3 +8,4 @@ Each folder is one format. Read the FORMAT BOOK in ../AGENT.md first (formats, h
 - jelly-press, square-hole, scary-pumpkin, sort-race, pendulum-wave, cafe-wall, odd-donut, phone-1pct, loading-bar, marble-race, sphere-wave: older one-off videos (retired formats), kept as code examples
 Common pattern: sim/gen -> data.js -> page.html draws frame(t) -> render.js (4 parallel processes) -> audio.py -> ffmpeg encode (see AGENT.md).
 three.min.js is copied per folder (r150-era build); use --use-gl=angle --use-angle=swiftshader in Playwright for WebGL.
+- ball-battle: family B last one standing (sim.js seed search, check.js headless logic check, page.html, audio.py). Recipe in AGENT.md STATE 7 Nov 19:40.
