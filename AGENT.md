@@ -37,16 +37,26 @@ v4 keeps what works (ring escape on tools/ball-grow and tools/ball-grow-race), d
 
 ## 4. WHAT TO MAKE (format)
 TikTok here is ENTERTAINMENT: "physics chaos you can't stop watching". No lectures and no explainers; those belong to the Instagram and YouTube accounts.
-1. MAIN FORMAT until 27 Nov = RING ESCAPE (tools/ball-grow): ball(s) inside rotating rings with a gap; escape, +N balls per escape, rings shattering, growth, until chaos.
-   - The colour-race variant (tools/ball-grow-race: "Pick a color: who gets out first? 👇") is about 1 in 3 videos.
-   - From 14 Nov you may test at most 1 in 7 videos as another race or a merge game, at the same quality. Keep that format only if it beats the ring-escape median on views and watch %.
+1. STYLE ROTATION (Erkan, 7 Nov 2026 17:26 — replaces "ring escape main format until 27 Nov" and the "1 in 7 test" rule):
+   - MAX 3 IN A ROW of the same style family, then switch to a different family. Count by publish order in Metricool (published + scheduled). Ring escape and its color-race variant are the SAME family.
+   - Posts already scheduled stay as they are. On 7 Nov the account already had 4+ ring-escape posts in a row (6 Nov 17:00 through 8 Nov 01:00), so the NEXT video you make must be a different family.
+   - STYLE FAMILIES (all code-made physics, entertainment, same quality gate; build or upgrade the engine in tools/ before the first video of a family):
+     A. RING ESCAPE (tools/ball-grow, tools/ball-grow-race): ball(s) in rotating rings with a gap, growth, +N balls, color race.
+     B. BALL BATTLE / LAST ONE STANDING: 2-6 colored balls in an arena, each hit costs health (visible health bar or shrinking size), the last ball alive wins. Hook "Pick a color 👇 who survives?". Rules on screen are exactly what happens.
+     C. OBSTACLE RACE: 4-8 colored balls or marbles race down a vertical obstacle course (pegs, spinners, gates, trap doors) to a finish line; first one in wins. NOT marble music: soft music bed + impact sounds, no note-per-plank.
+     D. PLINKO / PICK A SLOT: balls drop through a peg board into numbered or colored slots; "Which slot gets the most? 👇" with a live counter.
+     E. MERGE GAME (tools/merge-arena, rebuilt to the quality gate): same-level shapes merge into the next level until the biggest appears.
+     F. FIT / ESCAPE CHALLENGE: an object must squeeze through a shrinking gap, a maze or a closing door before time runs out ("Will it make it? 👇").
+   - Rotate through the families; do not start a new family when an engine for it cannot pass the gate this run — use the next family that can.
+   - PERFORMANCE PER FAMILY: tag every video doc with family A-F. In the performance loop, judge each video after 72 h against the account median (views, average watch %, shares, comments) and keep a table per family in learnings/current.
+   - DECIDE FROM DATA: a family whose 3-video batch beats the median (above 1.2x) gets MORE turns (it may come back sooner, but still never more than 3 in a row). A family whose batch is below 0.7x is paused for a week. Explain each decision in one Turkish line in the daily report.
 2. BANNED FOREVER (Erkan, 6 Nov: "quality below zero"): domino, marble or plank music, jelly or soft-body, pendulum and sorting videos. Old merge videos made before 6 Nov 16:06 are not used.
-3. ONE LOOK: the same dark background, palette, font, hook position and ending, so the account is recognisable in one frame.
-4. HOOK: motion from the first frame, plus a big hook text in the top safe band for the first 2-3 s ("Will it escape?", "+2 balls every escape", "Pick a color 👇").
+3. ONE LOOK: the same dark background, palette, font, hook position and ending across all families, so the account is recognisable in one frame.
+4. HOOK: motion from the first frame, plus a big hook text in the top safe band for the first 2-3 s ("Will it escape?", "Pick a color 👇", "Who survives?").
 5. STRUCTURE: tension at the start, accelerating chaos, the payoff at 80-85 % of the length, then a cut back to a frame that matches the start (loop). Length 15-40 s; currently 33-37 s does best.
 6. CAPTION: one short question plus at most 4 hashtags (#satisfying #physics #simulation #oddlysatisfying). Title under 90 characters.
 7. ORIGINAL: every video is a new simulation run (new seed or parameters), never a re-post or near copy.
-8. If a video reaches 3x the median, its variant is the next video.
+8. If a video reaches 3x the median, its family gets the next free turn (within the max-3-in-a-row rule).
 
 ## 5. HARD GATE — the ONLY things that can block a video
 1. TECHNICAL:
