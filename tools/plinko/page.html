@@ -1,0 +1,76 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="data.js"></script><script>
+// Family D "Plinko / pick a bin" renderer (same account look as families A/B: violet background, neon lines, glossy balls, top panel with hook + live counters).
+// Counters are read from the sim's 'land' events; ball positions from the sim frames (frames[k] = sim time k/60), interpolated for slow motion.
+const W=1080,H=1920,D=DATA,HUE=D.hue??305,BG=D.bg||['#2c1446','#130a2a','#05030c'],CX=D.CX,R=D.R,PR=D.PR,BT=D.BT,FL=D.FL,XL=D.XL,XR=D.XR,ET=D.endT,WIN=D.win,DIVS=D.DIVS;
+const NAMES=['RED','BLUE','YELLOW','GREEN'],HUES=[356,204,46,128],SAT=[95,95,100,80],BX=[XL,...DIVS,XR];
+const c=document.getElementById('c'),x=c.getContext('2d');
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
+const col=(i,l=58)=>`hsl(${HUES[i]},${SAT[i]}%,${i===2?Math.min(l+4,92):l}%)`;
+const lands=D.events.filter(e=>e.type==='land'),pegs=D.events.filter(e=>e.type==='peg'),drops=D.events.filter(e=>e.type==='drop');
+const landT={};lands.forEach(e=>landT[e.ball]=e.t);
+function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+ let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
+ let px=align==='center'?cx-w/2:cx;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=colr;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;{const g=bg.getContext('2d');const rg=g.createRadialGradient(CX,1030,40,CX,1030,1200);rg.addColorStop(0,BG[0]);rg.addColorStop(.5,BG[1]);rg.addColorStop(1,BG[2]);g.fillStyle=rg;g.fillRect(0,0,W,H);
+ for(let i=0;i<160;i++){g.fillStyle=`rgba(255,255,255,${.03+.05*((i*37)%7)/7})`;g.beginPath();g.arc((i*7919)%W,(i*104729)%H,1+(i%3)*.6,0,7);g.fill()}}
+function ball(bx,by,r,ci,al,flash){x.save();x.globalAlpha=al;x.translate(bx,by);
+ const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);
+ if(ci<0){x.shadowColor='rgba(220,220,255,.8)';x.shadowBlur=14;g.addColorStop(0,'#ffffff');g.addColorStop(.5,'#d9dcf0');g.addColorStop(1,'#6d7090')}
+ else{x.shadowColor=col(ci,60);x.shadowBlur=12;g.addColorStop(0,col(ci,88));g.addColorStop(.45,col(ci,56));g.addColorStop(1,col(ci,26))}
+ x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;
+ if(flash>0){x.fillStyle=`rgba(255,255,255,${.7*flash})`;x.beginPath();x.arc(0,0,r,0,7);x.fill()}
+ x.fillStyle='rgba(255,255,255,.7)';x.beginPath();x.ellipse(-r*.36,-r*.42,r*.26,r*.15,-.6,0,7);x.fill();x.restore()}
+function seg(x0,y0,x1,y1,w,cs,blur){x.save();x.lineCap='round';x.lineWidth=w;x.strokeStyle=cs;x.shadowColor=cs;x.shadowBlur=blur;x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke();x.restore()}
+function draw(tv){
+ const VF=D.vfps||60,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],ff=Math.min(D.frames.length-1,Math.max(0,t*D.fps)),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
+ const F0=D.frames[f0],F1=D.frames[f1];
+ x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.drawImage(bg,0,0);
+ const EVT=D.tmap.findIndex(v=>v>=ET)/VF,er=t>=ET?Math.max(t-ET,tv-EVT):-1,nl=countAt(lands,t),cnt=nl?lands[nl-1].c:[0,0,0,0],left=D.NB-countAt(drops,t);
+ const mx=Math.max(...cnt),leaders=cnt.map((v,i)=>v===mx&&mx>0?i:-1).filter(i=>i>=0),lead=leaders.length===1?leaders[0]:-1;
+ // bins: tinted fill + glowing floor, the winner bin turns gold at the end
+ for(let i=0;i<4;i++){const x0=BX[i]+4,x1=BX[i+1]-4,win=er>=0&&i===WIN,ga=win?Math.exp(-er*1.1):0;const g=x.createLinearGradient(0,BT,0,FL);
+  g.addColorStop(0,`hsla(${HUES[i]},90%,55%,0)`);g.addColorStop(1,`hsla(${HUES[i]},90%,55%,${win?.42:.22})`);x.fillStyle=g;x.fillRect(x0,BT,x1-x0,FL-BT);
+  // bin landing flash
+  for(let k=nl-1;k>=0&&t-lands[k].t<.3;k--)if(lands[k].bin===i){x.fillStyle=`hsla(${HUES[i]},100%,70%,${.18*(1-(t-lands[k].t)/.3)})`;x.fillRect(x0,BT,x1-x0,FL-BT)}
+  seg(x0+6,FL+6,x1-6,FL+6,8,win?`hsl(45,100%,${60+25*ga}%)`:col(i,60),16+30*ga)}
+ // walls + dividers (neon, account hue)
+ seg(XL-4,640,XL-4,FL+6,8,`hsl(${HUE},95%,64%)`,20);seg(XR+4,640,XR+4,FL+6,8,`hsl(${HUE},95%,64%)`,20);
+ for(const dx of DIVS)seg(dx,BT,dx,FL+6,8,`hsl(${HUE},95%,70%)`,16);
+ // pegs (flash white when hit)
+ const lastPeg={};for(let k=countAt(pegs,t)-1;k>=0&&t-pegs[k].t<.25;k--)if(!(pegs[k].p in lastPeg))lastPeg[pegs[k].p]=pegs[k];
+ D.PEGS.forEach((p,i)=>{const h=lastPeg[i],q=h?1-(t-h.t)/.25:0;x.save();x.shadowColor=q>0?'#fff':`hsl(${HUE},100%,70%)`;x.shadowBlur=10+18*q;x.fillStyle=q>0?`hsl(${HUE},${100-80*q}%,${78+20*q}%)`:`hsl(${HUE},90%,76%)`;
+  x.beginPath();x.arc(p[0],p[1],PR+2.5*q,0,7);x.fill();x.restore()});
+ // dropper: a small chute sliding across the top (position from the sim's dropper rule)
+ {const uu=((t/D.P+D.ph)%1+1)%1,dxp=CX+D.AMP*(uu<.5?4*uu-1:3-4*uu);x.save();x.fillStyle='rgba(8,8,30,.9)';x.strokeStyle=`hsl(${HUE},95%,72%)`;x.shadowColor=`hsl(${HUE},100%,65%)`;x.shadowBlur=14;x.lineWidth=4;
+  x.beginPath();x.roundRect(dxp-34,646,68,26,10);x.fill();x.stroke();x.restore();
+  if(left>0){x.save();x.globalAlpha=.9;ball(dxp,659,8,-1,.9,0);x.restore()}}
+ // balls: white while falling, bin color once they count
+ const fr=[];for(let i=0;i<F0.length;i++){const a=F0[i],b=F1[i]||a,lx=a[0]+(b[0]-a[0])*u,ly=a[1]+(b[1]-a[1])*u,lt=landT[i],ci=lt!=null&&t>=lt?D.binOfBall[i]:-1,fl=lt!=null&&t>=lt&&t-lt<.25?1-(t-lt)/.25:0;
+  if(ci<0){for(let k=4;k>=1;k--){const pf=D.frames[Math.max(0,f0-2*k)][i];if(!pf)continue;x.save();x.globalAlpha=.07*(5-k);x.fillStyle='#dfe2ff';x.beginPath();x.arc(pf[0],pf[1],R*(1-.08*k),0,7);x.fill();x.restore()}}
+  fr.push([lx,ly,ci,fl])}
+ for(const q of fr)ball(q[0],q[1],R,q[2],1,q[3]);
+ // +1 pops above the bin on every landing
+ for(let k=nl-1;k>=0&&t-lands[k].t<.7;k--){const e=lands[k],s=t-e.t,bx=(BX[e.bin]+BX[e.bin+1])/2;txt('+1',BT-18-50*ease(s/.7),40,col(e.bin,72),s<.45?1:1-(s-.45)/.25,bx,160)}
+ // winner confetti out of the winning bin
+ if(er>=0&&er<2.2){const bx=(BX[WIN]+BX[WIN+1])/2;x.save();for(let i=0;i<70;i++){const a=-Math.PI/2+(((i*37)%23)/22-.5)*1.5,sp=520+520*((i*53)%17)/16,px=bx+Math.cos(a)*sp*er,py=BT+40+Math.sin(a)*sp*er+700*er*er;
+   if(py<640)continue;x.globalAlpha=Math.max(0,1-er/2.2);x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-7,-4,14,8);x.restore()}x.restore()}
+ if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.06*(1-er/.25)})`;x.fillRect(0,0,W,H)}
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ // top panel: hook + rule/balls left + live counters (one column per bin)
+ x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
+ if(er<0){txt('Pick a color 👇 Which bin wins?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);txt(`Most balls wins · ${left} ${left===1?'ball':'balls'} left`,437,38,'#ffd23f',1)}
+ else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' WINS! 🏆',390,60*s,'#ffd23f',1);txt(er>=.8?'Did your color win? 💬':`${cnt[WIN]} balls · won by 1`,446,40,'#fff',er>=.8?ease((er-.8)/.35):1)}
+ for(let i=0;i<4;i++){const cx0=175+i*217,isL=er<0?lead===i:i===WIN,last=nl&&lands[nl-1].bin===i?t-lands[nl-1].t:9,pp=last<.25?1-last/.25:0;
+  x.save();if(isL){x.strokeStyle='rgba(255,210,63,.95)';x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
+  txt(NAMES[i],514,30,col(i,72),1,cx0,170);
+  txt(String(cnt[i]),588,62*(1+.25*pp),'#fff',1,cx0,180);
+ }
+ // FOLLOW CALL (main goal, 8 Nov): small pill over the empty peg board for the last FOLLOWS seconds, then the loop cuts back to frame 0
+ {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||1000;x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
+ return c.toDataURL('image/jpeg',0.93)}
+window.draw=draw;
+</script>
