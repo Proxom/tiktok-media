@@ -54,7 +54,7 @@ for(let s=SEED;s<SEED+3000;s++){const r=run(s);
  const e=r.events.find(q=>q.type==='escape');log.push(s+':esc'+r.escT.toFixed(1)+'@'+e.ratio.toFixed(2));
  const first=r.events.find(q=>q.type==='bounce');
  const last=r.frames[r.frames.length-1];
- if(r.escT>MIN&&r.escT<MAX&&e.ratio>=MINRATIO&&r.maxPen<1.0&&r.teleport===0&&r.outsideTouch===0&&first.t<1.0&&last[1]>2000&&r.events.find(q=>q.type==="escape").y<(+process.env.ESCMAXY||9999)&&r.frames.every(q=>q[1]-q[2]>(+process.env.TOPMIN||0))&&(e=>e.x-e.r>(+process.env.ESCXMIN||-1e9)&&e.x+e.r<(+process.env.ESCXMAX||1e9))(r.events.find(q=>q.type==="escape"))){res=r;break}}
+ if(r.escT>MIN&&r.escT<MAX&&e.ratio>=MINRATIO&&r.maxPen<1.0&&r.teleport===0&&r.outsideTouch===0&&first.t<1.0&&last[1]>2000&&r.events.find(q=>q.type==="escape").y<(+process.env.ESCMAXY||9999)&&r.frames.every(q=>q[1]-q[2]>(+process.env.TOPMIN||0))&&r.frames.every(q=>q[3]===0||q[1]-q[2]>1920||(q[0]-q[2]>=0&&q[0]+q[2]<=1080&&q[1]-q[2]>=(+process.env.TOPMIN||0))) /* escaped ball stays fully in frame until it drops off the bottom (review 8 Nov) */&&(e=>e.x-e.r>(+process.env.ESCXMIN||-1e9)&&e.x+e.r<(+process.env.ESCXMAX||1e9))(r.events.find(q=>q.type==="escape"))){res=r;break}}
 if(!res){console.log(log.slice(-60).join(' '));process.exit(1)}
 const bo=res.events.filter(e=>e.type==='bounce'),gaps=bo.slice(1).map((e,i)=>e.t-bo[i].t);
 const rate=[0,10,20,30,40].map(a=>bo.filter(e=>e.t>=a&&e.t<a+10).length/10);
