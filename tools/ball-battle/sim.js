@@ -57,9 +57,9 @@ for(let s=SEED;s<SEED+6000;s++){const r=run(s);
  if(r.fail){log.push(s+':'+r.fail);continue}
  const outs=r.events.filter(e=>e.type==='out').map(e=>e.t),whp=r.frames[r.frames.length-1][r.win][3];
  log.push(s+':end'+r.endT.toFixed(1)+' outs '+outs.map(v=>v.toFixed(1)).join(',')+' whp'+whp+' ties'+r.ties);
- const sp=outs.length===3&&outs[0]>7&&outs[1]-outs[0]>3&&outs[2]-outs[1]>3.5&&outs[2]-outs[1]<(+process.env.DUELMAX||99)&&outs[1]-outs[0]<(+process.env.MIDMAX||99);
+ const sp=outs.length===3&&outs[0]>7&&outs[0]<(+process.env.FIRSTMAX||99)&&outs[1]-outs[0]>3&&outs[2]-outs[1]>3.5&&outs[2]-outs[1]<(+process.env.DUELMAX||99)&&outs[1]-outs[0]<(+process.env.MIDMAX||99);
  const ct=r.events.filter(e=>e.type==="crash").map(e=>e.t),mg=Math.max(...ct.slice(1).map((v,i)=>v-ct[i]));
- if(mg<(+process.env.MAXGAP||99)&&r.endT>MIN&&r.endT<MAX&&sp&&whp<=WINMAX&&r.ties===0&&r.tunnel===0&&r.outside===0&&r.maxPen<1.0&&r.maxStep<.25){res=r;break}}
+ if((process.env.WINEX||"").split(",").indexOf(String(r.win))<0&&mg<(+process.env.MAXGAP||99)&&r.endT>MIN&&r.endT<MAX&&sp&&whp<=WINMAX&&r.ties<=(+process.env.TIEMAX||0)&&r.tunnel===0&&r.outside===0&&r.maxPen<1.0&&r.maxStep<.25){res=r;break}}
 if(!res){console.log(log.slice(-40).join('\n'));process.exit(1)}
 const cr=res.events.filter(e=>e.type==='crash');
 console.log('seed',res.seed,'winner',res.win,'end',res.endT.toFixed(2),'outs',res.events.filter(e=>e.type==='out').map(e=>e.ball+'@'+e.t.toFixed(1)).join(' '),'winnerHP',res.frames[res.frames.length-1][res.win][3],

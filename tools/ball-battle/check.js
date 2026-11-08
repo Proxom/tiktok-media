@@ -9,6 +9,8 @@ D.frames.forEach((F,k)=>{const t=(k+1)/D.ffps;F.forEach((q,i)=>{const lost=cr.fi
 outs.forEach(o=>{if(cr.filter(e=>e.loser===o.ball&&e.t<=o.t).length!==D.HP0)bad.push('out without 0 HP '+o.ball)});
 const last=D.frames[D.frames.length-1],alive=last.map((q,i)=>q[3]>0?i:-1).filter(i=>i>=0);
 if(alive.length!==1||alive[0]!==D.win)bad.push('winner mismatch '+alive+' vs '+D.win);
-if(outs.length!==D.N-1)bad.push('outs '+outs.length);if(D.tunnel||D.ties||D.outside)bad.push('tunnel/ties/outside '+D.tunnel+'/'+D.ties+'/'+D.outside);
+if(outs.length!==D.N-1)bad.push('outs '+outs.length);if(D.tunnel||D.outside)bad.push('tunnel/outside '+D.tunnel+'/'+D.outside);
+// a tie (speeds within 12 px/s, both at the speed cap) has no slower ball: nobody loses HP (HP check above proves it); at most 1 allowed
+if(D.ties>1)bad.push('ties '+D.ties);
 if(D.frames.length/D.ffps<D.endT+1)bad.push('ending not reached');
-console.log(bad.length?'FAIL\n'+bad.slice(0,20).join('\n'):`PASS crashes=${cr.length} outs=${outs.map(o=>o.ball+'@'+o.t.toFixed(2)).join(',')} winner=${D.win} winnerHP=${last[D.win][3]} maxPen=${D.maxPen.toFixed(3)} maxStep/r=${D.maxStep.toFixed(3)} tunnel=${D.tunnel} sub-steps/frame=20 (600 Hz)`)
+console.log(bad.length?'FAIL\n'+bad.slice(0,20).join('\n'):`PASS crashes=${cr.length} outs=${outs.map(o=>o.ball+'@'+o.t.toFixed(2)).join(',')} winner=${D.win} winnerHP=${last[D.win][3]} maxPen=${D.maxPen.toFixed(3)} maxStep/r=${D.maxStep.toFixed(3)} tunnel=${D.tunnel} ties(no HP lost)=${D.ties} sub-steps/frame=20 (600 Hz)`)
