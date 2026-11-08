@@ -73,9 +73,9 @@ if(!res){console.log(log.slice(-30).join('\n'));process.exit(1)}
 console.log('seed',res.seed,'winner',res.win,'counts',res.cnt.join('/'),'margin',res.margin,'leadChanges',res.changes,'lastDecides',res.lastDecides,'endT',res.endT.toFixed(2),
  'pegHits',res.events.filter(e=>e.type==='peg').length,'maxPen',res.maxPen.toFixed(2),'maxStep/r',res.maxStep.toFixed(3),'tunnel',res.tunnel,'tried',log.length);
 {const SP=+process.env.SLOW||.4,s0=res.endT-(+process.env.S0||1.0),s1=res.endT+(+process.env.S1||.4),TAIL=+process.env.TAIL||3.6,end=Math.min((res.frames.length-1)/60,res.endT+TAIL);
- const VF=60;res.vfps=VF;const tm=[];let ts=0,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
+ const VF=60;res.vfps=VF;const PRE=+process.env.PRE||0;res.pre=PRE;const tm=[];let ts=PRE,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
  // hold the last sim frame for the tail if the sim settled early
- while(tm.length/VF<res.endT+TAIL+(1/SP-1)*(s1-s0)*.8)tm.push(+Math.min(ts,(res.frames.length-1)/60).toFixed(4)),ts+=1/VF;
+ while(tm.length/VF<res.endT-PRE+TAIL+(1/SP-1)*(s1-s0)*.8)tm.push(+Math.min(ts,(res.frames.length-1)/60).toFixed(4)),ts+=1/VF;
  res.tmap=tm;console.log('video frames',tm.length,'video dur',(tm.length/VF).toFixed(2),'last land at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2))}
 delete res.finalBin;
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');

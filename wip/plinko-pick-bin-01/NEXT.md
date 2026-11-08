@@ -6,3 +6,6 @@ Result: RED 11 / BLUE 9 / YELLOW 6 / GREEN 10, won by 1, the last ball breaks a 
 Caption: Pick a color before the first ball lands 👇 36 balls, 4 bins, most balls wins. Did yours win? Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: Pick a color 👇 36 balls drop. Which bin gets the most?
 Slot: 9 Nov 21:00 Europe/London.
+Review v1 (seed 304, 32.9 s): logic PASS, 6.8 (hook 6, pacing 6) -> fixed once (§6): video starts 2.6 s into the sim (PRE 2.6, first +1 at 1.4 s), panel counts balls still to land + "LAST BALL! 👀 Who gets it?" with a gold glow on that ball, "won by 1!" held 1.6 s, bigger +1, winner bin keeps its red floor + gold outline, confetti clipped to the board, board dimmed behind the follow pill.
+Final: PRE=2.6 TAIL=4.4 LASTDECIDES=1 node sim.js data.js 300 -> seed 304; 30.3 s 60 fps CRF 16, -14.0 LUFS TP -2.3, 4k band 34.9 dB below; last landing at video 25.5 s (84%).
+DONE: media/plinko-pick-bin-01 (mp4 + cover.jpg).

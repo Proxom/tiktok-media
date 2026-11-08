@@ -8,6 +8,7 @@ sys.path.insert(0,__file__.rsplit('/',2)[0]);from sfx import Mix,hz,SR
 d=json.loads(open(sys.argv[1]).read().split('=',1)[1].rstrip(';\n'))
 TM=np.array(d['tmap']);VF=d.get('vfps',60);TV=np.arange(len(TM))/VF
 def V(s):
+    if s<TM[0]:return -1.0
     i=int(np.searchsorted(TM,s-1e-9));return float(TV[min(i,len(TV)-1)])
 D=len(TM)/VF;ET=d['endT'];EV=V(ET);CX=d['CX'];m=Mix(D,d['seed'])
 MEL=('E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4 D4 D4 '
@@ -16,15 +17,16 @@ MEL=('E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4 D4 D4 '
 lands=[e for e in d['events'] if e['type']=='land'];pegs=[e for e in d['events'] if e['type']=='peg'];drops=[e for e in d['events'] if e['type']=='drop']
 BX=[d['XL']]+d['DIVS']+[d['XR']]
 for k,e in enumerate(lands):
-    if abs(e['t']-ET)<1e-9:continue
+    if abs(e['t']-ET)<1e-9 or e['t']<TM[0]:continue
     f=hz(MEL[k%len(MEL)]);pan=((BX[e['bin']]+BX[e['bin']+1])/2-CX)/520
     m.add(V(e['t']),m.marimba(f,.20,.8),pan);m.add(V(e['t']),m.wood(f/2,.07),pan)
 lastp=-9
 for e in pegs:
     v=V(e['t'])
-    if v-lastp<.045:continue
+    if v<0 or v-lastp<.045:continue
     lastp=v;m.add(v,m.wood(196.0 if e['p']%2 else 174.61,.012+.012*min(1,e['v']/700)),(e['x']-CX)/520)
-for e in drops:m.add(V(e['t']),m.wood(110.0,.03),(e['x']-CX)/520)
+for e in drops:
+    if e['t']>=TM[0]:m.add(V(e['t']),m.wood(110.0,.03),(e['x']-CX)/520)
 v=V(ET);tt=np.arange(int(SR*.9))/SR
 m.add(v,.10*np.sin(2*np.pi*(62+30*np.exp(-tt*8))*tt)*(1-np.exp(-tt/.012))*np.exp(-tt*5))
 for i,f in enumerate([130.81,164.81,196.0,261.63,329.63,392.0]):m.add(v+.03+i*.05,m.marimba(f,.14,.9),(i-2.5)*.25)

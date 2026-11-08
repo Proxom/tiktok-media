@@ -29,14 +29,14 @@ function draw(tv){
  const VF=D.vfps||60,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],ff=Math.min(D.frames.length-1,Math.max(0,t*D.fps)),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
  const F0=D.frames[f0],F1=D.frames[f1];
  x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.drawImage(bg,0,0);
- const EVT=D.tmap.findIndex(v=>v>=ET)/VF,er=t>=ET?Math.max(t-ET,tv-EVT):-1,nl=countAt(lands,t),cnt=nl?lands[nl-1].c:[0,0,0,0],left=D.NB-countAt(drops,t);
+ const EVT=D.tmap.findIndex(v=>v>=ET)/VF,er=t>=ET?Math.max(t-ET,tv-EVT):-1,nl=countAt(lands,t),cnt=nl?lands[nl-1].c:[0,0,0,0],left=D.NB-nl;
  const mx=Math.max(...cnt),leaders=cnt.map((v,i)=>v===mx&&mx>0?i:-1).filter(i=>i>=0),lead=leaders.length===1?leaders[0]:-1;
  // bins: tinted fill + glowing floor, the winner bin turns gold at the end
  for(let i=0;i<4;i++){const x0=BX[i]+4,x1=BX[i+1]-4,win=er>=0&&i===WIN,ga=win?Math.exp(-er*1.1):0;const g=x.createLinearGradient(0,BT,0,FL);
   g.addColorStop(0,`hsla(${HUES[i]},90%,55%,0)`);g.addColorStop(1,`hsla(${HUES[i]},90%,55%,${win?.42:.22})`);x.fillStyle=g;x.fillRect(x0,BT,x1-x0,FL-BT);
   // bin landing flash
   for(let k=nl-1;k>=0&&t-lands[k].t<.3;k--)if(lands[k].bin===i){x.fillStyle=`hsla(${HUES[i]},100%,70%,${.18*(1-(t-lands[k].t)/.3)})`;x.fillRect(x0,BT,x1-x0,FL-BT)}
-  seg(x0+6,FL+6,x1-6,FL+6,8,win?`hsl(45,100%,${60+25*ga}%)`:col(i,60),16+30*ga)}
+  if(win){x.save();x.shadowColor='#ffd23f';x.shadowBlur=40;x.strokeStyle=`rgba(255,210,63,${.35+.5*ga})`;x.lineWidth=6;x.strokeRect(x0+2,BT,x1-x0-4,FL-BT+10);x.restore()}seg(x0+6,FL+6,x1-6,FL+6,win?12:8,col(i,win?66:60),16+30*ga)}
  // walls + dividers (neon, account hue)
  seg(XL-4,640,XL-4,FL+6,8,`hsl(${HUE},95%,64%)`,20);seg(XR+4,640,XR+4,FL+6,8,`hsl(${HUE},95%,64%)`,20);
  for(const dx of DIVS)seg(dx,BT,dx,FL+6,8,`hsl(${HUE},95%,70%)`,16);
@@ -52,25 +52,26 @@ function draw(tv){
  const fr=[];for(let i=0;i<F0.length;i++){const a=F0[i],b=F1[i]||a,lx=a[0]+(b[0]-a[0])*u,ly=a[1]+(b[1]-a[1])*u,lt=landT[i],ci=lt!=null&&t>=lt?D.binOfBall[i]:-1,fl=lt!=null&&t>=lt&&t-lt<.25?1-(t-lt)/.25:0;
   if(ci<0){for(let k=4;k>=1;k--){const pf=D.frames[Math.max(0,f0-2*k)][i];if(!pf)continue;x.save();x.globalAlpha=.07*(5-k);x.fillStyle='#dfe2ff';x.beginPath();x.arc(pf[0],pf[1],R*(1-.08*k),0,7);x.fill();x.restore()}}
   fr.push([lx,ly,ci,fl])}
+ if(left===1&&er<0){const lb=D.events.filter(e=>e.type==='land').slice(-1)[0].ball,q=fr[lb];if(q){x.save();const g=x.createRadialGradient(q[0],q[1],R*.6,q[0],q[1],R*3.2);g.addColorStop(0,'rgba(255,215,90,.75)');g.addColorStop(1,'rgba(255,215,90,0)');x.fillStyle=g;x.beginPath();x.arc(q[0],q[1],R*3.2,0,7);x.fill();x.restore()}}
  for(const q of fr)ball(q[0],q[1],R,q[2],1,q[3]);
  // +1 pops above the bin on every landing
- for(let k=nl-1;k>=0&&t-lands[k].t<.7;k--){const e=lands[k],s=t-e.t,bx=(BX[e.bin]+BX[e.bin+1])/2;txt('+1',BT-18-50*ease(s/.7),40,col(e.bin,72),s<.45?1:1-(s-.45)/.25,bx,160)}
+ for(let k=nl-1;k>=0&&t-lands[k].t<.7;k--){const e=lands[k],s=t-e.t,bx=(BX[e.bin]+BX[e.bin+1])/2;txt('+1',BT-18-60*ease(s/.7),54,col(e.bin,72),s<.45?1:1-(s-.45)/.25,bx,160)}
  // winner confetti out of the winning bin
- if(er>=0&&er<2.2){const bx=(BX[WIN]+BX[WIN+1])/2;x.save();for(let i=0;i<70;i++){const a=-Math.PI/2+(((i*37)%23)/22-.5)*1.5,sp=520+520*((i*53)%17)/16,px=bx+Math.cos(a)*sp*er,py=BT+40+Math.sin(a)*sp*er+700*er*er;
+ if(er>=0&&er<2.2){const bx=(BX[WIN]+BX[WIN+1])/2;x.save();x.beginPath();x.rect(XL,640,XR-XL,FL-634);x.clip();for(let i=0;i<70;i++){const a=-Math.PI/2+(((i*37)%23)/22-.5)*1.5,sp=520+520*((i*53)%17)/16,px=bx+Math.cos(a)*sp*er,py=BT+40+Math.sin(a)*sp*er+700*er*er;
    if(py<640)continue;x.globalAlpha=Math.max(0,1-er/2.2);x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-7,-4,14,8);x.restore()}x.restore()}
  if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.06*(1-er/.25)})`;x.fillRect(0,0,W,H)}
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: hook + rule/balls left + live counters (one column per bin)
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
- if(er<0){txt('Pick a color 👇 Which bin wins?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);txt(`Most balls wins · ${left} ${left===1?'ball':'balls'} left`,437,38,'#ffd23f',1)}
- else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' WINS! 🏆',390,60*s,'#ffd23f',1);txt(er>=.8?'Did your color win? 💬':`${cnt[WIN]} balls · won by 1`,446,40,'#fff',er>=.8?ease((er-.8)/.35):1)}
+ if(er<0){txt('Pick a color 👇 Which bin wins?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);if(left===1)txt('LAST BALL! 👀 Who gets it?',437,40*(1+.06*Math.sin(t*14)),'#ffd23f',1);else txt(`Most balls wins · ${left} balls left`,437,38,'#ffd23f',1)}
+ else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' WINS! 🏆',390,60*s,'#ffd23f',1);txt(er>=1.6?'Did your color win? 💬':`${cnt[WIN]} balls · won by ${D.margin}!`,446,40,'#fff',er>=1.6?ease((er-1.6)/.35):1)}
  for(let i=0;i<4;i++){const cx0=175+i*217,isL=er<0?lead===i:i===WIN,last=nl&&lands[nl-1].bin===i?t-lands[nl-1].t:9,pp=last<.25?1-last/.25:0;
   x.save();if(isL){x.strokeStyle='rgba(255,210,63,.95)';x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
   txt(NAMES[i],514,30,col(i,72),1,cx0,170);
   txt(String(cnt[i]),588,62*(1+.25*pp),'#fff',1,cx0,180);
  }
  // FOLLOW CALL (main goal, 8 Nov): small pill over the empty peg board for the last FOLLOWS seconds, then the loop cuts back to frame 0
- {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||1000;x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
+ {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||1000;x.save();x.globalAlpha=.5*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
