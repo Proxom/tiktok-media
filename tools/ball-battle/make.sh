@@ -5,10 +5,11 @@
 #    + 2-pass linear loudnorm I -14 / TP -2.5 / LRA 20, 4) H.264 CRF 16 yuv420p + AAC 192k, faststart.
 set -e
 D=$(cd "$(dirname "$0")" && pwd); OUT=$(realpath -m "$1"); WK=${2:-4}; TMP=${TMPD:-/tmp/claude-0/bb/build}
-rm -rf "$TMP"; mkdir -p "$TMP/f"
+python3 -c "import numpy" || { echo "numpy missing: python3 -m pip install numpy"; exit 1; }
+if [ -z "$SKIPRENDER" ]; then rm -rf "$TMP"; mkdir -p "$TMP/f"; fi   # SKIPRENDER=1 reuses frames already in $TMP/f
 N=$(node -e "global.window={};require('$D/data.js');console.log(window.DATA.tmap.length)")
 echo "frames $N workers $WK"; S=$(( (N+WK-1)/WK ))
-for ((w=0;w<WK;w++)); do A=$((w*S)); B=$(( (w+1)*S<N ? (w+1)*S : N )); VFPS=60 node "$D/render.js" "$TMP/f" $A $B & done; wait
+[ -z "$SKIPRENDER" ] && for ((w=0;w<WK;w++)); do A=$((w*S)); B=$(( (w+1)*S<N ? (w+1)*S : N )); VFPS=60 node "$D/render.js" "$TMP/f" $A $B & done; wait
 python3 "$D/audio.py" "$D/data.js" "$TMP/a.wav"
 PRE="acompressor=threshold=0.06:ratio=3:attack=10:release=200,lowpass=f=7500,highshelf=f=5000:g=-4"
 J=$(ffmpeg -hide_banner -nostats -i "$TMP/a.wav" -af "$PRE,loudnorm=I=-14:TP=-2.5:LRA=20:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p')
