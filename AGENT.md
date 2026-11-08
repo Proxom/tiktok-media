@@ -2,6 +2,17 @@
 
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
+## WEEKLY MARKET SCAN + REPORTS FOR THE GENERAL MANAGER (Erkan, 8 Nov 2026 08:38)
+Erkan reads only the general manager's (Claude's) combined report, not each agent. So every agent writes its reports as files in THIS REPO too (the general manager reads them with git), in addition to the dashboard:
+1. DAILY: the daily report also goes to reports/daily-<YYYY-MM-DD>.md (Turkish, max 25 lines: yesterday's posts with views / watch % / shares / comments, the best and worst and why, today's decision, problems, open approvals).
+2. WEEKLY MARKET SCAN, in the Monday queue-check (night) run, max 20 minutes, after the slots are safe:
+   - Find 5-10 videos or accounts in our niche on our platform that took off in the last 1-2 weeks (WebSearch, Parallel or Firecrawl search; no paid tools).
+   - For each: link, views, and what made it work (hook in the first second, length, look, title or caption, sound, series, posting pattern).
+   - Write reports/market-<YYYY-MM-DD>.md (Turkish, max 40 lines) with 1-3 concrete ideas for us and how you will test them.
+   - Never copy their videos, images or wording; learn the system only.
+3. WHAT YOU MAY CHANGE YOURSELF: at most 2 small tests per week (a hook style, title pattern, length, topic or sound idea) inside the existing rules, each measured after 72 h and reported.
+4. WHAT NEEDS ERKAN: a new style family, dropping or changing a main format, bringing back a banned style, or any change to this AGENT.md. Write it as an approval request (collection approvals) and also list it under "Onay bekleyenler" in the market report. Never edit AGENT.md yourself.
+
 ## 0. WHY v4 (Erkan, 7 Nov 2026 12:26)
 The Instagram agent missed the 7 Nov 01:00 slot because its rules had piled up into contradictions and an unreachable gate. The same layers exist here:
 - 3 loudness targets, 4 length rules (10-30, 25-45, 30-60, 15-35 s), 3 schedules and queue caps.
