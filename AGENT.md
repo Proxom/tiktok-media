@@ -2,6 +2,13 @@
 
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
+## 3 VIDEOS A DAY, 3 DIFFERENT STYLES A DAY (Erkan, 8 Nov 2026 13:23) — from 9 Nov 2026; review on 16 Nov; overrides "2 videos a day" and the queue numbers in section 2
+1. SLOTS: 3 videos a day at 01:00, 17:00 and 21:00 Europe/London. From 9 Nov every day must have all three. Posts already scheduled stay as they are.
+2. ONE STYLE PER SLOT, 3 DIFFERENT STYLE FAMILIES EVERY DAY (families A-F in section 4). Rotate which family goes in which slot from day to day, so time and style are not mixed up (a family that went out at 01:00 yesterday goes at 17:00 or 21:00 today). Over each 7 days every family whose engine passes the gate should get at least 3 posts. Ring escape (A) is limited to 1 a day until its 72 h numbers beat the others.
+3. Building a new engine for a family (B-F) is done inside the normal 2-hour run, one family at a time; while an engine is not ready, use the families that are, still 3 different ones per day where possible (2 different at minimum).
+4. QUEUE: 3 or more: no new video. 2: make 1. 1 or 0: make 2 in this run (the next slot is filled first).
+5. SCOREBOARD: every daily report (reports/daily-<date>.md) has a table per family: posts, median views at 24 h and 72 h, average watch %, shares, comments, followers gained. On 16 Nov write reports/3aday-result.md: did 3 a day lower views per video, followers per day before and after, which family wins, and a proposal (keep 3 a day or go back to 2; which family gets more turns).
+
 ## MAIN GOAL: 10,000 FOLLOWERS AS FAST AS POSSIBLE (Erkan, 8 Nov 2026 09:18) — this goal decides between options; views only matter when they turn into follows
 1. FOLLOW CALL ON SCREEN: the last 1-1.5 s of every video shows a short follow line in the lower safe area (e.g. "Follow → next one tomorrow"). It must not break the loop: keep it small, then cut back to the first frame. The caption/description still carries the follow line.
 2. SERIES + PART 2 PROMISE: when a topic clearly has a sequel, end with "Part 2 tomorrow 👀" (on screen and in the caption) and keep the promise: the Part 2 goes out in the next 1-2 slots (it takes priority over other topics and over rotation, but still counts toward the max-3-in-a-row rule). Never promise a Part 2 you cannot deliver.
