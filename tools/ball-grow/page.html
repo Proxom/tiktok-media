@@ -57,9 +57,9 @@ function draw(tv){
  const bx=110,bw=780,by=546,bh=40;x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(bx,by,bw,bh,20);x.fill();
  x.fillStyle=rcol(qd,58);x.shadowColor=rcol(qd,60);x.shadowBlur=14;x.beginPath();x.roundRect(bx,by,Math.max(bh,bw*cl(qd)),bh,20);x.fill();x.shadowBlur=0;
  x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=3;x.beginPath();x.roundRect(bx,by,bw,bh,20);x.stroke();x.restore();
- if(er>=1.0)txt('What % did you guess? 💬',CY+10,54,'#fff',ease((er-1.0)/.35),CX,680);
+ if(er>=1.0){const qa=ease((er-1.0)/.35);txt('What % did',CY-70,84,'#fff',qa,CX,640);txt('you guess? 💬',CY+30,84,'#fff',qa,CX,640)} /* review 9 Nov: end question 1.5x bigger, two lines */
  // FOLLOW CALL (AGENT.md main goal, 8 Nov): small pill in the lower safe area for the last FOLLOWS seconds, then the loop cuts back to frame 0
- {const DUR=D.tmap.length/(D.vfps||30),FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||1330;x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.86)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
+ {const DUR=D.tmap.length/(D.vfps||30),FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||(CY+175); /* review 9 Nov: pill inside the empty ring, off the ring stroke */x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.86)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-310,PY-52,620,80,40);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+4,44,'#ffd23f',fa,CX,570)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
