@@ -2,6 +2,21 @@
 
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
+## 17:00 = OUR VERSION OF A PROVEN 1M+ PHYSICS SIMULATION, IN ORDER (Erkan, 9 Nov 2026 21:15) — from 10 Nov, every day; overrides family choice for the 17:00 slot only (the other two daily slots keep 2 different families)
+1. The 17:00 video every day is OUR OWN VERSION of a ball/physics simulation short that already reached 1,000,000+ views (TikTok or YouTube Shorts). The idea is free to use; the video must be 100% ours: our own simulation run, our own look (our dark background, palette, font, hook band), our own text and sound (soft instrument, no banned sounds). Never re-upload, screen-record or copy frames, titles or captions. Log `outlier: <original title + link + views>` in the video doc. Before making each one, confirm the original's view count is above 1M on its page (if only likes are visible and they are above 100K, count it); if not, skip it.
+2. ORDER (most viewed first; one per day: 10 Nov = #1, 11 Nov = #2, ...; skip only if the hard gate cannot be met, then come back):
+   1. "Reminds me of something 💀" melody ball in a circle (satisfying.ba11s, ~67M, Dec 2023): one ball bouncing inside a circle, every hit plays the next note of a known public-domain melody, its trail draws a pattern → our twist: the drawing is revealed at the end ("Guess what it draws 👇").
+   2. Square bouncing inside a shrinking square (~38M, YouTube, linked in Know Your Meme "Will the Ball Escape?") → our twist: a counter "% space left".
+   3. Numbered "Choose your color" marble track elimination (@marble.track.game "Game 187", ~1.4M likes) → our Game N series, last place out at each checkpoint.
+   4. Marble disaster race (Crazy Marble Race EP.18, 6.1M) → obstacles that change mid-race; first to the finish wins.
+   5. "Will the ball manage to escape this time?" regenerating ring walls (CodeCraftedPhysics, 4.4M) → the wall heals; does the ball break out?
+   6. 1v10 dodgeball (AI Warehouse, 4.2M) → 1 ball vs 10 chasers, how long does it survive? (scripted physics, no claim of AI).
+   7. 24 marble survival (Crazy Marble Race, 2.5M) → last marble standing on a shrinking platform.
+   8. "Can the ball escape 1000 rings?" (@satisfyingtime22 and others, hundreds of thousands of likes) → our ring-escape engine with a huge ring count and a live counter.
+3. Each one still follows our hard gate (logic, no tunnelling, safe zones, soft sound) and counts as its family (A-F) in the daily table.
+4. WHEN THE LIST ENDS (or earlier, in each Monday market scan): find new physics/ball simulation shorts above 1,000,000 views, add them to reports/outliers.md (link, views, why it worked, our twist), sorted by views, and continue in that order. Never repeat one.
+5. In every daily report: the 17:00 video's views, average watch %, shares and follows at 24 h and 72 h vs our median.
+
 ## 3 VIDEOS A DAY, 3 DIFFERENT STYLES A DAY (Erkan, 8 Nov 2026 13:23) — from 9 Nov 2026; review on 16 Nov; overrides "2 videos a day" and the queue numbers in section 2
 1. SLOTS: 3 videos a day at 01:00, 17:00 and 21:00 Europe/London. From 9 Nov every day must have all three. Posts already scheduled stay as they are.
 2. ONE STYLE PER SLOT, 3 DIFFERENT STYLE FAMILIES EVERY DAY (families A-F in section 4). Rotate which family goes in which slot from day to day, so time and style are not mixed up (a family that went out at 01:00 yesterday goes at 17:00 or 21:00 today). Over each 7 days every family whose engine passes the gate should get at least 3 posts. Ring escape (A) is limited to 1 a day until its 72 h numbers beat the others.
