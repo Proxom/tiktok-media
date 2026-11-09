@@ -77,5 +77,5 @@ console.log('seed',res.seed,'winner',res.win,'counts',res.cnt.join('/'),'margin'
  // hold the last sim frame for the tail if the sim settled early
  while(tm.length/VF<res.endT-PRE+TAIL+(1/SP-1)*(s1-s0)*.8)tm.push(+Math.min(ts,(res.frames.length-1)/60).toFixed(4)),ts+=1/VF;
  res.tmap=tm;console.log('video frames',tm.length,'video dur',(tm.length/VF).toFixed(2),'last land at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2))}
-delete res.finalBin;
+delete res.finalBin;res.game=+process.env.GAME||0;res.lastWin=process.env.LASTWIN!==undefined?+process.env.LASTWIN:-1;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');
