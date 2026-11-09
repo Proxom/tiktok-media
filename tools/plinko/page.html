@@ -55,7 +55,7 @@ function draw(tv){
  if(left===1&&er<0){const lb=D.events.filter(e=>e.type==='land').slice(-1)[0].ball,q=fr[lb];if(q){x.save();const g=x.createRadialGradient(q[0],q[1],R*.6,q[0],q[1],R*3.2);g.addColorStop(0,'rgba(255,215,90,.75)');g.addColorStop(1,'rgba(255,215,90,0)');x.fillStyle=g;x.beginPath();x.arc(q[0],q[1],R*3.2,0,7);x.fill();x.restore()}}
  for(const q of fr)ball(q[0],q[1],R,q[2],1,q[3]);
  // +1 pops above the bin on every landing
- for(let k=nl-1;k>=0&&t-lands[k].t<.7;k--){const e=lands[k],s=t-e.t,bx=(BX[e.bin]+BX[e.bin+1])/2;txt('+1',BT-18-60*ease(s/.7),54,col(e.bin,72),s<.45?1:1-(s-.45)/.25,bx,160)}
+ for(let k=nl-1;k>=0&&t-lands[k].t<.7;k--){const e=lands[k],s=t-e.t,bx=(BX[e.bin]+BX[e.bin+1])/2;txt('+1',BT-18-60*ease(s/.7),54,col(e.bin,72),(s<.45?1:1-(s-.45)/.25)*(er<0?1:Math.max(0,1-er/.5)),bx,160)  /* fade by video time after the end: sim time freezes in the tail */}
  // winner confetti out of the winning bin
  if(er>=0&&er<2.2){const bx=(BX[WIN]+BX[WIN+1])/2;x.save();x.beginPath();x.rect(XL,640,XR-XL,FL-634);x.clip();for(let i=0;i<70;i++){const a=-Math.PI/2+(((i*37)%23)/22-.5)*1.5,sp=520+520*((i*53)%17)/16,px=bx+Math.cos(a)*sp*er,py=BT+40+Math.sin(a)*sp*er+700*er*er;
    if(py<640)continue;x.globalAlpha=Math.max(0,1-er/2.2);x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-7,-4,14,8);x.restore()}x.restore()}
