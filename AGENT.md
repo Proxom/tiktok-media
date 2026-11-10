@@ -2,6 +2,12 @@
 
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
+## MERGE GAME BACK IN THE ROTATION (Erkan, 10 Nov 2026 20:24)
+Erkan: "no merge-game videos for a long time; make them in between too".
+- The next EMPTY slot (non-17:00; at the moment 12 Nov 01:00) = family E MERGE GAME on tools/merge-arena, made to today's quality gate (Game N label, pick-before-it-starts hook, clear final-form reveal at 80-85 %, loop, follow pill).
+- From then on: at least one E video every 2 days, in a 01:00 or 21:00 slot (17:00 stays the 1M+ list). It counts toward the max-3-in-a-row and 3-families-per-day rules.
+- Judge E like the others after 72 h; if E beats the median, give it more slots.
+
 ## 17:00 = OUR VERSION OF A PROVEN 1M+ PHYSICS SIMULATION, IN ORDER (Erkan, 9 Nov 2026 21:15) — from 10 Nov, every day; overrides family choice for the 17:00 slot only (the other two daily slots keep 2 different families)
 1. The 17:00 video every day is OUR OWN VERSION of a ball/physics simulation short that already reached 1,000,000+ views (TikTok or YouTube Shorts). The idea is free to use; the video must be 100% ours: our own simulation run, our own look (our dark background, palette, font, hook band), our own text and sound (soft instrument, no banned sounds). Never re-upload, screen-record or copy frames, titles or captions. Log `outlier: <original title + link + views>` in the video doc. Before making each one, confirm the original's view count is above 1M on its page (if only likes are visible and they are above 100K, count it); if not, skip it.
 2. ORDER (most viewed first; one per day. UPDATE (general manager, 10 Nov 14:57, Erkan asked): #1 melody ball was moved to 10 Nov 17:00 (plinko Game 2 moved to 10 Nov 21:00, battle Game 3 moved to 11 Nov 21:00), so 11 Nov 17:00 is now EMPTY and must get #2 (square in a shrinking square), 12 Nov 17:00 #3, and so on. Never move or replace an already scheduled post yourself; skip only if the hard gate cannot be met, then come back):
