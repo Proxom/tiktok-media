@@ -46,7 +46,7 @@ function draw(tv){
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,286,30);x.fill();x.stroke();x.restore();
  if(er<0){txt('Every bounce = the next note 🎵',385,52*(1+.16*Math.exp(-tv*7)),'#fff',1);txt('Guess what it draws 👇',440,42,'#ffd23f',1)}
  else{const s=1+.22*Math.exp(-er*5);txt(D.answer||'IT DREW A STAR FLOWER! ✨',388,56*s,'#ffd23f',1);txt(er>=1.6?'Name the song 🎵 💬':'Did you guess it? 👀',442,42,'#fff',1)}
- const sp=Math.round((Math.pow(D.SPD,Math.min(n,NN-1))-1)*100);
+ const sp=Math.round((Math.pow(D.SPD,Math.min(n,NN))-1)*100);  // the sim multiplies the speed by SPD after EVERY bounce, the last one too
  txt(`NOTE ${Math.min(n,NN)} / ${NN}`,540,58*(1+.18*pulse*(er<0)),'#fff',1,300,380);
  txt(`SPEED +${sp}%`,540,46,'#7fe3ff',1,700,320);
  txt('every bounce: +4% faster',590,30,'rgba(255,255,255,.7)',1,700,320);
