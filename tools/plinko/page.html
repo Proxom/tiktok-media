@@ -64,12 +64,12 @@ function draw(tv){
  // top panel: hook + rule/balls left + live counters (one column per bin)
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
  if(er<0){txt(GAME?`Game ${GAME} · Pick a color 👇`:'Pick a color 👇 Which bin wins?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);if(left===1)txt('LAST BALL! 👀 Who gets it?',437,40*(1+.06*Math.sin(t*14)),'#ffd23f',1);
-  else if(LW>=0&&tv<3.4){const a=tv<3?1:1-(tv-3)/.4;txt(`Last winner: ${NAMES[LW]} 👑 Can it win again?`,437,38,'#ffd23f',a)}
-  else txt(`Most balls wins · ${left} balls left`,437,38,'#ffd23f',LW>=0?ease((tv-3.4)/.3):1)}
+  else if(LW>=0&&tv<4.0){const a=tv<3.6?1:1-(tv-3.6)/.4;txt(`Last winner: ${NAMES[LW]} 👑 Can it win again?`,437,38,'#ffd23f',a)}
+  else txt(`Most balls wins · ${left} balls left`,437,38,'#ffd23f',LW>=0?ease((tv-4.0)/.3):1)}
  else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+(LW===WIN?' WINS AGAIN! 🏆':LW>=0?' IS THE NEW CHAMP! 👑':' WINS! 🏆'),390,60*s,'#ffd23f',1);txt(er>=1.6?'Did your color win? 💬':`${cnt[WIN]} balls · won by ${D.margin}!`,446,40,'#fff',er>=1.6?ease((er-1.6)/.35):1)}
  for(let i=0;i<4;i++){const cx0=175+i*217,isL=er<0?lead===i:i===WIN,last=nl&&lands[nl-1].bin===i?t-lands[nl-1].t:9,pp=last<.25?1-last/.25:0;
   x.save();if(isL){x.strokeStyle='rgba(255,210,63,.95)';x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
-  txt(NAMES[i]+(i===LW&&er<0?' 👑':''),514,30,col(i,72),1,cx0,170);
+  txt(NAMES[i]+((er<0?i===LW:(LW>=0&&i===WIN&&er>=.5))?' 👑':''),514,30*(er>=.5&&i===WIN&&LW>=0?1+.25*Math.exp(-(er-.5)*6):1),col(i,72),1,cx0,170);  // crown hands over to the new/old champion 0.5 s after the end
   txt(String(cnt[i]),588,62*(1+.25*pp),'#fff',1,cx0,180);
  }
  // FOLLOW CALL (main goal, 8 Nov): small pill over the empty peg board for the last FOLLOWS seconds, then the loop cuts back to frame 0

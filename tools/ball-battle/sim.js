@@ -4,12 +4,13 @@
 // Wall hits cost nothing. After every knock-out the arena ring shrinks by SHR (14%) of its start radius over 0.8 s (moving wall, real push). Real 2D physics: gravity, elastic wall bounces, elastic ball-ball collisions (mass ~ r^2),
 // fixed timestep 600 Hz (20 sub-steps per 30 fps frame) + swept (continuous) collision check every sub-step, logged as tunnel=0.
 // frames[k] = state at sim time (k+1)/60 (renderer uses ff=t*60-1). The game rule keeps each ball's speed between VMIN and VMAX.
-// node sim.js <out.js> [seed]  (env HP, RMIN, RK, G, VMIN, VMAX, MINT, MAXT, WINMAX, TAIL)
+// SPEEDUP=.1: after every knock-out (not the last) all balls get 10% faster and the speed limits rise 10% (logged as 'speed' events).
+// node sim.js <out.js> [seed]  (env HP, RMIN, RK, G, VMIN, VMAX, MINT, MAXT, WINMAX, TAIL, SPEEDUP, GAME, LASTWIN, FOLLOWTEXT)
 const fs=require('fs');
 const OUT=process.argv[2]||'data.js',SEED=+process.argv[3]||1;
 const FPS=30,SUB=20,DT=1/(FPS*SUB),CX=540,CY=1030,R=390,HT=9,G=+process.env.G||380;
 const HP0=+process.env.HP||8,RMIN=+process.env.RMIN||24,RK=+process.env.RK||2.9,VMIN=+process.env.VMIN||430,VMAX=+process.env.VMAX||780,TAIL=+process.env.TAIL||4.4;
-const N=4,rad=hp=>RMIN+RK*hp,SHR=+process.env.SHR||.14,SHT=.8;
+const N=4,rad=hp=>RMIN+RK*hp,SHR=+process.env.SHR||.14,SHT=.8,SU=+process.env.SPEEDUP||0; // SPEEDUP: after every knock-out all balls get (1+SU)x faster and the speed limits rise by the same factor
 function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 function run(seed){
  const rnd=rng(seed);const B=[];
@@ -23,7 +24,7 @@ function run(seed){
   for(let s=0;s<SUB;s++){t+=DT;
    const prev=B.map(b=>[b.x,b.y]);const RIN=Rt(t)-HT,WV=(Rt(t-DT)-Rt(t))/DT;
    for(let i=0;i<N;i++){const b=B[i];if(!b.alive)continue;
-    b.vy+=G*DT;let sp=Math.hypot(b.vx,b.vy);if(sp<VMIN){b.vx*=VMIN/sp;b.vy*=VMIN/sp}else if(sp>VMAX){b.vx*=VMAX/sp;b.vy*=VMAX/sp}
+    b.vy+=G*DT;const sf=Math.pow(1+SU,kos.length),vmn=VMIN*sf,vmx=VMAX*sf;let sp=Math.hypot(b.vx,b.vy);if(sp<vmn){b.vx*=vmn/sp;b.vy*=vmn/sp}else if(sp>vmx){b.vx*=vmx/sp;b.vy*=vmx/sp}
     b.x+=b.vx*DT;b.y+=b.vy*DT;b.wc-=DT;maxStep=Math.max(maxStep,Math.hypot(b.x-prev[i][0],b.y-prev[i][1])/b.r);
     const dx=b.x-CX,dy=b.y-CY,d=Math.hypot(dx,dy)||1e-6,nx=dx/d,ny=dy/d;
     if(d+b.r>RIN){if(d-b.r>RIN)tunnel++;b.x=CX+nx*(RIN-b.r);b.y=CY+ny*(RIN-b.r);const vr=b.vx*nx+b.vy*ny+WV;if(vr>0){b.vx-=2*vr*nx;b.vy-=2*vr*ny;
@@ -41,7 +42,7 @@ function run(seed){
        if(Math.abs(sa-sc)<12){ties++;events.push({t,type:'tie',a:i,b:j,x:a.x+mx*a.r,y:a.y+my*a.r})}
        else{const L=sa<sc?i:j,W=L===i?j:i,lb=B[L];lb.hp--;const r1=lb.r;lb.r=rad(lb.hp);
         events.push({t,type:'crash',a:i,b:j,loser:L,winner:W,sl:Math.min(sa,sc),sw:Math.max(sa,sc),x:a.x+mx*a.r,y:a.y+my*a.r,hp:lb.hp,r1,v:-vn});
-        if(lb.hp<=0){lb.alive=0;kos.push(t);events.push({t,type:'out',ball:L,by:W,x:lb.x,y:lb.y,r:r1});const al=B.filter(q=>q.alive);if(al.length===1&&endT===null){endT=t;win=B.indexOf(al[0])}}}}}}}
+        if(lb.hp<=0){lb.alive=0;kos.push(t);events.push({t,type:'out',ball:L,by:W,x:lb.x,y:lb.y,r:r1});if(SU>0&&B.filter(q=>q.alive).length>1){for(const q of B)if(q.alive){q.vx*=1+SU;q.vy*=1+SU}events.push({t,type:'speed',level:kos.length,factor:+Math.pow(1+SU,kos.length).toFixed(4)})}const al=B.filter(q=>q.alive);if(al.length===1&&endT===null){endT=t;win=B.indexOf(al[0])}}}}}}}
    {const RIN=Rt(t)-HT;for(let i=0;i<N;i++){const b=B[i];if(!b.alive)continue;const d=Math.hypot(b.x-CX,b.y-CY);if(d+b.r>RIN+.5)outside++;
     let pen=Math.max(0,d+b.r-RIN);for(let j=0;j<N;j++)if(j!==i&&B[j].alive)pen=Math.max(pen,b.r+B[j].r-Math.hypot(b.x-B[j].x,b.y-B[j].y));if(pen>maxPen)maxPen=pen}}
    if(s===SUB/2-1)frames.push(snap());
@@ -67,4 +68,5 @@ console.log('seed',res.seed,'winner',res.win,'end',res.endT.toFixed(2),'outs',re
 res.ffps=60;{const SP=+process.env.SLOW||.4,s0=res.endT-(+process.env.S0||1.2),s1=res.endT+(+process.env.S1||.5),end=res.frames.length/60-.02;
  const VF=+process.env.VFPS||60;res.vfps=VF;const tm=[];let ts=0,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
  res.tmap=tm;console.log('video frames',tm.length,'video dur',(tm.length/VF).toFixed(2),'final KO at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2))}
+res.speedup=SU;res.vmin=VMIN;res.vmax=VMAX;res.game=+process.env.GAME||0;res.lastWin=process.env.LASTWIN!==undefined?+process.env.LASTWIN:-1;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');
