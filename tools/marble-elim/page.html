@@ -31,7 +31,7 @@ function draw(tv){
  // course: walls, ramps (account neon), pegs, spinning paddle
  const NE=`hsl(${HUE},95%,66%)`;seg(D.XL,640,D.XL,1210,8,NE,20);seg(D.LXL,736,D.LXL,1296,8,NE,18);seg(...D.RA,8,NE,18);seg(...D.RC,8,NE,18);
  const lastPeg={};for(let q=countAt(pegs,t)-1;q>=0&&t-pegs[q].t<.25;q--)if(!(pegs[q].p in lastPeg))lastPeg[pegs[q].p]=pegs[q];
- D.PEGS.forEach((p,i)=>{const h=lastPeg[i],q=h?1-(t-h.t)/.25:0;x.save();x.shadowColor=q>0?'#fff':`hsl(${HUE},100%,70%)`;x.shadowBlur=10+18*q;x.fillStyle=q>0?`hsl(${HUE},${100-80*q}%,${78+20*q}%)`:`hsl(${HUE},90%,76%)`;x.beginPath();x.arc(p[0],p[1],PR+2.5*q,0,7);x.fill();x.restore()});
+ D.PEGS.forEach((p,i)=>{const h=lastPeg[i],q=h?1-(t-h.t)/.25:0;x.save();x.shadowColor=`hsl(${HUE},100%,70%)`;x.shadowBlur=10+10*q;x.fillStyle=`hsl(${HUE},90%,${76+8*q}%)`;x.beginPath();x.arc(p[0],p[1],PR+1.5*q,0,7);x.fill();x.restore()});
  for(const S of D.SPINS){const a=S.w*t,cs=Math.cos(a),sn=Math.sin(a),ls=countAt(spins,t),hit=ls&&t-spins[ls-1].t<.2&&Math.hypot(spins[ls-1].x-S.x,spins[ls-1].y-S.y)<S.L+40?1-(t-spins[ls-1].t)/.2:0;
   seg(S.x-cs*S.L,S.y-sn*S.L,S.x+cs*S.L,S.y+sn*S.L,10,`hsl(45,100%,${62+20*hit}%)`,18+16*hit);x.save();x.fillStyle='#1a1030';x.strokeStyle='hsl(45,100%,70%)';x.lineWidth=4;x.beginPath();x.arc(S.x,S.y,9,0,7);x.fill();x.stroke();x.restore()}
  // trapdoor (start row floor): two halves swing down at TOPEN
@@ -51,13 +51,14 @@ function draw(tv){
    x.save();x.globalAlpha=1-s/.9;x.strokeStyle=col(ci,72);x.lineWidth=5;x.beginPath();x.arc(o.x,o.y,R+60*ease(s/.5),0,7);x.stroke();
    for(let j=0;j<12;j++){const a=j*Math.PI/6+ci,d=20+150*s;x.fillStyle=col(ci,60);x.beginPath();x.arc(o.x+Math.cos(a)*d,o.y+Math.sin(a)*d+200*s*s,6*(1-s/.9)+1,0,7);x.fill()}x.restore();
    txt('❌',o.y-40-60*ease(s/.9),46,'#fff',1-s/.9,o.x,80)}continue}
-  const lg=gates.filter(g=>g.m===ci&&g.t<=t).pop(),fl=lg&&t-lg.t<.25?1-(t-lg.t)/.25:0;ball(p[0],p[1],R,ci,1,fl)}
+  const lg=gates.filter(g=>g.m===ci&&g.t<=t).pop(),fl=lg&&t-lg.t<.25?.25*(1-(t-lg.t)/.25):0;ball(p[0],p[1],R,ci,1,fl)}
+ {const na=t<D.TOPEN?1:1-cl((t-D.TOPEN)/.35);if(na>0)for(let ci=0;ci<N;ci++){const p=pos[ci];if(p)txt(NAMES[ci],p[1]-34,19,col(ci,76),na,p[0],96)}}
  // lift glass front highlight
  x.save();x.globalAlpha=.18;x.fillStyle='#dfe9ff';x.fillRect(D.LXL+8,656,5,690);x.restore();
  // winner: gold ring + confetti from the winner
  if(er>=0){const p=pos[WIN];x.save();x.strokeStyle='#ffd23f';x.shadowColor='#ffd23f';x.shadowBlur=24;x.lineWidth=5;x.beginPath();x.arc(p[0],p[1],R+10+4*Math.sin(er*8),0,7);x.stroke();x.restore();
-  if(er<2.4){const o=outs[outs.length-1];const gx=D.GX-30,gy=1300;x.save();x.beginPath();x.rect(D.XL-20,630,D.LXR-D.XL+40,800);x.clip();for(let i=0;i<80;i++){const a=-Math.PI/2+(((i*37)%23)/22-.5)*1.8,sp=520+560*((i*53)%17)/16,px=gx+Math.cos(a)*sp*er,py=gy+Math.sin(a)*sp*er+700*er*er;
-   x.globalAlpha=Math.max(0,1-er/2.4);x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-7,-4,14,8);x.restore()}x.restore()}}
+  if(er<2.6){x.save();x.beginPath();x.rect(D.XL-20,630,D.LXR-D.XL+40,800);x.clip();for(let i=0;i<110;i++){const px=D.XL+((i*97)%101)/100*(D.LXR-D.XL)+40*Math.sin(er*3+i),py=640-30*((i*53)%17)/16+(260+300*((i*31)%13)/12)*er;
+   x.globalAlpha=Math.max(0,1-er/2.6);x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-7,-4,14,8);x.restore()}x.restore()}}
  if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.06*(1-er/.25)})`;x.fillRect(0,0,W,H)}
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: hook, live status line, 6 color chips (out = dimmed + cross)
@@ -70,7 +71,7 @@ function draw(tv){
   else l2='Last one through the GATE is OUT ❌';
   txt(l2,442,40*(sinceOut<1.6?1+.15*Math.exp(-sinceOut*6):1),c2,1)}
  else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' WINS! 🏆',388,62*s,'#ffd23f',1);txt(er>=1.6?'Did your color win? 💬':`Last one left of ${N}!`,445,40,'#fff',er>=1.6?ease((er-1.6)/.35):1)}
- for(let ci=0;ci<N;ci++){const cx0=145+ci*142,isOut=ci in outT&&outT[ci]<=t,isW=er>=0&&ci===WIN,dg=danger.includes(ci);x.save();
+ for(let pi=0;pi<N;pi++){const ci=D.order[pi],cx0=145+pi*142,isOut=ci in outT&&outT[ci]<=t,isW=er>=0&&ci===WIN,dg=danger.includes(ci);x.save();
   if(isW||dg){x.strokeStyle=isW?'rgba(255,210,63,.95)':'rgba(255,59,77,.9)';x.shadowColor=isW?'#ffd23f':'#ff3b4d';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-64,478,128,124,20);x.stroke()}x.restore();
   ball(cx0,520,22,ci,isOut?.28:1,0);if(isOut){x.save();x.strokeStyle='rgba(255,70,80,.95)';x.lineWidth=6;x.lineCap='round';x.beginPath();x.moveTo(cx0-18,502);x.lineTo(cx0+18,538);x.moveTo(cx0+18,502);x.lineTo(cx0-18,538);x.stroke();x.restore()}
   if(isW)txt('👑',470,34,'#fff',1,cx0,60);txt(NAMES[ci],584,24,isOut?'rgba(255,255,255,.35)':col(ci,74),1,cx0,134)}
