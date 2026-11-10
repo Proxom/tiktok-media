@@ -7,4 +7,4 @@ Video: 30.7 s 60 fps CRF 16, last landing at video 25.98 s (84.5%), -14.0 LUFS T
 Review v1: 7.4 (hook 7, polish 8, clarity 8, pacing 6, payoff 8), logic PASS. Next engine work: last ball should not creep down a wall for 3 s (drop it nearer the centre), "X takes the lead!" flash mid-game, header 10-20 px lower.
 Caption: Game 3 👇 BLUE won Game 2. Pick a color before the first ball lands. Did yours win? Follow for Game 4 #satisfying #physics #simulation #oddlysatisfying
 Title: Game 3 👇 Can BLUE win again? Pick a color before the drop
-Slot: 11 Nov 01:00 Europe/London. Game 4 must use LASTWIN=0 (RED) and GAME=4.
+Slot: 11 Nov 01:00 Europe/London. DONE: media/plinko-pick-bin-03. Game 4 must use LASTWIN=0 (RED) and GAME=4.
