@@ -9,3 +9,7 @@ Note: seeds 212965 and 221748 (other ranges) also had YELLOW winning: check for 
 Caption: Game 3 👇 YELLOW won Game 2. Pick your color before the first crash. The slower ball loses 1 HP and every knockout makes the rest faster. Who survives? #satisfying #physics #simulation #oddlysatisfying
 Title: Game 3 👇 Can YELLOW win again? Every KO = SPEED +10%
 Slot: 10 Nov 21:00 Europe/London.
+Video: 33.5 s 60 fps CRF 16, final KO at video 29.5 s (88%), -14.0 LUFS TP -2.5, 4k band 36.1 dB below.
+Review v1: 7.2 (hook 7, polish 7.5, clarity 8, pacing 7, payoff 6.5), logic PASS. Fixed once (engine): OUT/SPEED labels on a dark backing in whichever band (top/bottom of the ring) has fewer balls, "-1" pops hidden under them, crown on the winner ball, "FINAL DUEL!" in the rule line with 2 left, bigger follow pill.
+Still open: 22-29 s duel is slow (two small balls); the ring glow touches the right safe zone by ~5 px.
+DONE: media/ball-battle-survivor-03.
