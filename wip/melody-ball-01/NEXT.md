@@ -9,3 +9,7 @@ Result: 35 notes, first at 0.67 s, last at 25.53 s (83% of 30.7 s), chord step 1
 Caption: Every bounce plays the next note 🎵 Guess what it draws before the end 👇 Then name the song. Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: Every bounce = the next note 🎵 Guess what it draws 👇
 Slot: 11 Nov 17:00 Europe/London.
+Video: 30.7 s 60 fps CRF 16, reveal at 25.5 s (83%), -13.8 LUFS TP -2.2, 4k band 36.9 dB below.
+Review v1: 7.0 (hook 6, polish 8, clarity 7, pacing 6, payoff 8). LOGIC fix: the speed readout stalled at +279% on the 35th note (now +295% = 1.04^35). Also: newest 3 chords only, bigger "Guess what it draws", "+4% per bounce" readable, the mandala turns slowly after the reveal and fades back to the empty circle (seamless loop).
+Next engine ideas: stronger first second (start faster or a bigger hook), something new in 6-24 s (the star shape is guessable early: change STEP so the shape is less obvious, e.g. 137.5 golden angle -> a sunflower).
+DONE: media/melody-ball-01.
