@@ -31,8 +31,8 @@ function draw(tv){
  // disaster flash: red edge glow for 0.6 s at each disaster
  const ldt=nd?t-DT[nd-1]:9;
  // MOON GRAVITY tint
- if(nd>=4){x.save();x.globalAlpha=.10*cl((t-DT[3])/.5);x.fillStyle='#6fa8ff';x.beginPath();x.roundRect(D.XL-14,630,D.LXR-D.XL+28,800,18);x.fill();x.restore();
-  x.save();for(let i=0;i<26;i++){const yy=1440-((i*67+t*60)%800),xx=110+((i*131)%720);x.globalAlpha=.25*cl((t-DT[3])/.5);x.fillStyle='#cfe0ff';x.beginPath();x.arc(xx,yy,2+(i%3),0,7);x.fill()}x.restore()}
+ if(nd>=4){x.save();x.globalAlpha=.16*cl((t-DT[3])/.5);x.fillStyle='#6fa8ff';x.beginPath();x.roundRect(D.XL-14,630,D.LXR-D.XL+28,800,18);x.fill();x.restore();
+  x.save();for(let i=0;i<26;i++){const yy=1440-((i*67+t*60)%800),xx=110+((i*131)%720);x.globalAlpha=.4*cl((t-DT[3])/.5);x.fillStyle='#cfe0ff';x.beginPath();x.arc(xx,yy,2+(i%3),0,7);x.fill()}x.restore()}
  x.save();x.translate(shx,shy);
  // course: walls, ramps (account neon), pegs, spinning paddle
  const NE=`hsl(${HUE},95%,66%)`;seg(D.XL,640,D.XL,1210,8,NE,20);seg(D.LXL,736,D.LXL,1296,8,NE,18);seg(...D.RA,8,NE,18);seg(...D.RC,8,NE,18);
@@ -42,7 +42,7 @@ function draw(tv){
  D.SPINS.forEach((S,j)=>{const a=sa[j],wild=nd>=1,cs=Math.cos(a),sn=Math.sin(a),ls=countAt(spins,t),hit=ls&&t-spins[ls-1].t<.2&&Math.hypot(spins[ls-1].x-S.x,spins[ls-1].y-S.y)<S.L+40?1-(t-spins[ls-1].t)/.2:0;
   const ph=wild?(5+18*cl(1-(t-DT[0])/.8)):45;seg(S.x-cs*S.L,S.y-sn*S.L,S.x+cs*S.L,S.y+sn*S.L,10,`hsl(${ph},100%,${62+20*hit}%)`,18+16*hit);x.save();x.fillStyle='#1a1030';x.strokeStyle=`hsl(${ph},100%,70%)`;x.lineWidth=4;x.beginPath();x.arc(S.x,S.y,9,0,7);x.fill();x.stroke();x.restore()});
  // WIND streaks across the peg board (only where the wind blows: y 880-1140)
- if(nd>=2){const wa=cl((t-DT[1])/.4);x.save();x.lineCap='round';for(let i=0;i<22;i++){const yy=890+((i*47)%250),sp=900+((i*53)%5)*120,len=60+((i*29)%4)*30,xx=D.LXL-((t*sp+i*233)%(D.LXL-D.XL+len));x.globalAlpha=.32*wa;x.strokeStyle='#d8f3ff';x.lineWidth=3;x.beginPath();x.moveTo(xx,yy);x.lineTo(xx+len,yy);x.stroke()}x.restore()}
+ if(nd>=2){const wa=cl((t-DT[1])/.4);x.save();x.lineCap='round';x.beginPath();x.rect(D.XL+6,860,D.LXL-D.XL-12,300);x.clip();for(let i=0;i<22;i++){const yy=890+((i*47)%250),sp=900+((i*53)%5)*120,len=60+((i*29)%4)*30,xx=D.LXL-((t*sp+i*233)%(D.LXL-D.XL+len));x.globalAlpha=.5*wa;x.strokeStyle='#e4f7ff';x.lineWidth=4;x.beginPath();x.moveTo(xx,yy);x.lineTo(xx+len,yy);x.stroke()}x.restore()}
  // trapdoor (start row floor): two halves swing down at TOPEN
  {const T=D.TRAP,mid=(T[0]+T[2])/2,s=cl((t-D.TOPEN)/.14);if(s<1){const a=s*Math.PI/2*1.1,al=1-s;x.save();x.globalAlpha=al;
   seg(T[0],T[1],T[0]+(mid-T[0])*Math.cos(a),T[1]+(mid-T[0])*Math.sin(a),8,'hsl(45,100%,66%)',16);seg(T[2],T[3],T[2]-(T[2]-mid)*Math.cos(a),T[3]+(T[2]-mid)*Math.sin(a),8,'hsl(45,100%,66%)',16);x.restore()}}
@@ -56,6 +56,7 @@ function draw(tv){
  x.globalAlpha=.25;x.strokeStyle='#bcd2ff';x.lineWidth=3;for(let i=0;i<10;i++){const yy=1340-((i*72+t*260)%700);x.beginPath();x.moveTo(D.LX-9,yy+6);x.lineTo(D.LX,yy-3);x.lineTo(D.LX+9,yy+6);x.stroke()}x.restore();
  for(let ci=0;ci<N;ci++){const p=pos[ci];if(!p||p[2]!==0||er>=0&&ci!==WIN)continue;for(let q=4;q>=1;q--){const F=D.frames[Math.max(0,f0-2*q)],ii=D.order.indexOf(ci),pf=F[ii];if(!pf||pf[2]!==0)continue;x.save();x.globalAlpha=.06*(5-q);x.fillStyle=col(ci,70);x.beginPath();x.arc(pf[0],pf[1],R*(1-.08*q),0,7);x.fill();x.restore()}}
  for(let ci=0;ci<N;ci++){const p=pos[ci];if(!p)continue;const lg=gates.filter(g=>g.m===ci&&g.t<=t).pop(),fl=lg&&t-lg.t<.25?.25*(1-(t-lg.t)/.25):0;ball(p[0],p[1],R,ci,1,fl)}
+ if(er<0&&leader>=0){const p=pos[leader];if(p&&p[2]===0){x.save();x.globalAlpha=.55+.35*Math.sin(t*10);x.strokeStyle='#ffffff';x.shadowColor='#fff';x.shadowBlur=12;x.lineWidth=4;x.beginPath();x.arc(p[0],p[1],R+8,0,7);x.stroke();x.restore()}}
  {const na=t<D.TOPEN?1:1-cl((t-D.TOPEN)/.35);if(na>0)for(let ci=0;ci<N;ci++){const p=pos[ci];if(p)txt(NAMES[ci],p[1]-34,19,col(ci,76),na,p[0],96)}}
  // lift glass front highlight
  x.save();x.globalAlpha=.18;x.fillStyle='#dfe9ff';x.fillRect(D.LXL+8,656,5,690);x.restore();
@@ -70,17 +71,19 @@ x.restore();
  // top panel: hook, live status line, 6 color chips (out = dimmed + cross)
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,292,30);x.fill();x.stroke();x.restore();
  if(er<0){const lap=Math.min(D.LAPS,(nl||0)+1);
+  const duel=lap===D.LAPS?[...Array(N).keys()].filter(ci=>pos[ci]&&pos[ci][2]===0&&pos[ci][1]>1150&&lapsOf(ci)===D.LAPS-1).sort((a,b)=>pos[b][0]-pos[a][0]):[];
+  if(duel.length>=2&&tv>=3.2)txt(`${NAMES[duel[0]]} vs ${NAMES[duel[1]]} 👀 who's first?`,385,50,'#ffd23f',1);else
   if(tv<3.2)txt('Disaster race 🌋 Pick a color 👇',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);
   else txt(lap===D.LAPS?`FINAL LAP 🏁 ${NAMES[leader]} leads`:`Lap ${lap} of ${D.LAPS} · ${leader>=0?NAMES[leader]+' leads':'GO!'}`,385,52,lap===D.LAPS?'#ffd23f':'#fff',1);
   let l2,c2='#ffd23f',sz=40;
-  if(nd&&ldt<1.9){l2=`⚠️ DISASTER ${nd}: ${DNAME[nd]}`;c2='#ff5a5a';sz=42*(1+.18*Math.exp(-ldt*6))}
+  if(nd&&ldt<3.0){l2=`⚠️ DISASTER ${nd}: ${DNAME[nd]}`;c2='#ff5a5a';sz=42*(1+.18*Math.exp(-ldt*6))}
   else if(nd)l2=`${DICON.slice(1,nd+1).join(' ')}  +1 disaster every new lap`;
-  else l2='Every new lap = a new DISASTER ⚠️';
+  else l2=tv<1.6?'First to finish 5 laps wins 🏁':'Every new lap = a new DISASTER ⚠️';
   txt(l2,442,sz,c2,1)}
  else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' WINS! 🏆',388,62*s,'#ffd23f',1);txt(er>=1.6?'Did your color win? 💬':`${NAMES[D.runnerUp]} was right behind 😱`,445,40,er>=1.6?'#fff':col(D.runnerUp,76),er>=1.6?ease((er-1.6)/.35):1)}
  for(let pi=0;pi<N;pi++){const ci=D.order[pi],cx0=145+pi*142,isW=er>=0&&ci===WIN,isL=er<0&&ci===leader,L=Math.min(D.LAPS,lapsOf(ci));x.save();
   if(isW||isL){x.strokeStyle=isW?'rgba(255,210,63,.95)':'rgba(255,255,255,.6)';x.shadowColor=isW?'#ffd23f':'#fff';x.shadowBlur=isW?14:8;x.lineWidth=4;x.beginPath();x.roundRect(cx0-64,478,128,128,20);x.stroke()}x.restore();
-  ball(cx0,512,22,ci,1,0);for(let d=0;d<D.LAPS;d++){x.save();x.fillStyle=d<L?col(ci,70):'rgba(255,255,255,.18)';x.beginPath();x.arc(cx0-36+18*d,553,5.5,0,7);x.fill();x.restore()}
+  ball(cx0,512,22,ci,1,0);for(let d=0;d<D.LAPS;d++){x.save();x.fillStyle=d<L?col(ci,70):'rgba(255,255,255,.18)';x.beginPath();x.arc(cx0-44+22*d,554,8.5,0,7);x.fill();x.restore()}
   if(isW)txt('👑',466,34,'#fff',1,cx0,60);txt(NAMES[ci],592,24,col(ci,74),1,cx0,134)}
  // FOLLOW CALL: small pill over the dimmed board for the last 1.4 s, then the loop cuts back to frame 0
  {const FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=1000;x.save();x.globalAlpha=.5*fa;x.fillStyle='#05030c';x.fillRect(D.XL-10,636,D.LXR-D.XL+20,800);x.restore();

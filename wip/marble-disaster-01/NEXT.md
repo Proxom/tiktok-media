@@ -10,3 +10,10 @@ check.js PASS: 29 gate passes, disasters at 2.66/8.16/13.84/20.48 s, tunnel 0, m
 Caption: Pick a color before the trapdoor opens 👇 Every new lap leader brings a new DISASTER. Did yours make it? Follow for a new race every day #satisfying #physics #simulation #oddlysatisfying
 Title: Disaster race 🌋 Pick a color 👇 every new lap = a new disaster
 Slot: 12 Nov 17:00 Europe/London.
+Gate: 1080x1920 60 fps H.264 CRF 16 + AAC, 35.1 s; first/last YAVG 37.1/35.6; -14.0 LUFS, TP -5.0; 4k band -49.2 (35.2 dB below); spelling OK; safe zones clear.
+Sound: every gate pass = next note of "In the Hall of the Mountain King" (Grieg, public domain) on soft marimba + low wood; disaster = low thump + A-C-E marimba; quake = quiet low thumps; win = rolled low A chord.
+Review v1: 6.8 (hook 6, polish 7, clarity 7, pacing 6, payoff 8), LOGIC PASS. Fixed once (renderer only, physics unchanged): hook line 2 'First to finish 5 laps wins 🏁' for 1.6 s,
+  pulsing white ring on the lap leader, lap dots 2x (r 8.5), disaster banner 3.0 s, live 'A vs B 👀 who's first?' on the final lap (the two lap-4 marbles furthest along the bottom ramp),
+  brighter wind (clipped to the board) and moon tint.
+DONE: media/marble-disaster-01 (mp4 + cover.jpg).
+Next engine ideas: TOPEN .3 (faster start), bigger marbles (RAD 22) in the same course, BLUE leading 3 laps made 9-20 s look alike -> NLEAD 4 filter.
