@@ -63,14 +63,20 @@ function draw(tv){
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
  const m=Math.max(...hold),ls=hold.map((v,i)=>v===m&&m>=0?i:-1).filter(i=>i>=0),lead=ls.length===1?ls[0]:-1;
  const tops=F0.filter(a=>a[2]===TOP-1),duel=[...new Set(tops.map(a=>a[1]))];
- if(er<0){txt(`Game ${GAME} · Pick a color 👇`,385,56*(1+.18*Math.exp(-tv*7)),'#fff',1);
-  if(duel.length>=2)txt('TWO 64s! Who makes the 👑? 👀',437,38*(1+.05*Math.sin(t*14)),'#ffd23f',1);
-  else txt(tv<4.2?'Same numbers merge · newest color takes it':'First color to make the 👑 wins',437,tv<4.2?34:38,'#ffd23f',tv<4.2?1:ease((tv-4.2)/.3))}
- else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' WINS THE 👑!',390,60*s,'#ffd23f',1);txt(er>=1.6?'Did your color win? 💬':(D.king.lose!==WIN?`64 + 64 = 👑 · stolen from ${NAMES[D.king.lose]}!`:'64 + 64 = 👑'),446,38,'#fff',er>=1.6?ease((er-1.6)/.35):1)}
- for(let i=0;i<4;i++){const cx0=175+i*217,isL=er<0?lead===i:i===WIN;
-  x.save();if(isL){x.strokeStyle='rgba(255,210,63,.95)';x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
-  txt(NAMES[i],514,30,col(i,72),1,cx0,170);
-  const hv=er>=0&&i===WIN?TOP:hold[i];txt(hv<0?'–':label(hv),588,hv>=TOP?58:56,'#fff',1,cx0,180)}
+ const first64=merges.find(e=>e.k===TOP-1),f64=first64&&t>=first64.t&&t-first64.t<1.6&&duel.length<2;
+ // panel texts; in the last 0.35 s the panel cross-fades back to its frame-0 state so the loop seam matches (review 11 Nov)
+ const lf=ease((tv-(DUR-.35))/.3);
+ function panelText(st,al){if(al<=0)return;const E=st?-1:er,HO=st?[-1,-1,-1,-1]:hold,LD=st?-1:lead,TV=st?0:tv;
+  if(E<0){txt(`Game ${GAME} · Pick a color 👇`,385,56*(1+.18*Math.exp(-TV*7)),'#fff',al);
+   if(!st&&duel.length>=2)txt('TWO 64s! Who makes the 👑? 👀',437,38*(1+.05*Math.sin(t*14)),'#ffd23f',al);
+   else if(!st&&f64)txt(`${NAMES[first64.c]} hits 64! 👀 64 + 64 = 👑`,437,38*(1+.12*Math.exp(-(t-first64.t)*6)),'#ffd23f',al);
+   else txt(TV<4.2?'Same numbers merge · newest color takes it':'64 + 64 = 👑 · first color to make it wins',437,TV<4.2?34:36,'#ffd23f',al*(TV<4.2?1:ease((TV-4.2)/.3)))}
+  else{const s=1+.22*Math.exp(-E*5);txt(NAMES[WIN]+' WINS THE 👑!',390,60*s,'#ffd23f',al);txt(E>=1.6?'Did your color win? 💬':(D.king.lose!==WIN?`64 + 64 = 👑 · stolen from ${NAMES[D.king.lose]}!`:'64 + 64 = 👑'),446,38,'#fff',al*(E>=1.6?ease((E-1.6)/.35):1))}
+  for(let i=0;i<4;i++){const cx0=175+i*217,isL=E<0?LD===i:i===WIN,pulse=!st&&f64&&i===first64.c?.5+.5*Math.sin(t*16):0;
+   x.save();x.globalAlpha=al;if(isL||pulse){x.strokeStyle=`rgba(255,210,63,${isL?.95:pulse})`;x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
+   txt(NAMES[i],514,30,col(i,72),al,cx0,170);
+   const hv=E>=0&&i===WIN?TOP:HO[i];txt(hv<0?'–':label(hv),588,hv>=TOP?58:56,'#fff',al,cx0,180)}}
+ panelText(false,1-lf);panelText(true,lf);
  // FOLLOW CALL: small pill over the jar for the last FOLLOWS seconds, then the loop cuts back to frame 0
  {const FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=1040;x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
  return c.toDataURL('image/jpeg',0.93)}

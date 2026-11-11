@@ -78,7 +78,8 @@ if(!res){console.log(log.slice(-40).join('\n'));process.exit(1)}
 console.log('seed',res.seed,'winner',res.win,'best',res.best.join('/'),'second',res.second,'leadChanges',res.changes,'king at',res.endT.toFixed(2),'drops',res.drops,
  'merges',res.events.filter(e=>e.type==='merge').length,'maxPen',res.maxPen.toFixed(2),'maxStep/r',res.maxStep.toFixed(3),'tunnel',res.tunnel,'tried',log.length);
 {const SP=+process.env.SLOW||.35,s0=res.endT-(+process.env.S0||.8),s1=res.endT+(+process.env.S1||.35),TAIL=+process.env.TAIL||4.2,end=Math.min((res.frames.length-1)/60,res.endT+TAIL);
- const VF=60;res.vfps=VF;const PRE=+process.env.PRE||0;res.pre=PRE;const tm=[];let ts=PRE,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
+ const FF=+process.env.FF||1,FF0=+process.env.FF0||6,FF1=+process.env.FF1||17; // FF: fast-forward playback of the long middle (review 11 Nov)
+ const VF=60;res.vfps=VF;const PRE=+process.env.PRE||0;res.pre=PRE;const tm=[];let ts=PRE,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:(ts>=FF0&&ts<FF1)?FF:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
  res.tmap=tm;console.log('video frames',tm.length,'video dur',(tm.length/VF).toFixed(2),'king at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2),'=',(100*tm.findIndex(v=>v>=res.endT)/tm.length).toFixed(1)+'%')}
 res.game=+process.env.GAME||1;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');
