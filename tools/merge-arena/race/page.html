@@ -1,0 +1,78 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="data.js"></script><script>
+// Family E "Merge race" renderer (same account look as A/B/C/D: violet background, neon lines, glossy balls, top panel with hook + live counters).
+// Ball positions/sizes come from the sim frames (frames[k] = sim time k/60, [id,color,tier,x,y,born]); radius uses the SAME grow rule as sim.js.
+const W=1080,H=1920,D=DATA,HUE=305,BG=['#2c1446','#130a2a','#05030c'],CX=D.CX,XL=D.XL,XR=D.XR,FL=D.FL,JT=D.JT,ET=D.endT,WIN=D.win,TOP=D.TOP,GAME=D.game||1;
+const NAMES=['RED','BLUE','YELLOW','GREEN'],HUES=[356,204,46,128],SAT=[95,95,100,80];
+const c=document.getElementById('c'),x=c.getContext('2d');
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
+const col=(i,l=58)=>`hsl(${HUES[i]},${SAT[i]}%,${i===2?Math.min(l+4,92):l}%)`;
+const rad=k=>D.R0*Math.pow(D.RF,k),GROW=D.GROW||.15;
+const rAt=(k,born,t,merged)=>merged&&t-born<GROW?rad(k-1)+(rad(k)-rad(k-1))*cl((t-born)/GROW):rad(k);
+const label=k=>k>=TOP?'👑':String(2**(k+1));
+const merges=D.events.filter(e=>e.type==='merge'),drops=D.events.filter(e=>e.type==='drop'),mergedIds=new Set(merges.map(e=>e.id));
+function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,colr,a,cx=500,maxw=800){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';x.textBaseline='alphabetic';
+ const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+ let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
+ let px=cx-w/2;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=colr;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;{const g=bg.getContext('2d');const rg=g.createRadialGradient(CX,1030,40,CX,1030,1200);rg.addColorStop(0,BG[0]);rg.addColorStop(.5,BG[1]);rg.addColorStop(1,BG[2]);g.fillStyle=rg;g.fillRect(0,0,W,H);
+ for(let i=0;i<160;i++){g.fillStyle=`rgba(255,255,255,${.03+.05*((i*37)%7)/7})`;g.beginPath();g.arc((i*7919)%W,(i*104729)%H,1+(i%3)*.6,0,7);g.fill()}}
+function ball(bx,by,r,ci,k,al,flash,kingGlow){x.save();x.globalAlpha=al;x.translate(bx,by);
+ if(kingGlow>0){const g2=x.createRadialGradient(0,0,r*.8,0,0,r*1.9);g2.addColorStop(0,`rgba(255,215,90,${.55*kingGlow})`);g2.addColorStop(1,'rgba(255,215,90,0)');x.fillStyle=g2;x.beginPath();x.arc(0,0,r*1.9,0,7);x.fill()}
+ const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);x.shadowColor=col(ci,60);x.shadowBlur=12;g.addColorStop(0,col(ci,84));g.addColorStop(.45,col(ci,54));g.addColorStop(1,col(ci,24));
+ x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;
+ if(k>=TOP){x.strokeStyle='#ffd23f';x.lineWidth=Math.max(5,r*.09);x.shadowColor='#ffd23f';x.shadowBlur=24;x.beginPath();x.arc(0,0,r-x.lineWidth/2,0,7);x.stroke();x.shadowBlur=0}
+ if(flash>0){x.fillStyle=`rgba(255,255,255,${.45*flash})`;x.beginPath();x.arc(0,0,r,0,7);x.fill()}
+ x.fillStyle='rgba(255,255,255,.55)';x.beginPath();x.ellipse(-r*.38,-r*.44,r*.24,r*.13,-.6,0,7);x.fill();
+ const L=label(k);if(k>=TOP){x.font=(r*1.05)+'px "Noto Color Emoji"';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#fff';x.fillText(L,0,r*.06)}
+ else{const fs=r*(L.length>=2?.82:1.0);x.font='900 '+fs+'px "DejaVu Sans",Arial,sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.lineWidth=fs*.16;x.strokeStyle='rgba(20,8,30,.75)';x.strokeText(L,0,fs*.05);x.fillStyle='#fff';x.fillText(L,0,fs*.05)}
+ x.restore()}
+function seg(x0,y0,x1,y1,w,cs,blur){x.save();x.lineCap='round';x.lineWidth=w;x.strokeStyle=cs;x.shadowColor=cs;x.shadowBlur=blur;x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke();x.restore()}
+function draw(tv){
+ const VF=D.vfps||60,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],ff=Math.min(D.frames.length-1,Math.max(0,t*D.fps)),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
+ const F0=D.frames[f0],F1=new Map(D.frames[f1].map(q=>[q[0],q]));const DUR=D.tmap.length/VF;
+ x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.drawImage(bg,0,0);
+ const EVT=D.tmap.findIndex(v=>v>=ET)/VF,er=t>=ET?Math.max(t-ET,tv-EVT):-1;
+ // loop: the jar empties in the last 0.35 s so the last frame matches the empty jar of frame 0
+ const outA=1-ease((tv-(DUR-.35))/.3);
+ // jar: neon walls + floor
+ x.save();const jg=x.createLinearGradient(0,JT,0,FL);jg.addColorStop(0,'rgba(120,60,200,0)');jg.addColorStop(1,'rgba(120,60,200,.16)');x.fillStyle=jg;x.fillRect(XL,JT,XR-XL,FL-JT);x.restore();
+ seg(XL-4,640,XL-4,FL+4,8,`hsl(${HUE},95%,64%)`,20);seg(XR+4,640,XR+4,FL+4,8,`hsl(${HUE},95%,64%)`,20);seg(XL-4,FL+6,XR+4,FL+6,8,`hsl(${HUE},95%,64%)`,20);
+ // dropper with the next ball inside it (position from the sim's dropper rule; next drop = next 'drop' event)
+ {const uu=((t/D.P+D.ph)%1+1)%1,dxp=CX+D.AMP*(uu<.5?4*uu-1:3-4*uu);x.save();x.fillStyle='rgba(8,8,30,.9)';x.strokeStyle=`hsl(${HUE},95%,72%)`;x.shadowColor=`hsl(${HUE},100%,65%)`;x.shadowBlur=14;x.lineWidth=4;
+  x.beginPath();x.roundRect(dxp-40,634,80,26,10);x.fill();x.stroke();x.restore();
+  const nx=drops[countAt(drops,t)];if(nx&&er<0){const wait=nx.t-t,a=cl(1-wait/.12)*0+1;ball(dxp,DY_(),15,nx.c,nx.k,.95*outA,0,0)}}
+ function DY_(){return 647}
+ // balls
+ const king=D.king,hold=[-1,-1,-1,-1];let kb=null;
+ for(const a of F0){const b=F1.get(a[0])||a,bx=a[3]+(b[3]-a[3])*u,by=a[4]+(b[4]-a[4])*u,born=a[5],mg=mergedIds.has(a[0]),r=rAt(a[2],born,t,mg);hold[a[1]]=Math.max(hold[a[1]],a[2]);
+  const fl=mg&&t-born<.22?1-(t-born)/.22:0,isK=a[0]===king.id;if(isK){kb=[bx,by,r];continue}
+  ball(bx,by,r,a[1],a[2],outA*(er>=0?1-.35*cl(er/.6):1),fl,0)}
+ // merge rings: a ring in the NEW owner's color (a takeover from another color gets a thicker ring)
+ for(let k=countAt(merges,t)-1;k>=0&&t-merges[k].t<.4;k--){const e=merges[k],p=(t-e.t)/.4,q=F0.find(a=>a[0]===e.id),ex=q?q[3]:e.x,ey=q?q[4]:e.y,r=rad(e.k);
+  x.save();x.globalAlpha=(1-p)*outA;x.strokeStyle=col(e.c,72);x.shadowColor=col(e.c,70);x.shadowBlur=16;x.lineWidth=(e.from!==e.c?9:5)*(1-p)+1;x.beginPath();x.arc(ex,ey,r*(1+.7*ease(p)),0,7);x.stroke();x.restore()}
+ if(kb){const kg=er>=0?.6+.4*Math.sin(er*6):0,s=er>=0?1+.12*Math.exp(-er*3)*Math.sin(er*14):1;ball(kb[0],kb[1],kb[2]*s,WIN,TOP,outA,er>=0&&er<.25?1-er/.25:0,kg*outA)}
+ // confetti from the king
+ if(er>=0&&er<2.4&&kb){x.save();x.beginPath();x.rect(XL,640,XR-XL,FL-634);x.clip();for(let i=0;i<80;i++){const an=i*2.39996,sp=380+420*((i*53)%17)/16,px=kb[0]+Math.cos(an)*sp*er,py=kb[1]+Math.sin(an)*sp*er*.8+600*er*er;
+   x.globalAlpha=Math.max(0,1-er/2.4)*outA;x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-7,-4,14,8);x.restore()}x.restore()}
+ if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.06*(1-er/.25)})`;x.fillRect(0,0,W,H)}
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ // top panel: hook + rule + live "biggest number each color holds"
+ x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
+ const m=Math.max(...hold),ls=hold.map((v,i)=>v===m&&m>=0?i:-1).filter(i=>i>=0),lead=ls.length===1?ls[0]:-1;
+ const tops=F0.filter(a=>a[2]===TOP-1),duel=[...new Set(tops.map(a=>a[1]))];
+ if(er<0){txt(`Game ${GAME} · Pick a color 👇`,385,56*(1+.18*Math.exp(-tv*7)),'#fff',1);
+  if(duel.length>=2)txt('TWO 64s! Who makes the 👑? 👀',437,38*(1+.05*Math.sin(t*14)),'#ffd23f',1);
+  else txt(tv<4.2?'Same numbers merge · newest color takes it':'First color to make the 👑 wins',437,tv<4.2?34:38,'#ffd23f',tv<4.2?1:ease((tv-4.2)/.3))}
+ else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' WINS THE 👑!',390,60*s,'#ffd23f',1);txt(er>=1.6?'Did your color win? 💬':(D.king.lose!==WIN?`64 + 64 = 👑 · stolen from ${NAMES[D.king.lose]}!`:'64 + 64 = 👑'),446,38,'#fff',er>=1.6?ease((er-1.6)/.35):1)}
+ for(let i=0;i<4;i++){const cx0=175+i*217,isL=er<0?lead===i:i===WIN;
+  x.save();if(isL){x.strokeStyle='rgba(255,210,63,.95)';x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
+  txt(NAMES[i],514,30,col(i,72),1,cx0,170);
+  const hv=er>=0&&i===WIN?TOP:hold[i];txt(hv<0?'–':label(hv),588,hv>=TOP?58:56,'#fff',1,cx0,180)}
+ // FOLLOW CALL: small pill over the jar for the last FOLLOWS seconds, then the loop cuts back to frame 0
+ {const FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=1040;x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
+ return c.toDataURL('image/jpeg',0.93)}
+window.draw=draw;
+</script>
