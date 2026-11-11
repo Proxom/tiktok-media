@@ -1,0 +1,90 @@
+<!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
+<script src="data.js"></script><script>
+// 17:00 1M+ #4 "Marble disaster race" renderer (family C) (same account look: violet background, neon lines, glossy balls, top panel with hook + live status).
+// Everything shown comes from the sim: positions (frames[k] = sim time k/60), gate passes and outs (events). Slow motion only through tmap.
+const W=1080,H=1920,D=DATA,HUE=305,BG=['#2c1446','#130a2a','#05030c'],R=D.R,PR=D.PR,SW=D.SW,ET=D.endT,WIN=D.winner,N=D.N;
+const NAMES=['RED','ORANGE','YELLOW','GREEN','BLUE','PURPLE'],HUES=[356,26,50,128,204,276],SAT=[95,100,100,78,95,85];
+const c=document.getElementById('c'),x=c.getContext('2d');
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
+const col=(i,l=58)=>`hsl(${HUES[i]},${SAT[i]}%,${l}%)`;
+const E=D.events,gates=E.filter(e=>e.type==='gate'),leads=E.filter(e=>e.type==='lead'),dis=E.filter(e=>e.type==='disaster'),quakes=E.filter(e=>e.type==='quake'),pegs=E.filter(e=>e.type==='peg'),spins=E.filter(e=>e.type==='spin');
+const DNAME=['','WILD PADDLES 🌀','WIND ⬅️💨','EARTHQUAKE 💥','MOON GRAVITY 🌙'],DICON=['','🌀','💨','💥','🌙'],DT=dis.map(d=>d.t);
+function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
+const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
+function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+ const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
+ let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
+ let px=align==='center'?cx-w/2:cx;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=colr;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
+const bg=document.createElement('canvas');bg.width=W;bg.height=H;{const g=bg.getContext('2d');const rg=g.createRadialGradient(480,1030,40,480,1030,1200);rg.addColorStop(0,BG[0]);rg.addColorStop(.5,BG[1]);rg.addColorStop(1,BG[2]);g.fillStyle=rg;g.fillRect(0,0,W,H);
+ for(let i=0;i<160;i++){g.fillStyle=`rgba(255,255,255,${.03+.05*((i*37)%7)/7})`;g.beginPath();g.arc((i*7919)%W,(i*104729)%H,1+(i%3)*.6,0,7);g.fill()}}
+function ball(bx,by,r,ci,al,flash){x.save();x.globalAlpha=al;x.translate(bx,by);const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);
+ x.shadowColor=col(ci,60);x.shadowBlur=12;g.addColorStop(0,col(ci,88));g.addColorStop(.45,col(ci,55));g.addColorStop(1,col(ci,25));
+ x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;if(flash>0){x.fillStyle=`rgba(255,255,255,${.7*flash})`;x.beginPath();x.arc(0,0,r,0,7);x.fill()}
+ x.fillStyle='rgba(255,255,255,.72)';x.beginPath();x.ellipse(-r*.36,-r*.42,r*.26,r*.15,-.6,0,7);x.fill();x.restore()}
+function seg(x0,y0,x1,y1,w,cs,blur){x.save();x.lineCap='round';x.lineWidth=w;x.strokeStyle=cs;x.shadowColor=cs;x.shadowBlur=blur;x.beginPath();x.moveTo(x0,y0);x.lineTo(x1,y1);x.stroke();x.restore()}
+function draw(tv){
+ const VF=D.vfps||60,DUR=D.tmap.length/VF,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],ff=Math.min(D.frames.length-1,Math.max(0,t*D.fps)),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
+ const F0=D.frames[f0],F1=D.frames[f1];x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.drawImage(bg,0,0);
+ const EVT=D.tmap.findIndex(v=>v>=ET)/VF,er=t>=ET?Math.max(t-ET,tv-EVT):-1;
+ const nd=countAt(dis,t),lapsOf=ci=>countAt(gates.filter(g=>g.m===ci),Math.min(t,ET)),nl=countAt(leads,Math.min(t,ET)),leader=nl?leads[nl-1].m:-1;
+ const lq=countAt(quakes,t),qs=lq&&er<0?Math.max(0,1-(t-quakes[lq-1].t)/.15):0,shx=qs*9*Math.sin(t*97),shy=qs*7*Math.cos(t*83);
+ // disaster flash: red edge glow for 0.6 s at each disaster
+ const ldt=nd?t-DT[nd-1]:9;
+ // MOON GRAVITY tint
+ if(nd>=4){x.save();x.globalAlpha=.10*cl((t-DT[3])/.5);x.fillStyle='#6fa8ff';x.beginPath();x.roundRect(D.XL-14,630,D.LXR-D.XL+28,800,18);x.fill();x.restore();
+  x.save();for(let i=0;i<26;i++){const yy=1440-((i*67+t*60)%800),xx=110+((i*131)%720);x.globalAlpha=.25*cl((t-DT[3])/.5);x.fillStyle='#cfe0ff';x.beginPath();x.arc(xx,yy,2+(i%3),0,7);x.fill()}x.restore()}
+ x.save();x.translate(shx,shy);
+ // course: walls, ramps (account neon), pegs, spinning paddle
+ const NE=`hsl(${HUE},95%,66%)`;seg(D.XL,640,D.XL,1210,8,NE,20);seg(D.LXL,736,D.LXL,1296,8,NE,18);seg(...D.RA,8,NE,18);seg(...D.RC,8,NE,18);
+ const lastPeg={};for(let q=countAt(pegs,t)-1;q>=0&&t-pegs[q].t<.25;q--)if(!(pegs[q].p in lastPeg))lastPeg[pegs[q].p]=pegs[q];
+ D.PEGS.forEach((p,i)=>{const h=lastPeg[i],q=h?1-(t-h.t)/.25:0;x.save();x.shadowColor=`hsl(${HUE},100%,70%)`;x.shadowBlur=10+10*q;x.fillStyle=`hsl(${HUE},90%,${76+8*q}%)`;x.beginPath();x.arc(p[0],p[1],PR+1.5*q,0,7);x.fill();x.restore()});
+ const sa=(()=>{const A=D.spinA[f0],B=D.spinA[f1]||A;return A.map((v,j)=>v+(B[j]-v)*u)})();
+ D.SPINS.forEach((S,j)=>{const a=sa[j],wild=nd>=1,cs=Math.cos(a),sn=Math.sin(a),ls=countAt(spins,t),hit=ls&&t-spins[ls-1].t<.2&&Math.hypot(spins[ls-1].x-S.x,spins[ls-1].y-S.y)<S.L+40?1-(t-spins[ls-1].t)/.2:0;
+  const ph=wild?(5+18*cl(1-(t-DT[0])/.8)):45;seg(S.x-cs*S.L,S.y-sn*S.L,S.x+cs*S.L,S.y+sn*S.L,10,`hsl(${ph},100%,${62+20*hit}%)`,18+16*hit);x.save();x.fillStyle='#1a1030';x.strokeStyle=`hsl(${ph},100%,70%)`;x.lineWidth=4;x.beginPath();x.arc(S.x,S.y,9,0,7);x.fill();x.stroke();x.restore()});
+ // WIND streaks across the peg board (only where the wind blows: y 880-1140)
+ if(nd>=2){const wa=cl((t-DT[1])/.4);x.save();x.lineCap='round';for(let i=0;i<22;i++){const yy=890+((i*47)%250),sp=900+((i*53)%5)*120,len=60+((i*29)%4)*30,xx=D.LXL-((t*sp+i*233)%(D.LXL-D.XL+len));x.globalAlpha=.32*wa;x.strokeStyle='#d8f3ff';x.lineWidth=3;x.beginPath();x.moveTo(xx,yy);x.lineTo(xx+len,yy);x.stroke()}x.restore()}
+ // trapdoor (start row floor): two halves swing down at TOPEN
+ {const T=D.TRAP,mid=(T[0]+T[2])/2,s=cl((t-D.TOPEN)/.14);if(s<1){const a=s*Math.PI/2*1.1,al=1-s;x.save();x.globalAlpha=al;
+  seg(T[0],T[1],T[0]+(mid-T[0])*Math.cos(a),T[1]+(mid-T[0])*Math.sin(a),8,'hsl(45,100%,66%)',16);seg(T[2],T[3],T[2]-(T[2]-mid)*Math.cos(a),T[3]+(T[2]-mid)*Math.sin(a),8,'hsl(45,100%,66%)',16);x.restore()}}
+ // GATE: checkered strip at the lift entrance, flashes on every pass
+ {const lg=countAt(gates,t),fl=lg&&t-gates[lg-1].t<.3?1-(t-gates[lg-1].t)/.3:0,gc=lg?gates[lg-1].m:0;x.save();x.shadowColor=fl>0?col(gc,70):'#fff';x.shadowBlur=10+24*fl;
+  for(let i=0;i<7;i++){x.fillStyle=i%2?'#ffffff':'#20182e';x.fillRect(D.GX-5,1290+i*9,10,9)}x.restore();txt('GATE',1400,30,fl>0?col(gc,74):'#ffffff',1,D.GX-2,140)}
+ // marbles (trail while rolling), danger rings on the last two for this gate, pop on out
+ const pos=[];for(let i=0;i<N;i++){const a=F0[i],b=F1[i]||a,ci=D.order[i];let px=a[0]+(b[0]-a[0])*u,py=a[1]+(b[1]-a[1])*u;if(a[2]!==b[2]){px=a[0];py=a[1]}pos[ci]=[px,py,a[2]]}
+ // lift glass (behind)
+ x.save();x.fillStyle='rgba(150,190,255,.07)';x.strokeStyle='rgba(170,200,255,.45)';x.lineWidth=3;x.beginPath();x.roundRect(D.LXL+2,646,D.LXR-D.LXL+2,712,16);x.fill();x.stroke();
+ x.globalAlpha=.25;x.strokeStyle='#bcd2ff';x.lineWidth=3;for(let i=0;i<10;i++){const yy=1340-((i*72+t*260)%700);x.beginPath();x.moveTo(D.LX-9,yy+6);x.lineTo(D.LX,yy-3);x.lineTo(D.LX+9,yy+6);x.stroke()}x.restore();
+ for(let ci=0;ci<N;ci++){const p=pos[ci];if(!p||p[2]!==0||er>=0&&ci!==WIN)continue;for(let q=4;q>=1;q--){const F=D.frames[Math.max(0,f0-2*q)],ii=D.order.indexOf(ci),pf=F[ii];if(!pf||pf[2]!==0)continue;x.save();x.globalAlpha=.06*(5-q);x.fillStyle=col(ci,70);x.beginPath();x.arc(pf[0],pf[1],R*(1-.08*q),0,7);x.fill();x.restore()}}
+ for(let ci=0;ci<N;ci++){const p=pos[ci];if(!p)continue;const lg=gates.filter(g=>g.m===ci&&g.t<=t).pop(),fl=lg&&t-lg.t<.25?.25*(1-(t-lg.t)/.25):0;ball(p[0],p[1],R,ci,1,fl)}
+ {const na=t<D.TOPEN?1:1-cl((t-D.TOPEN)/.35);if(na>0)for(let ci=0;ci<N;ci++){const p=pos[ci];if(p)txt(NAMES[ci],p[1]-34,19,col(ci,76),na,p[0],96)}}
+ // lift glass front highlight
+ x.save();x.globalAlpha=.18;x.fillStyle='#dfe9ff';x.fillRect(D.LXL+8,656,5,690);x.restore();
+ // winner: gold ring + confetti from the winner
+ if(er>=0){const p=pos[WIN];x.save();x.strokeStyle='#ffd23f';x.shadowColor='#ffd23f';x.shadowBlur=24;x.lineWidth=5;x.beginPath();x.arc(p[0],p[1],R+10+4*Math.sin(er*8),0,7);x.stroke();x.restore();
+  if(er<2.6){x.save();x.beginPath();x.rect(D.XL-20,630,D.LXR-D.XL+40,800);x.clip();for(let i=0;i<110;i++){const px=D.XL+((i*97)%101)/100*(D.LXR-D.XL)+40*Math.sin(er*3+i),py=640-30*((i*53)%17)/16+(260+300*((i*31)%13)/12)*er;
+   x.globalAlpha=Math.max(0,1-er/2.6);x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-7,-4,14,8);x.restore()}x.restore()}}
+x.restore();
+ if(ldt<.6&&er<0){const g=x.createRadialGradient(W/2,1040,300,W/2,1040,900);g.addColorStop(0,'rgba(255,40,40,0)');g.addColorStop(1,`rgba(255,40,40,${.35*(1-ldt/.6)})`);x.fillStyle=g;x.fillRect(0,0,W,H)}
+ if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.06*(1-er/.25)})`;x.fillRect(0,0,W,H)}
+ const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
+ // top panel: hook, live status line, 6 color chips (out = dimmed + cross)
+ x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,292,30);x.fill();x.stroke();x.restore();
+ if(er<0){const lap=Math.min(D.LAPS,(nl||0)+1);
+  if(tv<3.2)txt('Disaster race 🌋 Pick a color 👇',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);
+  else txt(lap===D.LAPS?`FINAL LAP 🏁 ${NAMES[leader]} leads`:`Lap ${lap} of ${D.LAPS} · ${leader>=0?NAMES[leader]+' leads':'GO!'}`,385,52,lap===D.LAPS?'#ffd23f':'#fff',1);
+  let l2,c2='#ffd23f',sz=40;
+  if(nd&&ldt<1.9){l2=`⚠️ DISASTER ${nd}: ${DNAME[nd]}`;c2='#ff5a5a';sz=42*(1+.18*Math.exp(-ldt*6))}
+  else if(nd)l2=`${DICON.slice(1,nd+1).join(' ')}  +1 disaster every new lap`;
+  else l2='Every new lap = a new DISASTER ⚠️';
+  txt(l2,442,sz,c2,1)}
+ else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+' WINS! 🏆',388,62*s,'#ffd23f',1);txt(er>=1.6?'Did your color win? 💬':`${NAMES[D.runnerUp]} was right behind 😱`,445,40,er>=1.6?'#fff':col(D.runnerUp,76),er>=1.6?ease((er-1.6)/.35):1)}
+ for(let pi=0;pi<N;pi++){const ci=D.order[pi],cx0=145+pi*142,isW=er>=0&&ci===WIN,isL=er<0&&ci===leader,L=Math.min(D.LAPS,lapsOf(ci));x.save();
+  if(isW||isL){x.strokeStyle=isW?'rgba(255,210,63,.95)':'rgba(255,255,255,.6)';x.shadowColor=isW?'#ffd23f':'#fff';x.shadowBlur=isW?14:8;x.lineWidth=4;x.beginPath();x.roundRect(cx0-64,478,128,128,20);x.stroke()}x.restore();
+  ball(cx0,512,22,ci,1,0);for(let d=0;d<D.LAPS;d++){x.save();x.fillStyle=d<L?col(ci,70):'rgba(255,255,255,.18)';x.beginPath();x.arc(cx0-36+18*d,553,5.5,0,7);x.fill();x.restore()}
+  if(isW)txt('👑',466,34,'#fff',1,cx0,60);txt(NAMES[ci],592,24,col(ci,74),1,cx0,134)}
+ // FOLLOW CALL: small pill over the dimmed board for the last 1.4 s, then the loop cuts back to frame 0
+ {const FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=1000;x.save();x.globalAlpha=.5*fa;x.fillStyle='#05030c';x.fillRect(D.XL-10,636,D.LXR-D.XL+20,800);x.restore();
+  x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.9)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(490-280,PY-46,560,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new race every day',PY+3,38,'#ffd23f',fa,490,520)}}
+ return c.toDataURL('image/jpeg',0.93)}
+window.draw=draw;
+</script>
