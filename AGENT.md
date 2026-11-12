@@ -2,6 +2,14 @@
 
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
+
+## TOP OVERRIDE (Erkan, 12 Nov 2026 18:30): 2 VIDEOS A DAY, 01:00 AND 17:00 ONLY – to save weekly Claude credits
+- From now on: exactly 2 videos a day, at 01:00 and 17:00 Europe/London. The 21:00 slot is CLOSED: never schedule anything new at 21:00. This overrides the 3-a-day rule/sprint below and any other mention of 21:00.
+- Posts already scheduled for 21:00 stay as they are (already made); do not make new ones for 21:00.
+- 17:00 keeps its current rule (1M+ list); 01:00 carries the other style/family of the day (rotate styles day by day as before).
+- QUEUE rule from now on: QUEUE = future non-draft posts + finished gate-passed videos not yet scheduled. QUEUE >= 2: short check only, no new videos. QUEUE 1: make 1. QUEUE 0: make 2.
+- Keep runs short and lean; no extra experiments that cost credits. The 16 Nov 3-a-day/sprint result report is replaced by a short note in the daily report: views per video and followers per day with 3 a day vs 2 a day.
+
 ## MERGE GAME BACK IN THE ROTATION (Erkan, 10 Nov 2026 20:24)
 Erkan: "no merge-game videos for a long time; make them in between too".
 - The next EMPTY slot (non-17:00; at the moment 12 Nov 01:00) = family E MERGE GAME on tools/merge-arena, made to today's quality gate (Game N label, pick-before-it-starts hook, clear final-form reveal at 80-85 %, loop, follow pill).
