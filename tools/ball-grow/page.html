@@ -34,7 +34,7 @@ function draw(tv){
  x.beginPath();x.arc(CX,CY,R,gc+D.GAP,gc-D.GAP+Math.PI*2);x.stroke();x.restore();
  // gap caps + dashed gate (shows the free width the ball has to fit through)
  const p1=[CX+R*Math.cos(gc-D.GAP),CY+R*Math.sin(gc-D.GAP)],p2=[CX+R*Math.cos(gc+D.GAP),CY+R*Math.sin(gc+D.GAP)];
- x.save();x.fillStyle='#fff';x.shadowColor='#fff';x.shadowBlur=14;[p1,p2].forEach(p=>{x.beginPath();x.arc(p[0],p[1],HT*.75,0,7);x.fill()});
+ x.save();{const hot=er<0&&q>=.9?.5+.5*Math.sin(t*14):0;x.fillStyle=hot?`hsl(10,100%,${70+25*(1-hot)}%)`:'#fff';x.shadowColor=hot?'#ff5a3c':'#fff';x.shadowBlur=14+18*hot} /* gap caps pulse red once the ball is at 90 %+ */[p1,p2].forEach(p=>{x.beginPath();x.arc(p[0],p[1],HT*.75,0,7);x.fill()});
  x.restore();
  // ripple at the last contact point
  if(lastB&&since<.35&&er<0){const k=since/.35;x.save();x.globalAlpha=.7*(1-k);x.strokeStyle=rcol(lastB.ratio,75);x.lineWidth=4*(1-k)+1;x.beginPath();x.arc(lastB.x,lastB.y,8+30*ease(k),0,7);x.stroke();x.restore()}
@@ -49,7 +49,11 @@ function draw(tv){
  // top panel: hook + meter
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,290,30);x.fill();x.stroke();x.restore();
  const qd=er>=0?esc.ratio:q,pct=Math.round(qd*100);
- if(er<0){txt('It GROWS every bounce 😬',390,58,'#fff',1);txt('Can it escape before 100%?',448,46,'#ffd23f',1)}
+ if(er<0){txt('It GROWS every bounce 😬',390,58,'#fff',1);
+  /* tension beats (engine 12 Nov): when the meter first passes 90/95/97 %, line 2 becomes a callout for 1.3 s */
+  const TB=[[90,'... still fits? 😬'],[95,'! SO close 😱'],[97,'!! last chance 🔥']];let tb=null; /* label shows the meter's own rounded % (review 12 Nov) */
+  for(const [th,lab] of TB){const e=bo.find(b=>Math.round(b.ratio*100)>=th);if(e&&e.t<=tq&&tq-e.t<1.3&&e.t<ET)tb={lab:Math.round(e.ratio*100)+'%'+lab,k:tq-e.t}}
+  if(tb){const s=1+.22*Math.exp(-tb.k*7);txt(tb.lab,448,Math.round(48*s),'#ff6b4a',1)}else txt('Can it escape before 100%?',448,46,'#ffd23f',1)}
  else{const s=1+.25*Math.exp(-er*5);txt('ESCAPED at '+pct+'%! 🎉',416,64*s,'#ffd23f',1)}
  x.save();x.textAlign='left';x.lineJoin='round';x.font='900 44px "DejaVu Sans"';x.lineWidth=9;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText('BALL vs GAP',110,520);x.fillStyle='#cfd8ff';x.fillText('BALL vs GAP',110,520);
  x.textAlign='right';const pp=1+.16*pulse*(er<0?1:0);x.font=`900 ${Math.round(62*pp)}px "DejaVu Sans"`;x.strokeText(pct+'%',890,525);x.fillStyle=rcol(qd,68);x.fillText(pct+'%',890,525);

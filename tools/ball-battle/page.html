@@ -73,7 +73,7 @@ const LBt=[...koL.map(([o,s])=>[o.t,s<1?1:1-(s-1)/.4])].sort((a,b)=>b[1]-a[1])[0
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
  const lv=countAt(spd,t);
  if(er<0){txt(GAME?`Game ${GAME} · Pick a color 👇`:'Pick a color 👇 Who survives?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);
-  if(LW>=0&&tv<3.4){const a=tv<3?1:1-(tv-3)/.4;txt(`Last winner: ${NAMES[LW]} 👑 Can it win again?`,437,38,'#ffd23f',a)}
+  if(LW>=0&&tv<3.4){const a=tv<3?1:1-(tv-3)/.4;txt((D.lastStreak||1)>=2?`${NAMES[LW]} won ${D.lastStreak} in a row 👑 Can it make it ${D.lastStreak+1}?`:`Last winner: ${NAMES[LW]} 👑 Can it win again?`,437,38,'#ffd23f',a)}
   else txt(lv>=2?`FINAL DUEL! Speed +${Math.round((Math.pow(1+SU,lv)-1)*100)}%`:lv>0?`Slower ball loses 1 HP · Speed +${Math.round((Math.pow(1+SU,lv)-1)*100)}%`:'Every crash: the SLOWER ball loses 1 HP',437,38,'#ffd23f',LW>=0?ease((tv-3.4)/.3):1)}
  else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+(LW===WIN?' WINS AGAIN! 🏆':LW>=0?' IS THE NEW CHAMP! 👑':' SURVIVES! 🏆'),390,60*s,'#ffd23f',1);if(er>=.8)txt('Did your color win? 💬',446,40,'#fff',ease((er-.8)/.35))}
  for(let i=0;i<4;i++){const cx0=i%2?505:95,y0=478+Math.floor(i/2)*64,hp=PP[i][3],dead=hp<=0,h=lastHit(i),hit=h&&h.loser===i?t-h.t:9,pp=hit<.2?1-hit/.2:0;

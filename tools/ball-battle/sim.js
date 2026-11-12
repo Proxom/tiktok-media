@@ -8,13 +8,14 @@
 // node sim.js <out.js> [seed]  (env HP, RMIN, RK, G, VMIN, VMAX, MINT, MAXT, WINMAX, TAIL, SPEEDUP, GAME, LASTWIN, FOLLOWTEXT)
 const fs=require('fs');
 const OUT=process.argv[2]||'data.js',SEED=+process.argv[3]||1;
-const FPS=30,SUB=20,DT=1/(FPS*SUB),CX=540,CY=1030,R=390,HT=9,G=+process.env.G||380;
+const FPS=30,SUB=20,DT=1/(FPS*SUB),CX=+process.env.CX||540,CY=1030,R=390,HT=9,G=+process.env.G||380;
 const HP0=+process.env.HP||8,RMIN=+process.env.RMIN||24,RK=+process.env.RK||2.9,VMIN=+process.env.VMIN||430,VMAX=+process.env.VMAX||780,TAIL=+process.env.TAIL||4.4;
 const N=4,rad=hp=>RMIN+RK*hp,SHR=+process.env.SHR||.14,SHT=.8,SU=+process.env.SPEEDUP||0; // SPEEDUP: after every knock-out all balls get (1+SU)x faster and the speed limits rise by the same factor
 function rng(seed){let s=seed>>>0;return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 function run(seed){
  const rnd=rng(seed);const B=[];
  const start=[[-150,-120],[150,-120],[-150,90],[150,90]];
+ if(process.env.SHUF){for(let i=start.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[start[i],start[j]]=[start[j],start[i]]}} // SHUF=1 (12 Nov): random start corner per colour, removes the YELLOW-bottom-left start bias
  for(let i=0;i<N;i++){const a=rnd()*6.283,sp=VMIN+rnd()*(VMAX-VMIN)*.6;B.push({x:CX+start[i][0]+(rnd()-.5)*40,y:CY+start[i][1]+(rnd()-.5)*40,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,hp:HP0,r:rad(HP0),alive:1,wc:0})}
  const pc={},kos=[];const Rt=tt=>{let r=R;for(const k of kos)r-=SHR*R*Math.min(1,Math.max(0,(tt-k)/SHT));return r};
 
@@ -68,5 +69,5 @@ console.log('seed',res.seed,'winner',res.win,'end',res.endT.toFixed(2),'outs',re
 res.ffps=60;{const SP=+process.env.SLOW||.4,s0=res.endT-(+process.env.S0||1.2),s1=res.endT+(+process.env.S1||.5),end=res.frames.length/60-.02;
  const VF=+process.env.VFPS||60;res.vfps=VF;const tm=[];let ts=0,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
  res.tmap=tm;console.log('video frames',tm.length,'video dur',(tm.length/VF).toFixed(2),'final KO at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2))}
-res.speedup=SU;res.vmin=VMIN;res.vmax=VMAX;res.game=+process.env.GAME||0;res.lastWin=process.env.LASTWIN!==undefined?+process.env.LASTWIN:-1;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;
+res.speedup=SU;res.vmin=VMIN;res.vmax=VMAX;res.game=+process.env.GAME||0;res.lastWin=process.env.LASTWIN!==undefined?+process.env.LASTWIN:-1;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;res.lastStreak=+process.env.STREAK||1;
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');
