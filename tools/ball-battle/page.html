@@ -87,7 +87,7 @@ const LBt=[...koL.map(([o,s])=>[o.t,s<1?1:1-(s-1)/.4])].sort((a,b)=>b[1]-a[1])[0
   }
 
  // FOLLOW CALL (main goal, 8 Nov): small pill inside the arena for the last FOLLOWS seconds, then the loop cuts back to frame 0
- {const DUR=D.tmap.length/(D.vfps||30),FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||(CY+200);x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.beginPath();x.arc(CX,CY,R-HT,0,7);x.fill();x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+4,46,'#ffd23f',fa,CX,590)}}
+ {const DUR=D.tmap.length/(D.vfps||30),FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||(()=>{const F=D.frames,k0=Math.max(0,F.length-90);let sy=0;for(let k=k0;k<F.length;k++)sy+=F[k][D.win][1];return sy/(F.length-k0)>CY?CY-215:CY+200})(); /* review 12 Nov: pill on the side away from the winner ball */x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.beginPath();x.arc(CX,CY,R-HT,0,7);x.fill();x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+4,50,'#ffd23f',fa,CX,590)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>

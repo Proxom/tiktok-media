@@ -7,3 +7,8 @@ Result: seed 320288, GREEN wins on 1 HP (new champ); OUT BLUE 13.8 s (x1.1), YEL
 Caption: Game 4 👇 YELLOW won 2 in a row. Pick your color before the first crash. The slower ball loses 1 HP, every knockout makes the rest faster. Who survives? #satisfying #physics #simulation #oddlysatisfying
 Title: Game 4 👇 YELLOW won 2 in a row. Can it make it 3?
 Slot: 13 Nov 01:00 Europe/London.
+Gate: 1080x1920 60 fps H.264 CRF 16 + AAC, YAVG first 40.5 / last 39.2, -14.0 LUFS TP -2.2, 4k band -49.9 (35.9 dB below). Spelling OK. Safe zones clear (ring right edge x≈922 < 930 with CX 525).
+Rule sheet: 4 balls 13 HP in one ring; every crash the SLOWER ball loses 1 HP; 0 HP = OUT; after each non-final KO all balls +10 % speed and the ring shrinks 12 %; last ball alive wins.
+Review v1: 7.2 (hook 7, polish 7, clarity 8, pacing 6, payoff 8), LOGIC PASS. Fixed once: follow pill now goes on the side away from the winner (CY-215 / CY+200 by the winner's mean y in the last 1.5 s), text 50 px; loop cross-fade (tools/loopfade.sh).
+Still open (next B engine work): ring shrink hard to see (make it 8-10 % per KO with a flash), slow final duel 25-29 s, clumping at 9-12 s.
+DONE: media/ball-battle-survivor-04.
