@@ -12,3 +12,6 @@ Rule sheet: 1 ball in a rotating ring with one gap; every bounce grows it by a f
 Caption: It grows every bounce 😬 Can it squeeze out before 100%? Guess the % 👇 Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: It grows every bounce. 97%... 99%... will it still fit? 😬
 Slot: 12 Nov 21:00 Europe/London.
+Review v1: 7.0 (hook 7, polish 7, clarity 8, pacing 6, payoff 7); callouts match the meter, no clipping, no safe-zone hits. Flagged: end frame != start frame (loop).
+Fix applied once: NEW tools/loopfade.sh (last 0.4 s cross-fades into frame 0; audio copied) -> last-frame YAVG 37.4 vs first 38.0. Not done (next A engine work): shorter 0-60 % stretch / per-bounce flash early on.
+DONE: media/ball-grow-escape-99c (mp4 + cover.jpg at the 97 % beat).
