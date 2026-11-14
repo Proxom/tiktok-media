@@ -10,8 +10,12 @@ Rule sheet:
  3. A hole grows back after 3.5 s at full HP (only when the ball is clear of it); the arc along the hole shows the timer.
  4. When the ball gets fully outside a ring through a hole, that ring shatters; out of the 3rd ring = BROKE OUT.
  5. HITS counter = logged hit events; the end shows the real total.
-Params: NS=12,16,20 HPS=2,2,2 HEAL=3.5 MINT=27 MAXT=32 R1=5,12 R2=14,23 TAIL=4.2 (defaults RS 215,305,395 OMS .9,-.7,.55 VMIN 520 VMAX 820 R0 26 G 620 CX 500 CY 1030), seed 301.
-Rebuild: cd tools/heal-ring && NS=12,16,20 HPS=2,2,2 HEAL=3.5 MINT=27 MAXT=32 R1=5,12 R2=14,23 TAIL=4.2 node sim.js data.js 301 && node check.js && TMPD=/tmp/claude-0/bg/hr ./make.sh <out.mp4> 4
+Params (v2): NS=12,16,20 HPS=2,2,2 HEAL=3.5 MINT=27 MAXT=32 R1=5,12 R2=14,23 TAIL=3.4 FF=1.7 FF0=16 FF1=25.9 (defaults RS 215,305,395 OMS .9,-.7,.55 VMIN 520 VMAX 820 R0 26 G 620 CX 500 CY 1030), seed 301.
+Rebuild: cd tools/heal-ring && NS=12,16,20 HPS=2,2,2 HEAL=3.5 MINT=27 MAXT=32 R1=5,12 R2=14,23 TAIL=3.4 FF=1.7 FF0=16 FF1=25.9 node sim.js data.js 301 && node check.js && TMPD=/tmp/claude-0/bg/hr ./make.sh <out.mp4> 4
 Result: walls down at 7.45 / 14.43 / 27.21 s, 40 hits, 13 breaks, 5 heals, maxPen 0, check.js PASS; video 33.18 s, break-out at 28.3 s (85 %).
 Caption: The wall heals itself 🩹 2 hits make a hole, but every hole grows back. Guess how many hits it takes to break out 👇 Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: The wall HEALS itself 🩹 Can the ball break out? Guess the hits 👇
+Review v1 (33.2 s): 6.4 (hook 6, polish 7, clarity 8, pacing 5, payoff 6). Flagged: on shatter, holes came back as solid shards (looked like the ball passed a solid brick at the break-out).
+Fix round (once): only intact bricks shatter, holes stay dashed; wall-3 middle (sim 16-25.9 s) at 1.7x; TAIL 3.4; hook line 2 'Guess how many hits to break out 👇' (pays off the end question); faint ghost of the last wall behind the end question.
+v2: 28.27 s, break-out at 24.18 s (85.5 %), check.js PASS, 1080x1920 60 fps H.264 CRF 16 + AAC, -14.0 LUFS TP -2.4, 4k band -49.1 (35 dB below), YAVG first 35.4 / last 34.2, spelling OK, loopfade 0.4 s.
+DONE: media/heal-ring-01 (mp4 + cover.jpg at 7.55 s 'WALL 1 DOWN').
