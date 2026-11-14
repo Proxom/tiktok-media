@@ -9,7 +9,7 @@ const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2
 const col=(i,l=58)=>`hsl(${HUES[i]},${SAT[i]}%,${i===2?Math.min(l+4,92):l}%)`;
 const spd=D.events.filter(e=>e.type==='speed'),cr=D.events.filter(e=>e.type==='crash'),outs=D.events.filter(e=>e.type==='out'),walls=D.events.filter(e=>e.type==='wall');
 const Rt=tt=>{let r=R;for(const k of (D.kos||[]))r-=(D.SHR||0)*R*cl((tt-k)/(D.SHT||1));return r};
-const bandOf=(()=>{const m=new Map();for(const o of outs){const Y0=CY-R+HT+150,Y1=CY+R-HT-190;let c0=0,c1=0;for(let k=Math.round(o.t*D.ffps);k<Math.min(D.frames.length,Math.round((o.t+1.9)*D.ffps));k+=3){const zz=R/Rt((k+1)/D.ffps);for(const q of D.frames[k]){if(q[3]<=0&&k>Math.round(o.t*D.ffps)+1)continue;const sy=CY+(q[1]-CY)*zz,sx=CX+(q[0]-CX)*zz,rr=q[2]*zz;if(Math.abs(sx-CX)<260+rr){if(Math.abs(sy-(Y0+20))<70+rr)c0++;if(Math.abs(sy-(Y1+20))<70+rr)c1++}}}m.set(o.t,c1<c0?Y1:Y0)}return t=>m.get(t)??(CY-R+HT+150)})();
+const bandOf=(()=>{const m=new Map();for(const o of outs){const Y0=CY-R+HT+150,Y1=CY+R-HT-190;let c0=0,c1=0;for(let k=Math.round(o.t*D.ffps);k<Math.min(D.frames.length,Math.round((o.t+1.9)*D.ffps));k+=3){const zz=R/Rt(Math.max(0,(k+1)/D.ffps-(D.camLag||0)));for(const q of D.frames[k]){if(q[3]<=0&&k>Math.round(o.t*D.ffps)+1)continue;const sy=CY+(q[1]-CY)*zz,sx=CX+(q[0]-CX)*zz,rr=q[2]*zz;if(Math.abs(sx-CX)<260+rr){if(Math.abs(sy-(Y0+20))<70+rr)c0++;if(Math.abs(sy-(Y1+20))<70+rr)c1++}}}m.set(o.t,c1<c0?Y1:Y0)}return t=>m.get(t)??(CY-R+HT+150)})();
 function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
 function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
@@ -35,10 +35,10 @@ function draw(tv){
  const tq=t+.5/FF,er=t>=ET?t-ET:-1;
  const nc=countAt(cr,tq),lastC=nc>0?cr[nc-1]:null,pulse=lastC?Math.max(0,1-(t-lastC.t)/.18):0;
  // camera: zoom so the shrinking arena keeps filling the frame (the physics is unchanged; only the view scales)
- const Z=R/Rt(t),SX=v=>CX+(v-CX)*Z,SY=v=>CY+(v-CY)*Z;x.save();x.translate(CX,CY);x.scale(Z,Z);x.translate(-CX,-CY);
+ const CL=D.camLag||0,Z=R/Rt(Math.max(0,t-CL)) /* camLag (14 Nov): camera follows the shrink CL s late, so the wall is SEEN closing in before the view zooms */,SX=v=>CX+(v-CX)*Z,SY=v=>CY+(v-CY)*Z;x.save();x.translate(CX,CY);x.scale(Z,Z);x.translate(-CX,-CY);
  // arena ring (closed)
  const glowGold=er>=0?Math.exp(-er*1.3):0;
- x.save();x.lineWidth=HT*2;x.strokeStyle=er>=0?`hsl(45,100%,${62+20*glowGold}%)`:`hsl(${HUE},95%,${62+16*pulse}%)`;x.shadowColor=er>=0?'hsl(45,100%,60%)':`hsl(${HUE},100%,60%)`;x.shadowBlur=22+18*pulse+40*glowGold;
+ x.save();x.lineWidth=HT*2;x.strokeStyle=er>=0?`hsl(45,100%,${62+20*glowGold}%)`:`hsl(${HUE},95%,${62+16*pulse}%)`;x.shadowColor=er>=0?'hsl(45,100%,60%)':`hsl(${HUE},100%,60%)`;x.shadowBlur=22+18*pulse+40*glowGold;const shk=(D.kos||[]).reduce((m,k)=>{const q=(t-k)/(D.SHT||1);return q>0&&q<1.6?Math.max(m,1-q/1.6):m},0);if(shk>0&&er<0){x.strokeStyle=`hsl(${HUE},100%,${72+22*shk}%)`;x.shadowColor='#fff';x.shadowBlur+=50*shk;x.lineWidth=HT*2*(1+.6*shk)}
  const RR=Rt(t);x.beginPath();x.arc(CX,CY,RR,0,Math.PI*2);x.stroke();x.restore();
  // wall ripples (soft, fade fast)
  for(let k=countAt(walls,tq)-1;k>=0&&t-walls[k].t<.3;k--){const w=walls[k],q=(t-w.t)/.3;x.save();x.globalAlpha=.45*(1-q);x.strokeStyle=col(w.ball,75);x.lineWidth=3*(1-q)+1;x.beginPath();x.arc(w.x,w.y,5+18*ease(q),0,7);x.stroke();x.restore()}
@@ -61,11 +61,11 @@ function draw(tv){
   if(e.hp>0)minus.push([e,s])}
  x.restore();
  // screen-space labels (drawn above the balls, never scaled): -1 over the loser, KO label in a fixed slot inside the top of the ring
-const LBt=[...koL.map(([o,s])=>[o.t,s<1?1:1-(s-1)/.4])].sort((a,b)=>b[1]-a[1])[0],LB=LBt?bandOf(LBt[0]):CY-R+HT+150,lbA=Math.max(0,...koL.map(([o,s])=>s<1?1:1-(s-1)/.4),...spd.map(e=>{const s=t-e.t-.3;return s<0||s>1.5?0:s<1.1?ease(s/.12):1-(s-1.1)/.4}));
- if(lbA>0){x.save();x.globalAlpha=.62*lbA;x.fillStyle='rgba(6,4,20,1)';x.beginPath();x.roundRect(CX-250,LB-62,500,spd.some(e=>t-e.t-.3>=0&&t-e.t-.3<=1.5)?150:84,26);x.fill();x.restore()}
+const LBt=[...koL.map(([o,s])=>[o.t,s<1?1:1-(s-1)/.4])].sort((a,b)=>b[1]-a[1])[0],spA=spd.find(e=>{const q=t-e.t-.3;return q>=0&&q<=.9}),LB=LBt?bandOf(LBt[0]):spA?bandOf(spA.t):CY-R+HT+150 /* 14 Nov fix: the box follows the SPEED label after the OUT label is gone */,lbA=Math.max(0,...koL.map(([o,s])=>s<1?1:1-(s-1)/.4),...spd.map(e=>{const s=t-e.t-.3;return s<0||s>.9?0:s<.6?ease(s/.12):1-(s-.6)/.3}));
+ if(lbA>0){x.save();x.globalAlpha=.62*lbA;x.fillStyle='rgba(6,4,20,1)';x.beginPath();x.roundRect(CX-250,LB-62,500,spd.some(e=>t-e.t-.3>=0&&t-e.t-.3<=.9)?150:84,26);x.fill();x.restore()}
  for(const [e,s] of minus){const p=PP[e.loser],my=Math.max(700,SY(p[1])-p[2]*Z-16-60*ease(s/.75));if(lbA>0&&my>LB-70&&my<LB+100&&Math.abs(SX(p[0])-CX)<270)continue;txt('-1',Math.max(700,SY(p[1])-p[2]*Z-16-60*ease(s/.75)),46,col(e.loser,70),s<.5?1:1-(s-.5)/.25,SX(p[0]),200)}
  for(const [o,s] of koL){const sc=1+.3*Math.exp(-s*6);txt(NAMES[o.ball]+' OUT!',bandOf(o.t),58*sc,col(o.ball,72),s<1?1:1-(s-1)/.4,CX,440)}
- for(const e of spd){const s=t-e.t-.3;if(s<0||s>1.5)continue;const sc=1+.35*Math.exp(-s*7);txt(`SPEED +${Math.round(SU*100)}% ⚡`,bandOf(e.t)+72,48*sc,'#ffd23f',s<1.1?ease(s/.12):1-(s-1.1)/.4,CX,440)}
+ for(const e of spd){const s=t-e.t-.3;if(s<0||s>.9)continue;const sc=1+.35*Math.exp(-s*7);txt(`SPEED +${Math.round(SU*100)}% ⚡`,bandOf(e.t)+72,48*sc,'#ffd23f',s<.6?ease(s/.12):1-(s-.6)/.3,CX,440)}
  if(er>=0&&WIN>=0){const p=PP[WIN],a=ease((er-.3)/.25),bob=Math.sin(er*5)*4;if(a>0){x.save();x.globalAlpha=a;x.font=Math.round(p[2]*Z*1.5)+'px "Noto Color Emoji"';x.textAlign='center';x.fillText('👑',SX(p[0]),SY(p[1])-p[2]*Z*1.05+bob);x.restore()}}
  if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.05*(1-er/.25)})`;x.fillRect(0,0,W,H)}
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
@@ -77,7 +77,7 @@ const LBt=[...koL.map(([o,s])=>[o.t,s<1?1:1-(s-1)/.4])].sort((a,b)=>b[1]-a[1])[0
   else txt(lv>=2?`FINAL DUEL! Speed +${Math.round((Math.pow(1+SU,lv)-1)*100)}%`:lv>0?`Slower ball loses 1 HP · Speed +${Math.round((Math.pow(1+SU,lv)-1)*100)}%`:'Every crash: the SLOWER ball loses 1 HP',437,38,'#ffd23f',LW>=0?ease((tv-3.4)/.3):1)}
  else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+(LW===WIN?' WINS AGAIN! 🏆':LW>=0?' IS THE NEW CHAMP! 👑':' SURVIVES! 🏆'),390,60*s,'#ffd23f',1);if(er>=.8)txt('Did your color win? 💬',446,40,'#fff',ease((er-.8)/.35))}
  for(let i=0;i<4;i++){const cx0=i%2?505:95,y0=478+Math.floor(i/2)*64,hp=PP[i][3],dead=hp<=0,h=lastHit(i),hit=h&&h.loser===i?t-h.t:9,pp=hit<.2?1-hit/.2:0;
-  x.save();x.globalAlpha=dead?.38:1;ball(i,cx0+22,y0+18,17,0,1,0,1,null,0);if(i===LW&&er<0){x.font='20px "Noto Color Emoji"';x.textAlign='center';x.fillText('👑',cx0+22,y0+5)}
+  x.save();x.globalAlpha=dead?.38:1;ball(i,cx0+22,y0+18,17,0,1,0,1,null,0);if((i===LW&&er<0)||(i===WIN&&er>=.3)){x.font='20px "Noto Color Emoji"';x.textAlign='center';x.fillText('👑',cx0+22,y0+5)}
   x.textAlign='left';x.lineJoin='round';x.font='900 28px "DejaVu Sans"';x.lineWidth=7;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(NAMES[i],cx0+50,y0+30);x.fillStyle=col(i,72);x.fillText(NAMES[i],cx0+50,y0+30);
   const bx=cx0+196,bw=198,by=y0+5,bh=26,gw=(bw-(HP0-1)*4)/HP0;
   if(!dead)for(let k=0;k<HP0;k++){const on=k<hp;x.fillStyle=on?col(i,56):'rgba(255,255,255,.12)';if(on){x.shadowColor=col(i,60);x.shadowBlur=8}else x.shadowBlur=0;x.beginPath();x.roundRect(bx+k*(gw+4),by,gw,bh,6);x.fill()}
