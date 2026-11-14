@@ -12,5 +12,9 @@ Rule sheet:
 Params: VR=650 LA2=.5 WP=.3 AR=8000 KG=20 VC=220 CGROW=.03 RR=35 RC=31 (defaults ENT 1.8 T0 1.2 DTRIG 45 DASH 1.7 DDUR .35 DCD 1.6 R 400 CX 500 CY 1030), seed 1275.
 Rebuild: cd tools/dodge-ball && VR=650 LA2=.5 WP=.3 AR=8000 KG=20 VC=220 CGROW=.03 RR=35 RC=31 MINT=21.5 MAXT=27 MINCLOSE=4 node sim.js data.js 1275 && node check.js && TMPD=/tmp/claude-0/db/build ./make.sh <raw.mp4> 4 && ../loopfade.sh <raw.mp4> <out.mp4> && ./gate.sh <out.mp4> <dir>
 Result: caught by #2 at 23.605 s, 11 dodges, 68 bumps, check.js PASS (min runner gap before catch 0.59 px, tunnel 0, maxPen 0); video 28.88 s, catch at 25.07 s (86.8 %).
+Review v1: 6.6 (hook 7, polish 7, clarity 6, pacing 6, payoff 7), LOGIC PASS.
+Fix round (once): chaser numbers ~2x with outline + pulse rings on the catcher; DODGE ring/label follow the runner; runner stays visible 0.12 s with a hit ring before the burst; "It lasted ..." line right away; hook line 2 "Guess how many seconds it survives 👇"; DODGES spacing. (Arena size kept: it already fills the safe area 608-1440.)
+Gate (final): 1080x1920 60 fps H.264 CRF 16 + AAC, 28.88 s, YAVG first 36.3 / last 35.0, -13.8 LUFS TP -2.4, 4k band -49.7 (35.9 dB below), spelling OK, safe zones clear, loopfade 0.4 s.
+DONE: media/dodge-1v10-01 (mp4 + cover.jpg at 20.75 s).
 Caption: 1 ball vs 10 chasers 😬 A new one joins every 1.8 s and they keep getting faster. Guess how many seconds it lasts 👇 Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: 1 vs 10 😬 How long can it last? Guess the seconds 👇

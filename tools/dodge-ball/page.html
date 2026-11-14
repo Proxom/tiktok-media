@@ -35,33 +35,34 @@ function draw(tv){
  // runner trail
  if(!caught)for(let k=8;k>=1;k--){const g=D.frames[Math.max(0,f0-2*k)];x.save();x.globalAlpha=(ds<.5?.16:.07)*(9-k)/8;x.fillStyle=GOLD(60);x.beginPath();x.arc(g[0],g[1],RR*(1-.05*k),0,7);x.fill();x.restore()}
  // dodge burst (white ring + streaks)
- if(lastD&&ds<.45&&!caught){const q=ds/.45;x.save();x.globalAlpha=.85*(1-q);x.strokeStyle='#fff';x.lineWidth=4*(1-q)+1;x.beginPath();x.arc(lastD.x,lastD.y,RR+10+46*ease(q),0,7);x.stroke();x.restore()}
+ if(lastD&&ds<.45&&!caught){const q=ds/.45;x.save();x.globalAlpha=.85*(1-q);x.strokeStyle='#fff';x.lineWidth=4*(1-q)+1;x.beginPath();x.arc(P[0],P[1],RR+10+46*ease(q),0,7);x.stroke();x.restore()}
  // chasers
  let nearest=null,nd2=1e9;for(let k=0;k<NC;k++){const p=CH[k];if(!p)continue;const d=Math.hypot(p[0]-P[0],p[1]-P[1]);if(d<nd2){nd2=d;nearest=p}
   const s=t-ent[k].t,sc=s<.25?ease(s/.25):1,isC=caught&&k===D.catcher;
   if(isC){x.save();x.globalAlpha=.6;const g3=x.createRadialGradient(p[0],p[1],RC*.8,p[0],p[1],RC*2.4);g3.addColorStop(0,'rgba(255,80,90,.9)');g3.addColorStop(1,'rgba(255,80,90,0)');x.fillStyle=g3;x.beginPath();x.arc(p[0],p[1],RC*2.4,0,7);x.fill();x.restore()}
-  gloss(RED,p[0],p[1],RC*sc,1,18);if(sc>.9){eyes(p[0],p[1]-RC*.12,RC,P[0]-p[0],P[1]-p[1],false,true);x.save();x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(RC*.62)}px "DejaVu Sans"`;x.lineWidth=4;x.strokeStyle='rgba(30,4,8,.9)';x.strokeText(k+1,p[0],p[1]+RC*.5);x.fillStyle='#fff';x.fillText(k+1,p[0],p[1]+RC*.5);x.restore()}}
+  gloss(RED,p[0],p[1],RC*sc,1,18);if(sc>.9){eyes(p[0],p[1]-RC*.3,RC,P[0]-p[0],P[1]-p[1],false,true);x.save();x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(RC*(k>=9?.78:.95))}px "DejaVu Sans"`;x.lineJoin='round';x.lineWidth=7;x.strokeStyle='rgba(30,4,8,.95)';x.strokeText(k+1,p[0],p[1]+RC*.52);x.fillStyle='#fff';x.fillText(k+1,p[0],p[1]+RC*.52);x.restore()}
+  if(isC){for(const ph of [0,.5]){const q=((er+ph)%1);x.save();x.globalAlpha=.8*(1-q);x.strokeStyle=RED(72);x.lineWidth=5;x.beginPath();x.arc(p[0],p[1],RC+8+60*q,0,7);x.stroke();x.restore()}}}
  // runner
- if(!caught||er<.05){gloss(GOLD,P[0],P[1],RR,1,ds<.3?40:24);if(ds<.2){x.save();x.globalAlpha=.5*(1-ds/.2);x.fillStyle='#fff';x.beginPath();x.arc(P[0],P[1],RR,0,7);x.fill();x.restore()}
-  eyes(P[0],P[1],RR,nearest?nearest[0]-P[0]:0,nearest?nearest[1]-P[1]:1,nd2<RR+RC+120,false)}
+ if(!caught||er<.12){gloss(GOLD,P[0],P[1],RR,1,ds<.3?40:24);if(ds<.2){x.save();x.globalAlpha=.5*(1-ds/.2);x.fillStyle='#fff';x.beginPath();x.arc(P[0],P[1],RR,0,7);x.fill();x.restore()}
+  eyes(P[0],P[1],RR,nearest?nearest[0]-P[0]:0,nearest?nearest[1]-P[1]:1,nd2<RR+RC+120,false);if(caught){x.save();x.strokeStyle='#fff';x.lineWidth=6;x.globalAlpha=1-er/.12;x.beginPath();x.arc(P[0],P[1],RR+6+30*er/.12,0,7);x.stroke();x.restore()}}
  // catch: gold burst
- if(caught&&er<1.6){const k=er/1.6;x.save();x.beginPath();x.arc(CX,CY,R-HT,0,7);x.clip();x.shadowColor='#ffd23f';x.shadowBlur=12;for(let i=0;i<46;i++){const a=i*2.39996,h=((i*37)%11)/10,sp=220+400*h,rr=RR+sp*er,px=cat.px+Math.cos(a)*rr,py=cat.py+Math.sin(a)*rr+260*er*er;x.globalAlpha=Math.max(0,1-k)*.95;x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':RED(62);x.beginPath();x.arc(px,py,8*(1-k)+2.5,0,7);x.fill()}x.restore();
-  if(er<.35){const g2=x.createRadialGradient(cat.px,cat.py,0,cat.px,cat.py,240);g2.addColorStop(0,`rgba(255,230,140,${.6*(1-er/.35)})`);g2.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g2;x.fillRect(cat.px-240,cat.py-240,480,480)}}
+ if(caught&&er>=.06&&er<1.66){const er0=er;{const er=er0-.06,k=er/1.6;x.save();x.beginPath();x.arc(CX,CY,R-HT,0,7);x.clip();x.shadowColor='#ffd23f';x.shadowBlur=12;for(let i=0;i<46;i++){const a=i*2.39996,h=((i*37)%11)/10,sp=220+400*h,rr=RR+sp*er,px=cat.px+Math.cos(a)*rr,py=cat.py+Math.sin(a)*rr+260*er*er;x.globalAlpha=Math.max(0,1-k)*.95;x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':RED(62);x.beginPath();x.arc(px,py,8*(1-k)+2.5,0,7);x.fill()}x.restore();
+  if(er<.35){const g2=x.createRadialGradient(cat.px,cat.py,0,cat.px,cat.py,240);g2.addColorStop(0,`rgba(255,230,140,${.6*(1-er/.35)})`);g2.addColorStop(1,'rgba(0,0,0,0)');x.fillStyle=g2;x.fillRect(cat.px-240,cat.py-240,480,480)}}}
  // DODGE! label above the runner
- if(lastD&&ds<.7&&!caught){const a=ds<.5?1:1-(ds-.5)/.2,sc=1+.3*Math.exp(-ds*8);txt('DODGE!',Math.max(690,lastD.y-RR-34-40*ease(ds/.7)),40*sc,'#fff',a,cl(lastD.x,240,760),300)}
+ if(lastD&&ds<.6&&!caught){const a=ds<.45?1:1-(ds-.45)/.15,sc=1+.3*Math.exp(-ds*8),up=P[1]-RR-40>680;txt('DODGE!',up?P[1]-RR-40:P[1]+RR+62,40*sc,'#fff',a,cl(P[0],240,760),300)}
  if(caught&&er<.25){x.fillStyle=`rgba(255,240,200,${.07*(1-er/.25)})`;x.fillRect(0,0,W,H)}
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: hook + live counters
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,286,30);x.fill();x.stroke();x.restore();
  const tm=Math.min(t,ET);
  if(!caught){txt('1 vs 10 😬 How long does it last?',386,54*(1+.18*Math.exp(-tv*7)),'#fff',1);
-  if(tv<3.6)txt('Guess the seconds before it starts 👇',440,36,'#ffd23f',tv<3.2?1:1-(tv-3.2)/.4);
+  if(tv<3.6)txt('Guess how many seconds it survives 👇',440,36,'#ffd23f',tv<3.2?1:1-(tv-3.2)/.4);
   else{const pc=Math.round(100*(1+D.cgrow*t)*D.vc0/D.vr);txt(ne<NC?`A new chaser every ${D.ENT} s · Chasers speed up ⚡`:`ALL 10 IN! Chaser speed ${pc}% of yours`,440,34,'#ffd23f',ease((tv-3.6)/.3))}}
- else{const s=1+.22*Math.exp(-er*5);txt(`CAUGHT by #${D.catcher+1} 😵`,392,62*s,RED(70),1);if(er>=.7)txt(`It lasted ${ET.toFixed(1)} s · Did you guess it? 💬`,448,36,'#fff',ease((er-.7)/.35))}
+ else{const s=1+.22*Math.exp(-er*5);txt(`CAUGHT by #${D.catcher+1} 😵`,392,62*s,RED(70),1);txt(`It lasted ${ET.toFixed(1)} s · Did you guess it? 💬`,448,36,'#fff',ease((er-.1)/.25))}
  // counters row
  const ry=548;x.save();x.textAlign='center';
  txt(`⏱ ${tm.toFixed(1)} s`,ry,caught?58:52,caught?'#ffd23f':'#fff',1,270,330);
- txt(`CHASERS ${ne}/${NC}`,ry-6,34,RED(72),1,580,250);txt(`DODGES ${nd}`,ry-6,34,'#fff',1,815,200);x.restore();
+ txt(`CHASERS ${ne}/${NC}`,ry-6,34,RED(72),1,575,240);txt(`DODGES ${nd}`,ry-6,34,'#fff',1,795,180);x.restore();
  {const pc=cl((1+D.cgrow*t)*D.vc0/D.vr);x.save();x.fillStyle='rgba(255,255,255,.14)';x.beginPath();x.roundRect(470,ry+8,420,12,6);x.fill();x.fillStyle=RED(58);x.shadowColor=RED(60);x.shadowBlur=8;x.beginPath();x.roundRect(470,ry+8,420*pc,12,6);x.fill();x.restore()}
  // follow call, last FS seconds
  {const DUR=D.tmap.length/VF,FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=cat.py>CY?CY-215:CY+200;x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.beginPath();x.arc(CX,CY,R-HT,0,7);x.fill();x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new one every day',PY+4,46,'#ffd23f',fa,CX,590)}}
