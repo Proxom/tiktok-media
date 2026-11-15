@@ -3,6 +3,20 @@
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
 
+## TOP OVERRIDE (Erkan, 15 Nov 2026 14:29): THIS CHANNEL = BALL GAMES ONLY, AT LEAST 10 DIFFERENT GAMES, HUNDREDS OF VIDEOS — overrides section 4 families, the 1M+ list order and every older format rule it contradicts
+Erkan deleted every TikTok video that is not a ball game. From now on Tiny Chaos is a channel of many different BALL games ("ball" = round balls/marbles like the ones in our current videos). Every video's main objects are balls. Nothing else is posted.
+
+1. GAME CATALOGUE (keep it in learnings/game-catalogue.md: one row per game, engine path, status ready/building/paused, posts, 72 h median views, shares, follows):
+   Existing / in queue: A ring escape (+ melody bounce), B last ball standing / battle, C obstacle race (balls), D plinko, E merge (with balls only), F 1 ball vs N chasers, G growing black hole, H shrinking floor (fall off = out).
+   New, build in this order: I brick breaker (team balls break a block wall, colour with most blocks wins), J sumo push-out (balls push each other out of a ring), K territory paint (balls paint the floor, biggest area wins), L maze escape (balls race out of a rotating maze), M split/multiply (each bounce splits a ball, counter), N elimination wheel (spinning ring with colour gaps, ball that falls through is out).
+   The catalogue must reach at least 10 READY games, and may grow beyond (add new ideas from the weekly market scan; each new game type still needs Erkan's approval as before, EXCEPT I-N above, which Erkan approved on 15 Nov).
+2. ONE ENGINE PER GAME, MANY VIDEOS: each game is a reusable engine in tools/<game>/ with parameters (seed, ball count, colours, arena size/shape, speed, rule tweak, length). A new video = new parameters + a new seed, never a re-post. Label "Game N" per game so viewers follow a series.
+3. BUILDING NEW GAMES: build at most one new engine per run, only when QUEUE is 3 (so the daily video is never at risk), at most 2 new engines per week, until 10 games are READY. Every engine must pass the HARD GATE with one test video before it counts as ready.
+4. ROTATION: never the same game two days in a row; over any 7 days at least 5 different games. From data (72 h, vs account median): a game above 1.2x gets more turns (max 2 per 7 days more); below 0.7x on 3 videos is paused for 2 weeks. A video at 3x median gives its game the next free turn.
+5. The 1M+ list rule for 17:00 now applies ONLY to items that are ball games; skip any non-ball item.
+6. Unchanged: 1 video a day at 17:00, queue rule (3), HARD GATE, ONE LOOK (same dark background, palette, font, hook band, ending), the BANNED list (no marble or plank music, domino, jelly, pendulum, sorting videos), hook "Pick a color 👇" style, loop ending, caption rules.
+7. Daily report: catalogue status (ready / building) and the per-game table.
+
 ## TOP OVERRIDE (Erkan, 14 Nov 2026 20:25): 1 video A DAY AT 17:00 ONLY + NEW QUEUE RULE — overrides every other slot, schedule and queue rule in this file
 - From now on: exactly 1 video a day, at 17:00 Europe/London (Metricool brand 7675089). The 01:00 slot is CLOSED (as 21:00 already is): never schedule anything new at 01:00 or 21:00. This overrides "2 a day", "01:00 and 17:00", the 01:00 style/family rotation and every other mention of 01:00 below.
 - videos already scheduled for 01:00 stay as they are (already made, do not delete or move them). They count in QUEUE.
