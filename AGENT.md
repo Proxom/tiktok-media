@@ -3,6 +3,11 @@
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
 
+## TOP OVERRIDE (Erkan, 15 Nov 2026 14:59): QUEUE TARGET = 2 (was 3) — overrides the queue numbers in every rule below
+- QUEUE 2 or more: do NOT make a new video. Short check only (max 15 min), then end.
+- QUEUE 0 or 1: make videos until QUEUE is 2 (same gate, next empty 17:00 slots).
+- Every other rule below that says "QUEUE 3", "QUEUE is 3", "QUEUE >= 2" or "until 3" as the condition for building engines, kit work or long-video work now means QUEUE 2 (full). Videos already scheduled stay.
+
 ## TOP OVERRIDE (Erkan, 15 Nov 2026 14:29): THIS CHANNEL = BALL GAMES ONLY, AT LEAST 10 DIFFERENT GAMES, HUNDREDS OF VIDEOS — overrides section 4 families, the 1M+ list order and every older format rule it contradicts
 Erkan deleted every TikTok video that is not a ball game. From now on Tiny Chaos is a channel of many different BALL games ("ball" = round balls/marbles like the ones in our current videos). Every video's main objects are balls. Nothing else is posted.
 
