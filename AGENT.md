@@ -3,6 +3,14 @@
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
 
+## TOP OVERRIDE (Erkan, 15 Nov 2026 17:37): FACES ON BALLS — build once, then a 2-week A/B test
+1. BUILD (one run, only when QUEUE is full = 2; counts as that week's engine build): a shared module tools/faces/ used by every game engine: simple 2D eyes (white + pupil) and mouth drawn on each ball, scaled to the ball, in ONE consistent style for the whole channel.
+   Expressions driven by game state, smooth transitions (no flicker): calm (default); scared (big eyes, "O" mouth) when a hazard is near (growing black hole, shrinking floor edge, chaser close); dizzy/hit (squeezed or "X" eyes, short) on a hard hit; angry (frown brows) when chasing; happy (smile + wink) on winning; sad when eliminated. Pupils look at the nearest threat or rival. Occasional blink.
+   Readability: faces only when a ball is at least ~40 px wide on the 1080x1920 frame; smaller balls get eyes only or nothing. Never cover the colour (colour still identifies the ball). Faces must not break the HARD GATE (no tunnelling, safe zones, soft sound).
+2. A/B TEST (2 weeks from the first faces video): alternate the SAME game with and without faces (e.g. Game N with faces, Game N+1 without), never both on the same day. Tag each video doc faces=yes/no. Keep everything else equal (length, hook text style, sound).
+3. MEASURE at 72 h: views, average watch %, comments, shares, follows; table faces vs no faces in the daily report and in learnings/faces-ab.md. After 2 weeks write reports/faces-result.md with a recommendation (faces on all suitable games, or drop). The GM decides with Erkan.
+4. Hooks may use the faces ("Pick a face 👇 who survives?") in the faces videos only.
+
 ## TOP OVERRIDE (Erkan, 15 Nov 2026 14:59): QUEUE TARGET = 2 (was 3) — overrides the queue numbers in every rule below
 - QUEUE 2 or more: do NOT make a new video. Short check only (max 15 min), then end.
 - QUEUE 0 or 1: make videos until QUEUE is 2 (same gate, next empty 17:00 slots).
