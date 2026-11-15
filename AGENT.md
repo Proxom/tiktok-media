@@ -4,6 +4,8 @@ v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) ar
 
 
 ## TOP OVERRIDE (Erkan, 15 Nov 2026 17:37): FACES + VOICE ON BALLS — build once, then use on every suitable new video
+
+EYES ONLY, NO MOUTH (Erkan, 15 Nov 17:47) — overrides every mention of mouth/smile/"O" mouth/brows below: each ball gets TWO EYES only. All emotion comes from the eyes: size (big = scared), lids (half-closed = calm/sleepy, squeezed = hit), shape (X or spiral = dizzy, ^ ^ = happy, droopy = sad, slanted lids = angry), pupils (look at the threat/rival, shrink when scared), blinks. Voice sounds unchanged.
 EYES ONLY, NO MOUTH (Erkan, 15 Nov 17:47): every "face" below means TWO EYES ONLY (white + pupil, optional eyelids and simple brows). Never draw a mouth. Show each expression with the eyes alone: scared = wide eyes, small pupils; hit/dizzy = squeezed or X eyes or spinning pupils; angry = slanted lids/brows; happy = curved "^ ^" eyes or a wink; sad = drooping lids; pupils look at the nearest threat or rival; blinks. Voice sounds stay exactly as written.
 1. BUILD (one run, only when QUEUE is full = 2; counts as that week's engine build): a shared module tools/faces/ used by every game engine: simple 2D eyes (white + pupil) and mouth drawn on each ball, scaled to the ball, in ONE consistent style for the whole channel.
    EACH BALL HAS ITS OWN EXPRESSION from ITS OWN situation at that moment (Erkan, 15 Nov 17:41): never all balls the same face at once unless they really are all in the same situation; add small per-ball timing offsets so changes never look synchronised.
