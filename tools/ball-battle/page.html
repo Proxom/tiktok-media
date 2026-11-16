@@ -1,5 +1,5 @@
 <!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
-<script src="data.js"></script><script>
+<script src="data.js"></script><script src="../faces/faces.js"></script><script>
 // Family B "Ball battle" renderer (same account look as the ring-escape family: violet background, neon ring, glossy balls,
 // top panel with hook + one truthful health row per ball). The HP number inside each ball and the bars are read from the sim frames.
 const W=1080,H=1920,D=DATA,HUE=D.hue??305,BG=D.bg||['#2c1446','#130a2a','#05030c'],CX=D.CX,CY=D.CY,R=D.R,HT=D.HT,ET=D.endT,WIN=D.win,HP0=D.HP0,GAME=D.game||0,LW=D.lastWin??-1,SU=D.speedup||0;  // series test 1 (Game N + returning champion crown) and test 2 (SPEED +10% per knock-out), 9 Nov market scan
@@ -19,19 +19,21 @@ function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){if(a<=0)return;x.
 const bg=document.createElement('canvas');bg.width=W;bg.height=H;{const g=bg.getContext('2d');const rg=g.createRadialGradient(CX,CY,40,CX,CY,1200);rg.addColorStop(0,BG[0]);rg.addColorStop(.5,BG[1]);rg.addColorStop(1,BG[2]);g.fillStyle=rg;g.fillRect(0,0,W,H);
  for(let i=0;i<160;i++){g.fillStyle=`rgba(255,255,255,${.03+.05*((i*37)%7)/7})`;g.beginPath();g.arc((i*7919)%W,(i*104729)%H,1+(i%3)*.6,0,7);g.fill()}
  const fl=g.createLinearGradient(0,1560,0,H);fl.addColorStop(0,'rgba(80,90,180,0)');fl.addColorStop(1,'rgba(80,90,180,.10)');g.fillStyle=fl;g.fillRect(0,1560,W,H-1560)}
-function ball(i,bx,by,r,sqx,sqy,sq,al,hp,flash){x.save();x.globalAlpha=al;x.translate(bx,by);
+let T_NOW=0;function ball(i,bx,by,r,sqx,sqy,sq,al,hp,flash){x.save();x.globalAlpha=al;x.translate(bx,by);
  if(sq>0){const a=Math.atan2(sqy,sqx);x.rotate(a);x.scale(1-sq,1+sq*.6);x.rotate(-a)}
  x.shadowColor=col(i,60);x.shadowBlur=24;const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);g.addColorStop(0,col(i,88));g.addColorStop(.45,col(i,54));g.addColorStop(1,col(i,24));
  x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;
  if(flash>0){x.fillStyle=`rgba(255,255,255,${.55*flash})`;x.beginPath();x.arc(0,0,r,0,7);x.fill()}
  x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.ellipse(-r*.38,-r*.44,r*.25,r*.15,-.6,0,7);x.fill();
- if(hp!=null){x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(r*1.0)}px "DejaVu Sans"`;x.lineJoin='round';x.lineWidth=r*.16;x.strokeStyle='rgba(6,4,20,.85)';x.strokeText(hp,0,r*.06);x.fillStyle='#fff';x.fillText(hp,0,r*.06)}
+ if(D.faces){Faces.draw(x,D.faces,i,T_NOW,0,0,r,{lid:col(i,40),ey:-.24});/* faces (16 Nov): eyes high, HP number smaller under them */
+  if(hp!=null){x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(r*.62)}px "DejaVu Sans"`;x.lineJoin='round';x.lineWidth=r*.12;x.strokeStyle='rgba(6,4,20,.85)';x.strokeText(hp,0,r*.42);x.fillStyle='#fff';x.fillText(hp,0,r*.42)}}
+ else if(hp!=null){x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(r*1.0)}px "DejaVu Sans"`;x.lineJoin='round';x.lineWidth=r*.16;x.strokeStyle='rgba(6,4,20,.85)';x.strokeText(hp,0,r*.06);x.fillStyle='#fff';x.fillText(hp,0,r*.06)}
  x.restore()}
 function draw(tv){
  const VF=D.vfps||30,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)) /* frames[k] = sim time (k+1)/FF */,f=Math.round(ff),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
  const evIn=i=>D.events.some(e=>e.t>(f0+1)/FF&&e.t<=(f1+1)/FF&&(e.ball===i||e.a===i||e.b===i));
  const PP=[0,1,2,3].map(i=>{const A0=D.frames[f0][i],A1=D.frames[f1][i];if(A0[3]===A1[3]&&!evIn(i))return[A0[0]+(A1[0]-A0[0])*u,A0[1]+(A1[1]-A0[1])*u,A0[2]+(A1[2]-A0[2])*u,A0[3]];return D.frames[f][i]});
- x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
+ T_NOW=t;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
  const tq=t+.5/FF,er=t>=ET?t-ET:-1;
  const nc=countAt(cr,tq),lastC=nc>0?cr[nc-1]:null,pulse=lastC?Math.max(0,1-(t-lastC.t)/.18):0;
  // camera: zoom so the shrinking arena keeps filling the frame (the physics is unchanged; only the view scales)

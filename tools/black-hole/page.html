@@ -1,5 +1,5 @@
 <!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
-<script src="data.js"></script><script>
+<script src="data.js"></script><script src="../faces/faces.js"></script><script>
 // "Black hole" renderer: account look (violet background, neon ring, glossy balls with eyes, top panel with hook + live counters).
 // Every number on screen is read from the sim: LEFT = N - 'eat' events, HOLE SIZE = RH(t)/RH0, timer = sim time, winner = sim winner.
 const W=1080,H=1920,D=DATA,CX=D.CX,CY=D.CY,R=D.R,HT=D.HT,RB=D.RB,N=D.N,ET=D.endT,HUE=305;
@@ -36,14 +36,14 @@ function draw(tv){
  for(let k=0;k<N;k++){const e=eatAt[k];if(e&&t>=e.t)continue;x.save();x.strokeStyle=COL(k)(60);x.lineCap='round';for(let j=1;j<=14;j++){const a=D.frames[Math.max(0,f0-2*j+2)],b=D.frames[Math.max(0,f0-2*j)];x.globalAlpha=.32*(1-j/15);x.lineWidth=RB*.9*(1-j/16);x.beginPath();x.moveTo(a[3*k],a[3*k+1]);x.lineTo(b[3*k],b[3*k+1]);x.stroke()}x.restore()}
  // eaten balls spiral in (drawn under the horizon glow edge): shrink, stretch, fade
  for(let k=0;k<N;k++){const e=eatAt[k];if(!e||t<e.t)continue;const s=t-e.t;if(s>.9)continue;const q=ease(s/.9),px=L(3*k),py=L(3*k+1),a=Math.atan2(py-CY,px-CX);
-  x.save();x.translate(px,py);x.rotate(a);x.scale(1+1.6*q,1-.6*q);x.translate(-px,-py);gloss(COL(k),px,py,RB*(1-.75*q),1-q,10);x.restore()}
+  x.save();x.translate(px,py);x.rotate(a);x.scale(1+1.6*q,1-.6*q);x.translate(-px,-py);gloss(COL(k),px,py,RB*(1-.75*q),1-q,10);if(D.faces)Faces.draw(x,D.faces,k,t,px,py,RB*(1-.75*q),{lid:COL(k)(42),alpha:1-q});x.restore()}
  x.save();x.beginPath();x.arc(CX,CY,R-HT,0,7);x.clip();hole(RH,t);x.restore();
  // eat flash on the horizon
  for(const e of eat){const s=t-e.t;if(s<0||s>.6)continue;const q=s/.6,a=Math.atan2(e.y-CY,e.x-CX),rh=RHt(e.t);x.save();x.globalAlpha=.9*(1-q);x.strokeStyle=COL(e.b)(70);x.lineWidth=10*(1-q)+2;x.beginPath();x.arc(CX,CY,rh+6+30*q,a-.6-.6*q,a+.6+.6*q);x.stroke();x.restore()}
  // live balls
  for(let k=0;k<N;k++){const e=eatAt[k];if(e&&t>=e.t)continue;const px=L(3*k),py=L(3*k+1),isW=won&&k===D.win,dh=Math.hypot(px-CX,py-CY)-RB-RH;
   if(isW){x.save();x.globalAlpha=.7;const g3=x.createRadialGradient(px,py,RB*.8,px,py,RB*3);g3.addColorStop(0,'rgba(255,215,80,.9)');g3.addColorStop(1,'rgba(255,215,80,0)');x.fillStyle=g3;x.beginPath();x.arc(px,py,RB*3,0,7);x.fill();x.restore()}
-  const sc=isW?1+.3*ease(er/.5):1;gloss(COL(k),px,py,RB*sc,1,16);eyes(px,py,RB*sc,CX-px,CY-py,dh<90&&!won);
+  const sc=isW?1+.3*ease(er/.5):1;gloss(COL(k),px,py,RB*sc,1,16);if(D.faces)Faces.draw(x,D.faces,k,t,px,py,RB*sc,{lid:COL(k)(42)});else eyes(px,py,RB*sc,CX-px,CY-py,dh<90&&!won);
   if(isW&&er>.2)txt('👑',py-RB*sc-24,64*ease((er-.2)/.3),'#fff',1,px,200)}
  // win confetti
  if(won&&er<2.2){const wp=[L(3*D.win),L(3*D.win+1)],k2=er/2.2;x.save();x.beginPath();x.arc(CX,CY,R-HT,0,7);x.clip();x.shadowColor='#ffd23f';x.shadowBlur=10;for(let i=0;i<54;i++){const a=i*2.39996,h=((i*37)%11)/10,rr=RB+(220+400*h)*er,px=wp[0]+Math.cos(a)*rr,py=wp[1]+Math.sin(a)*rr+280*er*er;x.globalAlpha=Math.max(0,1-k2)*.95;x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':COL(D.win)(62);x.beginPath();x.arc(px,py,7*(1-k2)+2.5,0,7);x.fill()}x.restore()}

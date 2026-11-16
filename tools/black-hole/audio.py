@@ -28,4 +28,8 @@ t=m.t;st=np.interp(t,TV,TM);grow=np.clip(np.minimum(st,ET)/d['TG'],0,1)
 amp=(.35+.65*grow)*np.where(t<EV,1,np.exp(-(t-EV)*1.2)*.7+.0)
 pad=sum(g*np.sin(2*np.pi*f*t+.3*np.sin(2*np.pi*.09*t+f)) for f,g in [(65.41,1),(98.0,.55),(130.81,.3)])
 m.bed(pad*.009*amp)
+if d.get('faces'):# shared ball voices (tools/faces/voice.py), 12 dB under the impact notes; pan = ball x at that time
+    sys.path.insert(0,__file__.rsplit('/',2)[0]+'/faces');import voice
+    FR=d['frames'];FF=d['ffps'];px=lambda b,t:(FR[min(len(FR)-1,max(0,int(t*FF)-1))][3*b]-CX)/480
+    print('voices',voice.add_voices(m,d['faces']['voices'],V,ref=.19,pan=px))
 m.reverb();m.write(sys.argv[2]);print('dur',round(D,2),'hit notes',len(hits),'eats',len(ea))
