@@ -8,7 +8,8 @@ const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2
 const bo=D.events.filter(e=>e.type==='bounce'),esc=D.events.find(e=>e.type==='escape');
 function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
-function txt(str,y,size,col,a,cx=500,maxw=800){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+let TF=1; /* review 18 Nov: all text fades out just before the 0.4 s loop cross-fade, so end and start text never ghost together */
+function txt(str,y,size,col,a,cx=500,maxw=800){a*=TF;if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
  const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
  let px=cx-w/2;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=col;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
@@ -24,7 +25,7 @@ function ball(bx,by,r,q,sqx,sqy,sq,al){x.save();x.globalAlpha=al;x.translate(bx,
 let T_NOW=0;
 function draw(tv){
  const VF=D.vfps||30,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)) /* frames[k] = sim time (k+1)/FF (review 7 Nov) */,f=Math.round(ff),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0,A0=D.frames[f0],A1=D.frames[f1],fr=(A0[3]===A1[3]&&!(D.events.some(e=>e.t>(f0+1)/FF&&e.t<=(f1+1)/FF)))?[A0[0]+(A1[0]-A0[0])*u,A0[1]+(A1[1]-A0[1])*u,A0[2]+(A1[2]-A0[2])*u,A0[3]]:D.frames[f];
- T_NOW=t;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
+ T_NOW=t;TF=Math.max(0,Math.min(1,(D.tmap.length/(D.vfps||30)-.42-tv)/.12));x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
  const tq=t+.5/FF,nb=countAt(bo,tq),lastB=nb>0?bo[nb-1]:null,since=lastB?t-lastB.t:9,pulse=Math.max(0,1-since/.16);
  const er=t>=ET?t-ET:-1;
  const r=fr[2],q=lastB?lastB.ratio:2*D.R0/D.CLEAR;
@@ -57,14 +58,14 @@ function draw(tv){
   if(tb){const s=1+.22*Math.exp(-tb.k*7);txt(tb.lab,448,Math.round(48*s),'#ff6b4a',1)}else txt('Can it escape before 100%?',448,46,'#ffd23f',1)}
  else{const s=1+.25*Math.exp(-er*5);txt('ESCAPED at '+pct+'%! 🎉',416,64*s,'#ffd23f',1)}
  x.save();x.textAlign='left';x.lineJoin='round';x.font='900 44px "DejaVu Sans"';x.lineWidth=9;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText('BALL vs GAP',110,520);x.fillStyle='#cfd8ff';x.fillText('BALL vs GAP',110,520);
- x.textAlign='right';const pp=1+.16*pulse*(er<0?1:0);x.font=`900 ${Math.round(62*pp)}px "DejaVu Sans"`;x.strokeText(pct+'%',890,525);x.fillStyle=rcol(qd,68);x.fillText(pct+'%',890,525);
+ x.textAlign='right';const pp=1+.16*pulse*(er<0?1:0);x.font=`900 ${Math.round(62*pp)}px "DejaVu Sans"`;x.save();x.globalAlpha*=TF;x.strokeText(pct+'%',890,525);x.fillStyle=rcol(qd,68);x.fillText(pct+'%',890,525);x.restore();
  // bar
  const bx=110,bw=780,by=546,bh=40;x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(bx,by,bw,bh,20);x.fill();
  x.fillStyle=rcol(qd,58);x.shadowColor=rcol(qd,60);x.shadowBlur=14;x.beginPath();x.roundRect(bx,by,Math.max(bh,bw*cl(qd)),bh,20);x.fill();x.shadowBlur=0;
  x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=3;x.beginPath();x.roundRect(bx,by,bw,bh,20);x.stroke();x.restore();
  if(er>=1.0){const qa=ease((er-1.0)/.35);txt('What % did',CY-70,84,'#fff',qa,CX,640);txt('you guess? 💬',CY+30,84,'#fff',qa,CX,640)} /* review 9 Nov: end question 1.5x bigger, two lines */
  // FOLLOW CALL (AGENT.md main goal, 8 Nov): small pill in the lower safe area for the last FOLLOWS seconds, then the loop cuts back to frame 0
- {const DUR=D.tmap.length/(D.vfps||30),FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||(CY+175); /* review 9 Nov: pill inside the empty ring, off the ring stroke */x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.86)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-310,PY-52,620,80,40);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+4,44,'#ffd23f',fa,CX,570)}}
+ {const DUR=D.tmap.length/(D.vfps||30),FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||(CY+175); /* review 9 Nov: pill inside the empty ring, off the ring stroke */x.save();x.globalAlpha=fa*TF;x.fillStyle='rgba(8,8,30,.92)';x.strokeStyle='rgba(255,210,63,.9)';x.lineWidth=4;x.beginPath();x.roundRect(CX-350,PY-62,700,98,49);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+6,54,'#ffd23f',fa,CX,640)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>

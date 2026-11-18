@@ -8,3 +8,6 @@ Gate: 1080x1920 60 fps H.264 CRF 16 + AAC, YAVG 38.0 / 37.4, -14.1 LUFS TP -2.2,
 Caption: Every bounce it gets bigger 😬 Can it squeeze out before 100%? Guess the % before the end 👇 Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: It grows every bounce 👀 Will it fit through? Guess the % 👇
 DONE: media/ring-escape-faces-02.
+Review v1 (subagent): 6.8 (hook 6, polish 7, clarity 8, pacing 6, payoff 7), LOGIC PASS.
+Fix round (once, tools/ball-grow/page.html): all text (incl. the meter %) fades out 0.42-0.54 s before the end, so the 0.4 s loop cross-fade never ghosts "97%" over "33%"; follow pill bigger (700x98, 54 px, higher contrast). Not done (physics/sim changes): escape fall through the bottom gap into the lower safe area (ESCMAXY finds no seeds), bigger start ball (R0).
+Gate (final v2): YAVG 38.0 / 36.9, -14.1 LUFS TP -2.2, 4k band -46.5 (32.4 dB below). Slot 23 Nov 17:00.
