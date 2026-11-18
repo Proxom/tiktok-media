@@ -59,4 +59,5 @@ Object.assign(res,{N,CX,CY,R,HT,RB,RH0,RH1,TG,GM0,GK,S,ffps:FPS,RHstop:RHt(res.e
 {const SP=E_('SLOW',.4),s0=res.endT-E_('S0',1.0),s1=res.endT+E_('S1',.45),end=res.frames.length/60-.02,VF=60;res.vfps=VF;const tm=[];let ts=0,sp=1;
  while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
  res.tmap=tm;console.log('video dur',(tm.length/VF).toFixed(2),'final eat at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2))}
+if(process.env.GAME){res.game=+process.env.GAME;res.prevWin=process.env.PREVWIN||''}
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');
