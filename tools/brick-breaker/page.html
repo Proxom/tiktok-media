@@ -62,7 +62,7 @@ function draw(tv){
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
  const mx=Math.max(...sc),lead=sc.filter(v=>v===mx).length===1&&mx>0?sc.indexOf(mx):-1;
  if(er<0){txt(GAME?`Game ${GAME} · Pick a color 👇`:'Pick a color 👇 Who breaks the most?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);
-  if(tv<3.4)txt('Every brick you break = +1 for your color',437,36,'#ffd23f',tv<3?1:1-(tv-3)/.4);
+  if(tv<3.4)txt(D.prevWin?`${D.prevWin} won Game ${GAME-1} · every brick = +1`:'Every brick you break = +1 for your color',437,36,'#ffd23f',tv<3?1:1-(tv-3)/.4);
   else txt(left<=5?`LAST ${left} BRICK${left===1?'':'S'}! 😱`:`${left} bricks left · most bricks wins`,437,38,left<=5?'#ff8a5c':'#ffd23f',ease((tv-3.4)/.3))}
  else{const s=1+.22*Math.exp(-er*5),fs=sc.slice().sort((a,b)=>b-a);txt(NAMES[WIN]+' WINS! 🏆',390,62*s,'#ffd23f',1);/* review 17 Nov: close-finish callout + question right away */txt(`${fs[0]} vs ${fs[1]}! Did your color win? 💬`,446,40,'#fff',ease((er-.15)/.3))}
  for(let i=0;i<4;i++){const cx0=i%2?505:95,y0=478+Math.floor(i/2)*64,h=countAt(br.filter(e=>e.ball===i),t),fresh=h>0?t-br.filter(e=>e.ball===i)[h-1].t:9,pp=fresh<.25?1-fresh/.25:0;
