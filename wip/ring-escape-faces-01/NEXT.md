@@ -10,3 +10,4 @@ Gate: 1080x1920 60 fps H.264 CRF 16 + AAC, 36.75 s, YAVG first 38.0 / last 37.4,
 Caption: It grows every bounce 😬 Now it has eyes 👀 Can it squeeze out before 100%? Guess the % 👇 Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: It grows every bounce 👀 Can it escape before 100%? Guess the % 👇
 DONE: media/ring-escape-faces-01 (mp4 + cover.jpg at 30.0 s, the 97 % beat).
+Review v1 (subagent): 7.2 (hook 7, polish 8, clarity 8, pacing 6, payoff 7), LOGIC PASS -> schedule as is. Engine notes for next A: show ^ ^ eyes instantly at the escape and keep the ball on screen ~1 s longer; replace the 97 % callout with "99%!!!" at 99; bigger follow pill; set ESCMAXY so the escape stays above y 1440; faint grey bounce ring reads as an artifact.
