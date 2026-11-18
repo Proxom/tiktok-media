@@ -26,4 +26,8 @@ hi=np.sin(2*np.pi*392.0*t+.2*np.sin(2*np.pi*.17*t))*.35+np.sin(2*np.pi*523.25*t)
 m.bed(pad*.0065*(.5+.5*ten))
 for i,f in enumerate([130.81,164.81,196.0,261.63,329.63,392.0]):m.add(ET+.03+i*.05,m.marimba(f,.13,.9),(i-2.5)*.25)
 tt=np.arange(int(SR*.9))/SR;m.add(ET,.08*np.sin(2*np.pi*(70+30*np.exp(-tt*8))*tt)*(1-np.exp(-tt/.012))*np.exp(-tt*5))
+if d.get('faces'):
+    sys.path.insert(0,__file__.rsplit('/',2)[0]+'/faces');import voice
+    FR=d['frames'];FF=d['ffps'];px=lambda b,t:(FR[min(len(FR)-1,max(0,int(t*FF)-1))][0]-CX)/520
+    print('voices',voice.add_voices(m,d['faces']['voices'],V,ref=.2,pan=px))
 m.reverb();m.write(sys.argv[2]);print('dur',round(D,2),'bounces',len(bo))

@@ -1,5 +1,5 @@
 <!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
-<script src="data.js"></script><script>
+<script src="data.js"></script><script src="../faces/faces.js"></script><script>
 // Format D "It grows every bounce" renderer: neon ring with a rotating gap, one glossy ball with a short motion trail,
 // squash on impact, ripple at the contact point, BALL vs GAP meter (truthful: 2r / free gap width), payoff when it escapes.
 const W=1080,H=1920,D=DATA,HUE=D.hue??200,BG=D.bg||['#16224a','#0a0c26','#03030b'],FPS=D.fps,CX=D.CX,CY=D.CY,R=D.R,HT=D.HT,ET=D.escT;
@@ -20,10 +20,11 @@ const rcol=(q,l=60)=>`hsl(${Math.round(190-190*cl((q-.3)/.7))},95%,${l}%)`;
 function ball(bx,by,r,q,sqx,sqy,sq,al){x.save();x.globalAlpha=al;x.translate(bx,by);
  if(sq>0){const a=Math.atan2(sqy,sqx);x.rotate(a);x.scale(1-sq,1+sq*.6);x.rotate(-a)}
  x.shadowColor=rcol(q,60);x.shadowBlur=26;const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);g.addColorStop(0,rcol(q,90));g.addColorStop(.45,rcol(q,58));g.addColorStop(1,rcol(q,26));
- x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.8)';x.beginPath();x.ellipse(-r*.38,-r*.42,r*.27,r*.17,-.6,0,7);x.fill();x.restore()}
+ x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.8)';x.beginPath();x.ellipse(-r*.38,-r*.42,r*.27,r*.17,-.6,0,7);x.fill();if(D.faces)Faces.draw(x,D.faces,0,T_NOW,0,0,r,{lid:rcol(q,40),ey:-.02});x.restore()}
+let T_NOW=0;
 function draw(tv){
  const VF=D.vfps||30,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)) /* frames[k] = sim time (k+1)/FF (review 7 Nov) */,f=Math.round(ff),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0,A0=D.frames[f0],A1=D.frames[f1],fr=(A0[3]===A1[3]&&!(D.events.some(e=>e.t>(f0+1)/FF&&e.t<=(f1+1)/FF)))?[A0[0]+(A1[0]-A0[0])*u,A0[1]+(A1[1]-A0[1])*u,A0[2]+(A1[2]-A0[2])*u,A0[3]]:D.frames[f];
- x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
+ T_NOW=t;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
  const tq=t+.5/FF,nb=countAt(bo,tq),lastB=nb>0?bo[nb-1]:null,since=lastB?t-lastB.t:9,pulse=Math.max(0,1-since/.16);
  const er=t>=ET?t-ET:-1;
  const r=fr[2],q=lastB?lastB.ratio:2*D.R0/D.CLEAR;
@@ -49,7 +50,7 @@ function draw(tv){
  // top panel: hook + meter
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,290,30);x.fill();x.stroke();x.restore();
  const qd=er>=0?esc.ratio:q,pct=Math.round(qd*100);
- if(er<0){txt('It GROWS every bounce 😬',390,58,'#fff',1);
+ if(er<0){txt(D.hook1||'It GROWS every bounce 😬',390,58,'#fff',1);
   /* tension beats (engine 12 Nov): when the meter first passes 90/95/97 %, line 2 becomes a callout for 1.3 s */
   const TB=[[90,'... still fits? 😬'],[95,'! SO close 😱'],[97,'!! last chance 🔥']];let tb=null; /* label shows the meter's own rounded % (review 12 Nov) */
   for(const [th,lab] of TB){const e=bo.find(b=>Math.round(b.ratio*100)>=th);if(e&&e.t<=tq&&tq-e.t<1.3&&e.t<ET)tb={lab:Math.round(e.ratio*100)+'%'+lab,k:tq-e.t}}
