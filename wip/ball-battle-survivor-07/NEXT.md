@@ -7,3 +7,6 @@ Rule sheet: 4 balls 13 HP in one ring; every crash the SLOWER ball loses 1 HP; 0
 Gate: 1080x1920 60 fps H.264 CRF 16 + AAC, 28.93 s, YAVG first 40.7 / last 39.6, -14.0 LUFS TP -2.5, 4k band -49.7 (35.7 dB below), spelling OK (HP = game term), safe zones clear, loopfade 0.4 s.
 Caption: Game 7 👇 GREEN won Game 6. Pick your color before the first crash. The slower ball loses 1 HP. Who survives? #satisfying #physics #simulation #oddlysatisfying
 Title: Game 7 👀 GREEN won Game 6. Pick a color! Who survives this time?
+Review v1 (subagent): 7.2 (hook 7, polish 8, clarity 7, pacing 6, payoff 8). Reviewer called LOGIC FAIL "ring springs back after each KO"; checked: NOT a logic error: the sim really shrinks the ring 15 %/KO (sim.js Rt, kos) and page.html zooms the camera in (Z=R/Rt, camLag .7 s) while balls shrink with HP, so on-screen sizes look constant. Counters, KO times, speed lines, winner all correct -> schedule.
+Engine notes for next B: make the shrink VISIBLE (smaller zoom, or a ghost ring of the start size); fade the header + pill before the loop cross-fade; follow pill under the header (clears the crown); stack "-1" pops; first KO earlier (~11 s).
+Slot: 21 Nov 01:00 Europe/London.
