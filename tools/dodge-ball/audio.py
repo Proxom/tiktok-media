@@ -38,4 +38,8 @@ while hb<EV-.35:
             tt=np.arange(int(SR*.35))/SR;m.add(hb+dt,g*np.sin(2*np.pi*(52+20*np.exp(-tt*25))*tt)*(1-np.exp(-tt/.006))*np.exp(-tt*11))
         k=float(np.interp(hb,t,n_in));hb+=1.0-.05*k
     else:hb+=.1
+if d.get('faces'):
+    sys.path.insert(0,__file__.rsplit('/',2)[0]+'/faces');import voice
+    FR=d['frames'];FF=d['ffps'];px=lambda b,t:((FR[min(len(FR)-1,max(0,int(t*FF)-1))][0 if b==0 else 3*b-1])-CX)/520
+    print('voices',voice.add_voices(m,d['faces']['voices'],V,ref=.18,pan=px))
 m.reverb();m.write(sys.argv[2]);print('dur',round(D,2),'bump notes',len(bm),'enters',len(en),'dodges',len(dg))

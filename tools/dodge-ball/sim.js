@@ -86,5 +86,5 @@ if(!res){console.log(log.slice(-15).join('\n'));process.exit(1)}
 console.log('seed',res.seed,'catch',res.endT.toFixed(2),'by #'+(res.catcher+1),'close',res.events.filter(e=>e.type==='close').length,'bumps',res.events.filter(e=>e.type==='bump').length,'walls',res.events.filter(e=>e.type==='wall').length,'maxPen',res.maxPen.toFixed(2),'maxStep/r',res.maxStep.toFixed(3),'tunnel',res.tunnel,'tried',log.length);
 {const SP=E('SLOW',.35),s0=res.endT-E('S0',.9),s1=res.endT+E('S1',.4),end=res.frames.length/60-.02,VF=60;res.vfps=VF;const tm=[];let ts=0,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
  res.tmap=tm;console.log('video frames',tm.length,'dur',(tm.length/VF).toFixed(2),'catch at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2))}
-if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;res.tire=TIRE;res.cgrow=CGROW;res.vc0=VC;res.vr=VR;
+if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;if(process.env.PREV){res.prev=+process.env.PREV;res.round=+process.env.ROUND||2}res.tire=TIRE;res.cgrow=CGROW;res.vc0=VC;res.vr=VR;
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');
