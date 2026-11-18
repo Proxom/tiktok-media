@@ -8,3 +8,4 @@ Result: seed 5157, #5 wins at 22.185 s (final 2 #3/#5, #3 falls 22.2 s), 23 fall
 Gate: 1080x1920 60 fps H.264 CRF 16 + AAC, 27.85 s, YAVG first 40.1 / last 39.1, -13.9 LUFS TP -3.2, 4k band -48.2 (34.3 dB below), spelling OK, safe zones clear, loopfade 0.4 s.
 Caption: Game 2 😬 #6 won Game 1. Now every marble has eyes 👀 24 marbles, 1 floor that keeps shrinking. Off the edge = OUT. Pick a face 👇 #satisfying #physics #simulation #oddlysatisfying
 Title: Game 2 😬 24 marbles, only 1 survives. Pick a face 👇
+Review v1 (subagent): 7.4 (hook 7, polish 8, clarity 8, pacing 6, payoff 8), LOGIC PASS -> schedule. Engine notes for next H: follow pill earlier (~23.5 s) + bigger, cut the still hold ~1.5 s, fixed-width LEFT/timer, fade the HUD text before the loop cross-fade, crown >= 12 px under the panel.
