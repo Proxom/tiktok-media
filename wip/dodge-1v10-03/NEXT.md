@@ -7,3 +7,6 @@ Gate: 1080x1920 60 fps H.264 CRF 16 + AAC, 32.28 s, YAVG first 36.5 / last 35.5,
 Caption: 1 vs 10, Round 3 😬 The record is 28.5 s. Can it last longer this time? Guess the seconds 👇 Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: 1 vs 10 Round 3 😬 Record 28.5 s. Guess the seconds 👇
 DONE: media/dodge-1v10-03.
+Review v1 (subagent): 6.6 (hook 7, polish 7, clarity 6, pacing 6, payoff 7), LOGIC PASS.
+Fix round (once): "chaser speed" label under the bar; "·" separator between CHASERS and DODGES; rule/result lines 34/36 -> 40/42 px; ring moved up 10 px (CY 1030 -> 1020, sim re-run: identical result, catch 26.511 by #6) so its stroke stays out of the bottom safe zone. Not done (physics change): chasers clump 18-26 s.
+Rebuild now uses CY=1020. Gate (final v2): 32.28 s, YAVG 36.6 / 35.5, -14.1 LUFS TP -2.5, 4k band -49.6 (35.5 dB below), safe zones clear.
