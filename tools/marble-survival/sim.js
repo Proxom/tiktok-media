@@ -57,7 +57,7 @@ for(let s=SEED;s<SEED+3000;s++){const r=run(s);if(r.fail){log.push(s+':'+r.fail)
 if(!res){console.log(log.slice(-30).join('\n'));process.exit(1)}
 const fl=res.events.filter(e=>e.type==='fall');
 console.log('seed',res.seed,'winner #'+(res.win+1),'end',res.endT.toFixed(2),'falls',fl.map(e=>(e.m+1)+'@'+e.t.toFixed(1)).join(' '),'bumps',res.events.filter(e=>e.type==='bump').length,'maxPen',res.maxPen.toFixed(2),'maxStep/r',res.maxStep.toFixed(3),'tunnel',res.tunnel,'tried',log.length);
-Object.assign(res,{Rstop:Rt(res.endT),SIG,FR,K,N,CX,CY,R0,REND,TS,TE,MR,G0,GK,ffps:FPS,game:E_('GAME',0)});
+Object.assign(res,{Rstop:Rt(res.endT),SIG,FR,K,N,CX,CY,R0,REND,TS,TE,MR,G0,GK,ffps:FPS,game:E_('GAME',0),prevWin:E_('PREVWIN',0)});
 {const SP=E_('SLOW',.4),s0=res.endT-E_('S0',1.0),s1=res.endT+E_('S1',.45),end=res.frames.length/60-.02,VF=60;res.vfps=VF;const tm=[];let ts=0,sp=1;
  while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
  res.tmap=tm;console.log('video dur',(tm.length/VF).toFixed(2),'final fall at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2))}

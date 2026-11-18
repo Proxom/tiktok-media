@@ -1,5 +1,5 @@
 <!doctype html><meta charset=utf8><body style="margin:0;background:#000"><canvas id="c" width="1080" height="1920"></canvas>
-<script src="data.js"></script><script>
+<script src="data.js"></script><script src="../faces/faces.js"></script><script>
 // 1M+ #7 "24 marble survival" renderer: account look (violet background, neon rim, glossy balls, top panel with hook + live counters).
 // Camera zoom = (R0/R)^0.6, so the last marbles stay big. Every number on screen is read from the sim: LEFT = 24 - 'fall' events, FLOOR % = platform area R(t)^2/R0^2, timer = sim time, winner = sim winner.
 const W=1080,H=1920,D=DATA,CX=D.CX,CY=D.CY,R0=D.R0,MR=D.MR,N=D.N,ET=D.endT,HUE=305;
@@ -21,7 +21,7 @@ const fl=document.createElement('canvas');fl.width=W;fl.height=H;{const g=fl.get
  g.strokeStyle='rgba(200,160,255,.13)';g.lineWidth=2;const s=34;for(let row=-14;row<=14;row++)for(let col=-9;col<=9;col++){const hx=CX+col*s*1.5,hy=CY+row*s*1.732+(col&1?s*.866:0);g.beginPath();for(let k=0;k<6;k++){const a=k*Math.PI/3;g.lineTo(hx+s*.96*Math.cos(a),hy+s*.96*Math.sin(a))}g.closePath();g.stroke()}}
 function gloss(cf,bx,by,r,al,glow){x.save();x.globalAlpha=al;x.translate(bx,by);x.shadowColor=cf(55);x.shadowBlur=glow;const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);g.addColorStop(0,cf(88));g.addColorStop(.45,cf(56));g.addColorStop(1,cf(26));
  x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.7)';x.beginPath();x.ellipse(-r*.38,-r*.44,r*.25,r*.15,-.6,0,7);x.fill();x.restore()}
-function num(k,px,py,r,al){x.save();x.globalAlpha=al;x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(r*(k>=9?1.0:1.15))}px "DejaVu Sans"`;x.lineJoin='round';x.lineWidth=r*.3;x.strokeStyle='rgba(10,4,20,.95)';x.strokeText(k+1,px,py+r*.06);x.fillStyle='#fff';x.fillText(k+1,px,py+r*.06);x.restore()}
+function num(k,px,py,r,al){if(D.faces){py+=r*.46;r*=.66}x.save();x.globalAlpha=al;x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(r*(k>=9?1.0:1.15))}px "DejaVu Sans"`;x.lineJoin='round';x.lineWidth=r*.3;x.strokeStyle='rgba(10,4,20,.95)';x.strokeText(k+1,px,py+r*.06);x.fillStyle='#fff';x.fillText(k+1,px,py+r*.06);x.restore()}
 function draw(tv){
  const VF=D.vfps||60,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
  const F0=D.frames[f0],F1=D.frames[f1],L=i=>F0[i]+(F1[i]-F0[i])*u;
@@ -31,7 +31,7 @@ function draw(tv){
  const z=cl(Math.pow(R0/R,.6),1,2.2);const OY=-10,sy=wy=>CY+(wy-CY)*z+OY;x.setTransform(z,0,0,z,CX*(1-z),CY*(1-z)+OY);
  // falling marbles BELOW the floor level (drawn first, shrink + darken as they drop)
  for(let k=0;k<N;k++){const e=fallAt[k];if(!e||t<e.t)continue;const s=t-e.t;if(s>1.1)continue;const q=ease(s/1.1),px=L(3*k),py=L(3*k+1);
-  x.save();x.filter=`brightness(${1-.6*q})`;gloss(COL(k),px,py+40*q*q,MR*(1-.7*q),1-q,0);x.restore();if(s<.7)num(k,px,py+40*q*q,MR*(1-.7*q),(1-q)*(1-s/.7))}
+  x.save();x.filter=`brightness(${1-.6*q})`;gloss(COL(k),px,py+40*q*q,MR*(1-.7*q),1-q,0);x.restore();if(D.faces)Faces.draw(x,D.faces,k,t,px,py+40*q*q,MR*(1-.7*q),{lid:COL(k)(38),ey:-.3,alpha:1-q});if(s<.7)num(k,px,py+40*q*q,MR*(1-.7*q),(1-q)*(1-s/.7))}
  // platform shadow + floor
  x.save();x.fillStyle='rgba(0,0,0,.45)';x.beginPath();x.ellipse(CX,CY+26,R+6,R+10,0,0,7);x.fill();x.restore();
  x.save();x.beginPath();x.arc(CX,CY,R,0,7);x.clip();x.drawImage(fl,0,0);
@@ -46,7 +46,7 @@ function draw(tv){
  // marbles on the floor
  const bl=countAt(bmp,t);for(let k=0;k<N;k++){const e=fallAt[k];if(e&&t>=e.t)continue;const px=L(3*k),py=L(3*k+1),isW=won&&k===D.win;
   if(isW){x.save();x.globalAlpha=.7;const g3=x.createRadialGradient(px,py,MR*.8,px,py,MR*3);g3.addColorStop(0,'rgba(255,215,80,.9)');g3.addColorStop(1,'rgba(255,215,80,0)');x.fillStyle=g3;x.beginPath();x.arc(px,py,MR*3,0,7);x.fill();x.restore()}
-  const sc=isW?1+.35*ease(er/.5):1;gloss(COL(k),px,py,MR*sc,1,left<=3&&!won?22:12);num(k,px,py,MR*sc,1)
+  const sc=isW?1+.35*ease(er/.5):1;gloss(COL(k),px,py,MR*sc,1,left<=3&&!won?22:12);if(D.faces)Faces.draw(x,D.faces,k,t,px,py,MR*sc,{lid:COL(k)(38),ey:-.3});num(k,px,py,MR*sc,1)
   if(isW&&er>.2)txt('👑',py-MR*sc-26,70*ease((er-.2)/.3),'#fff',1,px,200)}
  // win confetti
  if(won&&er<2.2){const wp=[L(3*D.win),L(3*D.win+1)],k2=er/2.2;x.save();x.shadowColor='#ffd23f';x.shadowBlur=10;for(let i=0;i<54;i++){const a=i*2.39996,h=((i*37)%11)/10,rr=MR+(240+420*h)*er,px=wp[0]+Math.cos(a)*rr,py=wp[1]+Math.sin(a)*rr+300*er*er;x.globalAlpha=Math.max(0,1-k2)*.95;x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':COL(D.win)(62);x.beginPath();x.arc(px,py,7*(1-k2)+2.5,0,7);x.fill()}x.restore()}
@@ -55,8 +55,8 @@ function draw(tv){
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: hook + live counters
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,286,30);x.fill();x.stroke();x.restore();
- if(!won){txt('24 marbles. Only 1 survives 😬',386,56*(1+.18*Math.exp(-tv*7)),'#fff',1);
-  if(tv<3.6)txt('Pick a number before the floor shrinks 👇',440,36,'#ffd23f',tv<3.2?1:1-(tv-3.2)/.4);
+ if(!won){txt(D.game?`Game ${D.game} · Only 1 survives 😬`:'24 marbles. Only 1 survives 😬',386,56*(1+.18*Math.exp(-tv*7)),'#fff',1);
+  if(tv<3.6)txt(D.game&&D.prevWin?`#${D.prevWin} won Game ${D.game-1}. Pick a face 👇`:'Pick a number before the floor shrinks 👇',440,36,'#ffd23f',tv<3.2?1:1-(tv-3.2)/.4);
   else txt(left===2?'FINAL 2 ⚔️ Who stays on?':left===3?'FINAL 3 😬':'The floor shrinks and shakes · off the edge = OUT',440,left<=3?40:32,left<=3?'#ff6b81':'#ffd23f',ease((tv-3.6)/.3))}
  else{const s=1+.22*Math.exp(-er*5);txt(`#${D.win+1} SURVIVES 👑`,394,66*s,COL(D.win)(66),1);txt(`Last of 24 · Did you pick #${D.win+1}? 💬`,450,36,'#fff',ease((er-.1)/.25))}
  const ry=548;txt(`LEFT ${left}/${N}`,ry,left<=3?54:48,left<=3?'#ff6b81':'#fff',1,265,330);

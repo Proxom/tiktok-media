@@ -44,7 +44,7 @@ function draw(tv){
  const RR=Rt(t);x.beginPath();x.arc(CX,CY,RR,0,Math.PI*2);x.stroke();x.restore();
  // wall ripples (soft, fade fast)
  for(let k=countAt(walls,tq)-1;k>=0&&t-walls[k].t<.3;k--){const w=walls[k],q=(t-w.t)/.3;x.save();x.globalAlpha=.45*(1-q);x.strokeStyle=col(w.ball,75);x.lineWidth=3*(1-q)+1;x.beginPath();x.arc(w.x,w.y,5+18*ease(q),0,7);x.stroke();x.restore()}
- const koL=[];
+ const koL=[];/* 18 Nov review fix: the FINAL KO label clears fast so it never sits under the champion crown */const KA=(o,s)=>o.t>=ET-1e-6?(s<.12?1:Math.max(0,1-(s-.12)/.1)):(s<1?1:1-(s-1)/.4);
  // knock-outs: pop burst in the loser colour + OUT!
  for(const o of outs){const s=t-o.t;if(s<0||s>1.4)continue;const k=s/1.4,fin=o.t===ET;x.save();x.beginPath();x.arc(CX,CY,RR-HT,0,7);x.clip();x.shadowColor=fin?'#ffd23f':col(o.ball,60);x.shadowBlur=12;
   for(let i=0;i<(fin?44:30);i++){const a=i*2.39996,h=((i*37)%11)/10,sp=200+380*h,rr=o.r+sp*s,px=o.x+Math.cos(a)*rr,py=o.y+Math.sin(a)*rr+300*s*s;x.globalAlpha=Math.max(0,1-k)*.95;x.fillStyle=i%3===0?'#fff':i%3===1&&fin?'#ffd23f':col(o.ball,62);x.beginPath();x.arc(px,py,8*(1-k)+2.5,0,7);x.fill()}x.restore();
@@ -63,10 +63,10 @@ function draw(tv){
   if(e.hp>0)minus.push([e,s])}
  x.restore();
  // screen-space labels (drawn above the balls, never scaled): -1 over the loser, KO label in a fixed slot inside the top of the ring
-const LBt=[...koL.map(([o,s])=>[o.t,s<1?1:1-(s-1)/.4])].sort((a,b)=>b[1]-a[1])[0],spA=spd.find(e=>{const q=t-e.t-.3;return q>=0&&q<=.9}),LB=LBt?bandOf(LBt[0]):spA?bandOf(spA.t):CY-R+HT+150 /* 14 Nov fix: the box follows the SPEED label after the OUT label is gone */,lbA=Math.max(0,...koL.map(([o,s])=>s<1?1:1-(s-1)/.4),...spd.map(e=>{const s=t-e.t-.3;return s<0||s>.9?0:s<.6?ease(s/.12):1-(s-.6)/.3}));
+const LBt=[...koL.map(([o,s])=>[o.t,KA(o,s)])].sort((a,b)=>b[1]-a[1])[0],spA=spd.find(e=>{const q=t-e.t-.3;return q>=0&&q<=.9}),LB=LBt?bandOf(LBt[0]):spA?bandOf(spA.t):CY-R+HT+150 /* 14 Nov fix: the box follows the SPEED label after the OUT label is gone */,lbA=Math.max(0,...koL.map(([o,s])=>KA(o,s)),...spd.map(e=>{const s=t-e.t-.3;return s<0||s>.9?0:s<.6?ease(s/.12):1-(s-.6)/.3}));
  if(lbA>0){x.save();x.globalAlpha=.62*lbA;x.fillStyle='rgba(6,4,20,1)';x.beginPath();x.roundRect(CX-250,LB-62,500,spd.some(e=>t-e.t-.3>=0&&t-e.t-.3<=.9)?150:84,26);x.fill();x.restore()}
  for(const [e,s] of minus){const p=PP[e.loser],my=Math.max(700,SY(p[1])-p[2]*Z-16-60*ease(s/.75));if(lbA>0&&my>LB-70&&my<LB+100&&Math.abs(SX(p[0])-CX)<270)continue;txt('-1',Math.max(700,SY(p[1])-p[2]*Z-16-60*ease(s/.75)),46,col(e.loser,70),s<.5?1:1-(s-.5)/.25,SX(p[0]),200)}
- for(const [o,s] of koL){const sc=1+.3*Math.exp(-s*6);txt(NAMES[o.ball]+' OUT!',bandOf(o.t),58*sc,col(o.ball,72),s<1?1:1-(s-1)/.4,CX,440)}
+ for(const [o,s] of koL){const sc=1+.3*Math.exp(-s*6);txt(NAMES[o.ball]+' OUT!',bandOf(o.t),58*sc,col(o.ball,72),KA(o,s),CX,440)}
  for(const e of spd){const s=t-e.t-.3;if(s<0||s>.9)continue;const sc=1+.35*Math.exp(-s*7);txt(`SPEED +${Math.round(SU*100)}% ⚡`,bandOf(e.t)+72,48*sc,'#ffd23f',s<.6?ease(s/.12):1-(s-.6)/.3,CX,440)}
  if(er>=0&&WIN>=0){const p=PP[WIN],a=ease((er-.3)/.25),bob=Math.sin(er*5)*4;if(a>0){x.save();x.globalAlpha=a;x.font=Math.round(p[2]*Z*1.5)+'px "Noto Color Emoji"';x.textAlign='center';x.fillText('👑',SX(p[0]),SY(p[1])-p[2]*Z*1.05+bob);x.restore()}}
  if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.05*(1-er/.25)})`;x.fillRect(0,0,W,H)}
