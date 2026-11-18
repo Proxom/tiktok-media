@@ -3,6 +3,16 @@
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
 
+## TOP OVERRIDE (Erkan, 18 Nov 2026 21:54): 2 videos A DAY AGAIN (01:00 + 17:00) + QUEUE TARGET = 10 + 5 RUNS A DAY — overrides every older slot, schedule and queue rule in this file (incl. "1 a day at 17:00 only" of 14 Nov and "QUEUE TARGET = 2" of 15 Nov)
+- SLOTS: exactly 2 videos a day, at 01:00 and 17:00 Europe/London (Metricool brand 7675089, TikTok). The 01:00 slot is OPEN again from 19 Nov 01:00. 21:00 stays CLOSED. No other slot exists. Fill empty slots in date order, the nearest empty slot first (tonight/tomorrow 01:00 included if there is still time to finish it properly).
+- QUEUE = future non-draft TikTok posts in Metricool + finished, gate-passed videos not yet scheduled.
+  - QUEUE 10 or more: do NOT make a new one. Short check only (max 15 min: slots right, last posts PUBLISHED, metrics note), then end.
+  - QUEUE 9 or less: make videos in this run one after another, each to the FULL hard gate and every quality, topic and no-repeat rule in this file, each scheduled into the next empty 01:00/17:00 slot, until QUEUE is 10 or the run's 2-hour cap is reached. The next run continues.
+  - Never lower quality, skip a gate or repeat a topic to fill the queue. A video that fails the gate is not scheduled.
+- Both slots follow the same current content rules (studio kit, data-driven topics, series, no repeats, etc.); 01:00 simply takes the next item in the same order/rotation. Spread series and formats so two videos of the same kind do not go out back to back.
+- Every older rule that makes kit work, engine builds or long-video work wait until "QUEUE is full" (2 or 3) now means QUEUE 10.
+- RUNS: 5 runs a day (Erkan sets the times; trust list_triggers). Only one run of this agent at a time: if the previous run's lock/work is still active, do a short check and end. Hard cap per run stays 2 hours.
+- TikTok extras: the game rotation, 'at most 2 new engines a week' and the faces + voice module rules stay; spread games across both slots.
 ## TOP OVERRIDE (Erkan, 15 Nov 2026 17:37): FACES + VOICE ON BALLS — build once, then use on every suitable new video
 
 EYES ONLY, NO MOUTH (Erkan, 15 Nov 17:47) — overrides every mention of mouth/smile/"O" mouth/brows below: each ball gets TWO EYES only. All emotion comes from the eyes: size (big = scared), lids (half-closed = calm/sleepy, squeezed = hit), shape (X or spiral = dizzy, ^ ^ = happy, droopy = sad, slanted lids = angry), pupils (look at the threat/rival, shrink when scared), blinks. Voice sounds unchanged.
