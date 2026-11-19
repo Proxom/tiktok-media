@@ -12,7 +12,7 @@ D.faces=planFaces({ffps:FF,nFrames:FR.length,n:N,seed:D.seed,events:ev,pitch,sen
   if(i===0){let g=1e9,lx=0,ly=1;for(let k=0;k<NC;k++)if(F[4+3*k]){const dx=F[2+3*k]-rx,dy=F[3+3*k]-ry,d=Math.hypot(dx,dy)-D.RR-D.RC;if(d<g){g=d;lx=dx;ly=dy}}
     return{threat:t<ET?cl(1-g/170):0,lx,ly}}
   const k=i-1;if(!F[4+3*k])return{threat:0};const dx=rx-F[2+3*k],dy=ry-F[3+3*k],d=Math.hypot(dx,dy);
-  return{threat:0,chase:t<ET?.45+.55*cl(1-(d-D.RR-D.RC)/350):0,lx:dx,ly:dy}}});
+  return{threat:0,chase:t<ET?.45+.55*cl(1-(d-D.RR-D.RC)/350):.5,lx:dx,ly:dy}}}); /* 19 Nov (Round 5 review): the 9 losers stay angry after the catch */
 const bad=checkVoices(D.faces.voices);if(bad.length){console.log('VOICE FAIL',bad);process.exit(1)}
 fs.writeFileSync(P,'window.DATA='+JSON.stringify(D)+';\n');
 console.log('faces: voices',D.faces.voices.map(v=>v.kind+'@'+v.t.toFixed(2)+'#'+v.b).join(' '),'| blinks',D.faces.blink.map(b=>b.length).join(','));
