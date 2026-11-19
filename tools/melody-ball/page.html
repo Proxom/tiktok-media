@@ -40,21 +40,21 @@ function draw(tv){
   const sweep=cl(er/1.2)*NN;for(let k=0;k<NN;k++){const a=cl(sweep-k);if(a<=0)continue;chordLine(k,.95*a,3.4,58+20*Math.exp(-Math.max(0,er-k*1.2/NN)*3))}
   if(er>1.2){x.save();x.globalAlpha=fo*.25*(.5+.5*Math.sin((er-1.2)*3));const g2=x.createRadialGradient(CX,CY,R*.2,CX,CY,R);g2.addColorStop(0,'rgba(255,215,90,.0)');g2.addColorStop(1,'rgba(255,215,90,.25)');x.fillStyle=g2;x.beginPath();x.arc(CX,CY,R,0,7);x.fill();x.restore()}x.restore();FO=1}
  // hit ripples + note pop
- for(let k=Math.max(0,n-3);k<n;k++){const h=HI[k],s=t-h.t;if(s>.45)continue;const q=s/.45;x.save();x.globalAlpha=.6*(1-q);x.strokeStyle=`hsl(${hueK(k)},95%,75%)`;x.lineWidth=3;x.beginPath();x.arc(h.x,h.y,BR+30*ease(q),0,7);x.stroke();x.restore();
-  const nx=(h.x-CX),ny=(h.y-CY),dd=Math.hypot(nx,ny);txt('♪',h.y-ny/dd*70-30*ease(q),40,`hsl(${hueK(k)},95%,78%)`,1-q,h.x-nx/dd*70,80)}
+ for(let k=Math.max(0,n-3);k<n;k++){const h=HI[k],s=t-h.t;if(s>.45)continue;const q=s/.45,ra=er<0?1:1-ease(er/.15);/* 19 Nov: last ripple + note gone fast at the reveal */if(ra<=0)continue;x.save();x.globalAlpha=.6*(1-q)*ra;x.strokeStyle=`hsl(${hueK(k)},95%,75%)`;x.lineWidth=3;x.beginPath();x.arc(h.x,h.y,BR+30*ease(q),0,7);x.stroke();x.restore();
+  const nx=(h.x-CX),ny=(h.y-CY),dd=Math.hypot(nx,ny);txt('♪',h.y-ny/dd*70-30*ease(q),40,`hsl(${hueK(k)},95%,78%)`,(1-q)*ra,h.x-nx/dd*70,80)}
  // ball (fades out at the reveal)
- {const al=er<0?1:1-ease(er/.4);if(al>0){const sq=since<.1?.12*Math.sin(Math.PI*since/.1):0;ball(bx,by,BR,hueNow,al,sq,last?last.x-CX:0,last?last.y-CY:1)}}
+ {const al=er<0?1:1-ease(er/.15);/* 19 Nov: gone fast at the reveal */if(al>0){const sq=since<.1?.12*Math.sin(Math.PI*since/.1):0;ball(bx,by,BR,hueNow,al,sq,last?last.x-CX:0,last?last.y-CY:1)}}
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,286,30);x.fill();x.stroke();x.restore();
- if(er<0){txt('Every bounce = the next note 🎵',385,52*(1+.16*Math.exp(-tv*7)),'#fff',1);txt(D.hook2||'Guess what it draws 👇',446,50,'#ffd23f',1)}
+ if(er<0){txt('Every bounce = the next note 🎵',383,62*(1+.16*Math.exp(-tv*7)),'#fff',1);txt(D.hook2||'Guess what it draws 👇',450,58,'#ffd23f',1)}
  else{const s=1+.22*Math.exp(-er*5);txt(D.answer||'IT DREW A STAR FLOWER! ✨',388,56*s,'#ffd23f',1);txt(er>=1.6?'Name the song 🎵 💬':'Did you guess it? 👀',442,42,'#fff',1)}
  const sp=Math.round((Math.pow(D.SPD,Math.min(n,NN))-1)*100);  // the sim multiplies the speed by SPD after EVERY bounce, the last one too
  txt(`NOTE ${Math.min(n,NN)} / ${NN}`,540,58*(1+.18*pulse*(er<0)),'#fff',1,300,380);
  txt(`SPEED +${sp}%`,540,46,'#7fe3ff',1,700,320);
  txt(`+${Math.round((D.SPD-1)*100)}% per bounce`,592,32,'rgba(255,255,255,.8)',1,700,320);
  // progress bar under the note counter
- x.save();x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(130,566,340,16,8);x.fill();x.fillStyle=er>=0?'#ffd23f':`hsl(${hueNow},95%,62%)`;x.beginPath();x.roundRect(130,566,340*Math.min(n,NN)/NN,16,8);x.fill();x.restore();
+ x.save();x.globalAlpha=HF;/* 19 Nov: fades with the text before the loop */x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(130,566,340,16,8);x.fill();x.fillStyle=er>=0?'#ffd23f':`hsl(${hueNow},95%,62%)`;x.beginPath();x.roundRect(130,566,340*Math.min(n,NN)/NN,16,8);x.fill();x.restore();
  // FOLLOW CALL: pill over the dimmed circle for the last 1.4 s
  {const FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=CY+R*.62;x.save();x.globalAlpha=.4*fa;x.fillStyle='#05030c';x.beginPath();x.arc(CX,CY,R-HT,0,7);x.fill();x.restore();x.save();x.globalAlpha=fa*HF;x.fillStyle='rgba(8,8,30,.9)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new one every day',PY+4,44,'#ffd23f',fa,CX,590)}}
  return c.toDataURL('image/jpeg',0.93)}
