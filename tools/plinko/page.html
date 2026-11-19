@@ -4,6 +4,7 @@
 // Counters are read from the sim's 'land' events; ball positions from the sim frames (frames[k] = sim time k/60), interpolated for slow motion.
 const W=1080,H=1920,D=DATA,HUE=D.hue??305,BG=D.bg||['#2c1446','#130a2a','#05030c'],CX=D.CX,R=D.R,PR=D.PR,BT=D.BT,FL=D.FL,XL=D.XL,XR=D.XR,ET=D.endT,WIN=D.win,DIVS=D.DIVS,GAME=D.game||0,LW=D.lastWin??-1;  // series test (9 Nov market scan): 'Game N' + returning champion crown
 const NAMES=['RED','BLUE','YELLOW','GREEN'],HUES=[356,204,46,128],SAT=[95,95,100,80],BX=[XL,...DIVS,XR];
+let HF=1;/* 19 Nov: text + pill fade out 0.62 s before the end (clean 0.4 s loop cross-fade) */
 const c=document.getElementById('c'),x=c.getContext('2d');
 const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2*v)};
 const col=(i,l=58)=>`hsl(${HUES[i]},${SAT[i]}%,${i===2?Math.min(l+4,92):l}%)`;
@@ -11,7 +12,7 @@ const lands=D.events.filter(e=>e.type==='land'),pegs=D.events.filter(e=>e.type==
 const landT={};lands.forEach(e=>landT[e.ball]=e.t);
 function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
-function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){a*=HF;if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
  const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
  let px=align==='center'?cx-w/2:cx;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=colr;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
@@ -28,6 +29,7 @@ function seg(x0,y0,x1,y1,w,cs,blur){x.save();x.lineCap='round';x.lineWidth=w;x.s
 function draw(tv){
  const VF=D.vfps||60,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],ff=Math.min(D.frames.length-1,Math.max(0,t*D.fps)),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
  const F0=D.frames[f0],F1=D.frames[f1];
+ HF=1-ease((tv-(D.tmap.length/VF-.62))/.15);
  x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.drawImage(bg,0,0);
  const EVT=D.tmap.findIndex(v=>v>=ET)/VF,er=t>=ET?Math.max(t-ET,tv-EVT):-1,nl=countAt(lands,t),cnt=nl?lands[nl-1].c:[0,0,0,0],left=D.NB-nl;
  const mx=Math.max(...cnt),leaders=cnt.map((v,i)=>v===mx&&mx>0?i:-1).filter(i=>i>=0),lead=leaders.length===1?leaders[0]:-1;
@@ -65,15 +67,17 @@ function draw(tv){
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
  if(er<0){txt(GAME?`Game ${GAME} · Pick a color 👇`:'Pick a color 👇 Which bin wins?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);if(left===1)txt('LAST BALL! 👀 Who gets it?',437,40*(1+.06*Math.sin(t*14)),'#ffd23f',1);
   else if(LW>=0&&tv<4.0){const a=tv<3.6?1:1-(tv-3.6)/.4;txt(`Last winner: ${NAMES[LW]} 👑 Can it win again?`,437,38,'#ffd23f',a)}
-  else txt(`Most balls wins · ${left} balls left`,437,38,'#ffd23f',LW>=0?ease((tv-4.0)/.3):1)}
+  else{let lc=null;for(let k=nl-1;k>=1&&t-lands[k].t<1.1;k--){const a=lands[k].c,b=lands[k-1].c,ma=Math.max(...a),mb=Math.max(...b),la=a.filter(v=>v===ma).length===1?a.indexOf(ma):-1,lb=b.filter(v=>v===mb).length===1?b.indexOf(mb):-1;if(la>=0&&la!==lb){lc=[la,t-lands[k].t];break}}
+   if(lc&&tv>4.3){const s=lc[1];txt(`${NAMES[lc[0]]} takes the lead! 🔥`,437,40*(1+.15*Math.exp(-s*8)),col(lc[0],72),s<.9?1:1-(s-.9)/.2)}
+   else txt(`Most balls wins · ${left} balls left`,437,38,'#ffd23f',LW>=0?ease((tv-4.0)/.3):1)}}
  else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+(LW===WIN?' WINS AGAIN! 🏆':LW>=0?' IS THE NEW CHAMP! 👑':' WINS! 🏆'),390,60*s,'#ffd23f',1);txt(er>=1.6?'Did your color win? 💬':`${cnt[WIN]} balls · won by ${D.margin}!`,446,40,'#fff',er>=1.6?ease((er-1.6)/.35):1)}
  for(let i=0;i<4;i++){const cx0=175+i*217,isL=er<0?lead===i:i===WIN,last=nl&&lands[nl-1].bin===i?t-lands[nl-1].t:9,pp=last<.25?1-last/.25:0;
-  x.save();if(isL){x.strokeStyle='rgba(255,210,63,.95)';x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
+  x.save();x.globalAlpha=HF;if(isL){x.strokeStyle='rgba(255,210,63,.95)';x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
   txt(NAMES[i]+((er<0?i===LW:(LW>=0&&i===WIN&&er>=.5))?' 👑':''),514,30*(er>=.5&&i===WIN&&LW>=0?1+.25*Math.exp(-(er-.5)*6):1),col(i,72),1,cx0,170);  // crown hands over to the new/old champion 0.5 s after the end
   txt(String(cnt[i]),588,62*(1+.25*pp),'#fff',1,cx0,180);
  }
  // FOLLOW CALL (main goal, 8 Nov): small pill over the empty peg board for the last FOLLOWS seconds, then the loop cuts back to frame 0
- {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||1000;x.save();x.globalAlpha=.5*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
+ {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15)*HF;if(fa>0){const PY=D.followY||1000;x.save();x.globalAlpha=.5*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>

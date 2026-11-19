@@ -60,17 +60,17 @@ function run(seed){
  const fin=cnt.slice(),mx=Math.max(...fin),win=fin.indexOf(mx),second=Math.max(...fin.filter((v,i)=>i!==win));
  let leader=-1,changes=0;for(const e of lands){const m=Math.max(...e.c),ls=e.c.map((v,i)=>v===m?i:-1).filter(i=>i>=0);if(ls.length===1&&ls[0]!==leader){if(leader>=0)changes++;leader=ls[0]}}
  const pre=lands.length>1?lands[lands.length-2].c:[0,0,0,0],pm=Math.max(...pre),lastDecides=pre.filter(v=>v===pm).length===2&&lands[lands.length-1].bin===pre.indexOf(pm)||(pre.filter(v=>v===pm).length===2&&pre[lands[lands.length-1].bin]===pm);
- const finalBin=B.map(b=>binOf(b.x));
- return{frames,events,endT,win,cnt:fin,margin:mx-second,changes,lastDecides,tie:fin.filter(v=>v===mx).length>1,seed,NB,PEGS,XL,XR,CX,BT,FL,DY,DIVS,R,PR,P,ph,AMP,dropT,fps:FPS,tunnel,maxPen,maxStep,finalBin,binOfBall:B.map(b=>b.bin)};
+ const finalBin=B.map(b=>binOf(b.x));const lastFall=endT-dropT[lands[lands.length-1].ball];  // 19 Nov review fix: the deciding ball must not creep down a wall for seconds
+ return{frames,events,endT,win,cnt:fin,margin:mx-second,changes,lastDecides,tie:fin.filter(v=>v===mx).length>1,seed,NB,PEGS,XL,XR,CX,BT,FL,DY,DIVS,R,PR,P,ph,AMP,dropT,fps:FPS,tunnel,maxPen,maxStep,finalBin,lastFall,binOfBall:B.map(b=>b.bin)};
 }
 const MIN=+process.env.MINT||23,MAX=+process.env.MAXT||28.5;let res=null,log=[];
 for(let s=SEED;s<SEED+3000;s++){const r=run(s);if(r.fail){log.push(s+':'+r.fail);continue}
  log.push(s+':end'+r.endT.toFixed(1)+' cnt '+r.cnt.join('/')+' ch'+r.changes+' last'+(r.lastDecides?1:0));
  const ok=!r.tie&&r.margin===1&&r.changes>=(+process.env.LEADMIN||3)&&(!+process.env.LASTDECIDES||r.lastDecides)&&r.endT>MIN&&r.endT<MAX&&r.tunnel===0&&r.maxPen<2&&r.maxStep<.25&&
-  r.finalBin.every((v,i)=>v===r.binOfBall[i])&&(process.env.WINEX||'').split(',').indexOf(String(r.win))<0&&Math.min(...r.cnt)>=4;
+  r.finalBin.every((v,i)=>v===r.binOfBall[i])&&(process.env.WINEX||'').split(',').indexOf(String(r.win))<0&&Math.min(...r.cnt)>=4&&r.lastFall<(+process.env.LASTFALL||2.6);
  if(ok){res=r;break}}
 if(!res){console.log(log.slice(-30).join('\n'));process.exit(1)}
-console.log('seed',res.seed,'winner',res.win,'counts',res.cnt.join('/'),'margin',res.margin,'leadChanges',res.changes,'lastDecides',res.lastDecides,'endT',res.endT.toFixed(2),
+console.log('seed',res.seed,'winner',res.win,'counts',res.cnt.join('/'),'margin',res.margin,'leadChanges',res.changes,'lastDecides',res.lastDecides,'endT',res.endT.toFixed(2),'lastFall',res.lastFall.toFixed(2),
  'pegHits',res.events.filter(e=>e.type==='peg').length,'maxPen',res.maxPen.toFixed(2),'maxStep/r',res.maxStep.toFixed(3),'tunnel',res.tunnel,'tried',log.length);
 {const SP=+process.env.SLOW||.4,s0=res.endT-(+process.env.S0||1.0),s1=res.endT+(+process.env.S1||.4),TAIL=+process.env.TAIL||3.6,end=Math.min((res.frames.length-1)/60,res.endT+TAIL);
  const VF=60;res.vfps=VF;const PRE=+process.env.PRE||0;res.pre=PRE;const tm=[];let ts=PRE,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SP:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
