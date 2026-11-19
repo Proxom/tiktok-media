@@ -18,3 +18,4 @@ Fix round (v2, no second review): live "Gate k · X of N through 👀" status be
 Caption: Game 2 🏁 RED won Game 1. Now every marble has eyes 👀 Last one through the gate is OUT. Pick a color before the trapdoor opens 👇 Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: Game 2 🏁 RED won Game 1. Pick a color! Last one through the gate is OUT 👇
 Slot: 21 Nov 21:00 Europe/London. Next C: Game 3 with LASTWIN=5 (PURPLE).
+v2 gate: 1080x1920 60 fps + AAC, -14.0 LUFS, peak -3.1 dBFS, 4k+ -48.1 LUFS, YAVG 37/36, 31.72 s. Final: media/marble-elim-02.
