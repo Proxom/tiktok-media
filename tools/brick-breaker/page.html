@@ -66,7 +66,7 @@ function draw(tv){
  if(er<0){txt(GAME?`Game ${GAME} · Pick a color 👇`:'Pick a color 👇 Who breaks the most?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);
   if(tv<3.4)txt(D.prevWin?`${D.prevWin} won Game ${GAME-1} · every brick = +1`:'Every brick you break = +1 for your color',437,36,'#ffd23f',tv<3?1:1-(tv-3)/.4);
   else txt(left<=5?`LAST ${left} BRICK${left===1?'':'S'}! 😱`:`${left} bricks left · most bricks wins`,437,38,left<=5?'#ff8a5c':'#ffd23f',ease((tv-3.4)/.3))}
- else{const s=1+.22*Math.exp(-er*5),fs=sc.slice().sort((a,b)=>b-a);txt(NAMES[WIN]+' WINS! 🏆',390,62*s,'#ffd23f',1);/* review 17 Nov: close-finish callout + question right away */txt(`${fs[0]} vs ${fs[1]}! Did your color win? 💬`,446,40,'#fff',ease((er-.15)/.3))}
+ else{const s=1+.22*Math.exp(-er*5),fs=sc.slice().sort((a,b)=>b-a);txt(NAMES[WIN]+' WINS! 🏆',390,62*s,'#ffd23f',1);/* review 17 Nov: close-finish callout + question right away */txt(`${fs[0]} vs ${fs[1]}! Did your color win? 💬`,446,40,'#fff',ease((er-.02)/.12))}
  for(let i=0;i<4;i++){const cx0=i%2?505:95,y0=478+Math.floor(i/2)*64,h=countAt(br.filter(e=>e.ball===i),t),fresh=h>0?t-br.filter(e=>e.ball===i)[h-1].t:9,pp=fresh<.25?1-fresh/.25:0;
   x.save();ball(i,cx0+22,y0+18,17,0,1,0,false);const crown=(er<0&&i===lead)||(er>=0&&i===WIN);if(crown){x.font='20px "Noto Color Emoji"';x.textAlign='center';x.fillText('👑',cx0+22,y0+5)}
   x.textAlign='left';x.lineJoin='round';x.font='900 28px "DejaVu Sans"';x.lineWidth=7;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(NAMES[i],cx0+50,y0+30);x.fillStyle=col(i,72);x.fillText(NAMES[i],cx0+50,y0+30);
@@ -74,7 +74,7 @@ function draw(tv){
   if(ww>0){x.fillStyle=col(i,56);x.shadowColor=col(i,60);x.shadowBlur=8+14*pp;x.beginPath();x.roundRect(bx,by,Math.max(ww,10),bh,8);x.fill()}x.shadowBlur=0;x.restore();
   txt(String(sc[i]),y0+31,34*(1+.25*pp),pp>0?'#fff':col(i,80),1,cx0+215,90)}
  // FOLLOW CALL: small pill inside the box for the last FOLLOWS seconds (on the side away from the winner), then the loop cuts back to frame 0
- {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const F=D.frames,k0=Math.max(0,F.length-110);let PY=0,bestd=-1;for(const cy of [D.BY0+130,(D.BY0+D.BY1)/2,D.BY1-120]){let dm=1e9;for(let k=k0;k<F.length;k++)dm=Math.min(dm,Math.abs(F[k][WIN][1]-cy));if(dm>bestd){bestd=dm;PY=cy}} /* pill row farthest from the winner ball over the pill window */
+ {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const F=D.frames,k0=Math.max(0,F.length-110);let PY=0,bestd=-1;for(let cy=D.BY0+110;cy<=D.BY1-100;cy+=20){let dm=1e9;for(let k=k0;k<F.length;k++)for(let i=0;i<4;i++)dm=Math.min(dm,Math.abs(F[k][i][1]-cy));if(dm>bestd){bestd=dm;PY=cy}} /* 19 Nov review: pill row farthest from ALL balls over the pill window */
   x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.beginPath();x.roundRect(D.BX0+D.HT,D.BY0+D.HT,D.BX1-D.BX0-2*D.HT,D.BY1-D.BY0-2*D.HT,12);x.fill();x.restore();
   x.save();x.globalAlpha=fa*HF;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(510-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+4,50,'#ffd23f',fa,510,590)}}
  return c.toDataURL('image/jpeg',0.93)}
