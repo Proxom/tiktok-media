@@ -46,7 +46,7 @@ function draw(tv){
  for(let k=0;k<N;k++){const e=eatAt[k];if(e&&t>=e.t)continue;const px=L(3*k),py=L(3*k+1),isW=won&&k===D.win,dh=Math.hypot(px-CX,py-CY)-RB-RH;
   if(isW){x.save();x.globalAlpha=.7;const g3=x.createRadialGradient(px,py,RB*.8,px,py,RB*3);g3.addColorStop(0,'rgba(255,215,80,.9)');g3.addColorStop(1,'rgba(255,215,80,0)');x.fillStyle=g3;x.beginPath();x.arc(px,py,RB*3,0,7);x.fill();x.restore()}
   const sc=isW?1+.3*ease(er/.5)+.05*Math.sin(er*7)*Math.exp(-er*.8):1;/* 19 Nov: winner pulse */gloss(COL(k),px,py,RB*sc,1,16);if(D.faces)Faces.draw(x,D.faces,k,t,px,py,RB*sc,{lid:COL(k)(42)});else eyes(px,py,RB*sc,CX-px,CY-py,dh<90&&!won);
-  if(isW&&er>.2){/* 19 Nov: bigger crown; beside the winner if it would reach the HUD panel (bottom y 607) */const cs=84*ease((er-.2)/.3),cy0=py-RB*sc-26;if(cy0-.85*84>=622)txt('👑',cy0,cs,'#fff',1,px,200);else txt('👑',py+28,cs,'#fff',1,px+(px<CX?1:-1)*(RB*sc+56),200)}}
+  if(isW&&er>.05){/* 19 Nov: bigger crown; beside the winner if it would reach the HUD panel (bottom y 607) */const cs=84*ease((er-.05)/.2),cy0=py-RB*sc-26;if(cy0-.85*84>=622)txt('👑',cy0,cs,'#fff',1,px,200);else txt('👑',py+28,cs,'#fff',1,px+(px<CX?1:-1)*(RB*sc+56),200)}}
  // win confetti
  if(won&&er<2.2){const wp=[L(3*D.win),L(3*D.win+1)],k2=er/2.2;x.save();x.beginPath();x.arc(CX,CY,R-HT,0,7);x.clip();x.shadowColor='#ffd23f';x.shadowBlur=10;for(let i=0;i<54;i++){const a=i*2.39996,h=((i*37)%11)/10,rr=RB*1.7+(220+400*h)*er,px=wp[0]+Math.cos(a)*rr,py=wp[1]+Math.sin(a)*rr+280*er*er;if(Math.hypot(px-CX,py-CY)<RH+8)continue;/* 19 Nov: no confetti over the hole */x.globalAlpha=Math.max(0,1-k2)*.95;x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':COL(D.win)(62);x.beginPath();x.arc(px,py,7*(1-k2)+2.5,0,7);x.fill()}x.restore()}
  if(won&&er<.25){x.fillStyle=`rgba(255,240,200,${.07*(1-er/.25)})`;x.fillRect(0,0,W,H)}
@@ -57,7 +57,7 @@ function draw(tv){
   if(tv<3.4)txt(D.game&&D.prevWin?`${D.prevWin} won Game ${D.game-1}. Pick a face 👇`:'Pick a color before it grows 👇',442,38,'#ffd23f',tv<3.0?1:1-(tv-3.0)/.4);
   else if(lastE&&es<1.3)txt(`${NAMES[lastE.b]} got eaten 😱`,442,40,COL(lastE.b)(68),es<1.0?1:1-(es-1.0)/.3);
   else txt(left===2?'FINAL 2 ⚔️ Who lasts longer?':'It grows every second · touch it = gone',442,left===2?40:34,left===2?'#ff6b81':'#ffd23f',1)}
- else{const s=1+.22*Math.exp(-er*5);txt(`${NAMES[D.win]} SURVIVES 👑`,394,64*s,COL(D.win)(66),1);txt(`Last of ${N} · Did you pick ${NAMES[D.win]}? 💬`,450,36,'#fff',ease(er/.15))}
+ else{const s=1+.22*Math.exp(-er*5);txt(`${NAMES[D.win]} SURVIVES 👑`,394,64*s,COL(D.win)(66),1);if(lastE&&er<.75)txt(`${NAMES[lastE.b]} got eaten 😱`,450,40,COL(lastE.b)(68),er<.6?1:1-(er-.6)/.15);/* 19 Nov review: the final eat is named first */else txt(`Last of ${N} · Did you pick ${NAMES[D.win]}? 💬`,450,36,'#fff',ease((er-.75)/.15))}
  const ry=548;txt(`LEFT ${left}/${N}`,ry,left<=2?54:48,won?'#ffd23f':left<=2?'#ff6b81':'#fff',1,255,300);
  txt(`HOLE ×${(RH/D.RH0).toFixed(1)}`,ry-6,36,'hsl(32,100%,70%)',1,560,220);txt(`⏱ ${Math.min(t,ET).toFixed(1)} s`,ry-6,36,'#fff',1,790,190);
  // dots: who is still in
