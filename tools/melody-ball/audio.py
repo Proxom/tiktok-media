@@ -16,8 +16,11 @@ for k,h in enumerate(hits):
 t=m.t;sp=np.clip(np.array([sum(1 for h in hits if V(h['t'])<=tt) for tt in t[::441]])/NN,0,1);sp=np.repeat(sp,441)[:len(t)]
 if len(sp)<len(t):sp=np.pad(sp,(0,len(t)-len(sp)),'edge')
 env=(.35+.65*sp)*(t<EV)+(t>=EV)*(.9*np.exp(-(t-EV)*.5)+.1)
-pad=sum(g*np.sin(2*np.pi*f*t+.3*np.sin(2*np.pi*.09*t+f)) for f,g in [(110.0,1),(164.81,.55),(220.0,.35),(261.63,.22)])
+KEY=d.get('key','Am')  # 19 Nov: pad + reveal chord follow the melody's key (Am = Fur Elise, G = Ode to Joy)
+PADF={'Am':[110.0,164.81,220.0,261.63],'G':[98.0,146.83,196.0,246.94]}[KEY]
+RCH={'Am':['A2','E3','A3','C4','E4','A3'],'G':['G2','D3','G3','B3','D4','G3']}[KEY]
+pad=sum(g*np.sin(2*np.pi*f*t+.3*np.sin(2*np.pi*.09*t+f)) for f,g in zip(PADF,[1,.55,.35,.22]))
 m.bed(pad*.006*env)
-for i,n in enumerate(['A2','E3','A3','C4','E4','A3']):m.add(EV+.02+i*.09,m.marimba(hz(n),.16 if i<5 else .10,.9),(i-2.5)*.22)
+for i,n in enumerate(RCH):m.add(EV+.02+i*.09,m.marimba(hz(n),.16 if i<5 else .10,.9),(i-2.5)*.22)
 tt=np.arange(int(SR*2.5))/SR;m.add(EV,.06*np.sin(2*np.pi*55*tt)*(1-np.exp(-tt/.3))*np.exp(-tt*1.4))
 m.reverb(wet=.34);m.write(sys.argv[2]);print('dur',round(D,2),'notes',NN,'reveal at',round(EV,2))

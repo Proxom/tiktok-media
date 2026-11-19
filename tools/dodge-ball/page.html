@@ -9,7 +9,8 @@ const GOLD=l=>`hsl(46,100%,${l}%)`,RED=l=>`hsl(356,92%,${l}%)`;
 const ent=D.events.filter(e=>e.type==='enter'),dod=D.events.filter(e=>e.type==='dodge'),bmp=D.events.filter(e=>e.type==='bump'),cat=D.events.find(e=>e.type==='catch');
 function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
-function txt(str,y,size,colr,a,cx=CX,maxw=800,align='center'){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+let HF=1;/* 19 Nov: HUD text fades out before the 0.4 s loop cross-fade */
+function txt(str,y,size,colr,a,cx=CX,maxw=800,align='center'){a*=HF;if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
  const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
  let px=align==='center'?cx-w/2:cx;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=colr;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
@@ -21,6 +22,7 @@ function eyes(bx,by,r,lx,ly,scared,angry){const l=Math.hypot(lx,ly)||1,ux=lx/l,u
  x.fillStyle='#fff';x.beginPath();x.ellipse(ex,ey,er,er*(scared?1.15:1),0,0,7);x.fill();x.fillStyle='#120818';x.beginPath();x.arc(ex+ux*er*.45,ey+uy*er*.45,er*.5,0,7);x.fill();
  if(angry){x.strokeStyle='#2a0508';x.lineWidth=r*.13;x.lineCap='round';x.beginPath();x.moveTo(ex-sd*er*1.1,ey-er*1.45);x.lineTo(ex+sd*er*.9,ey-er*.85);x.stroke()}}}
 function draw(tv){
+ HF=1-ease((tv-(D.tmap.length/(D.vfps||60)-.62))/.15);
  const VF=D.vfps||60,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
  const F0=D.frames[f0],F1=D.frames[f1],L=(i)=>F0[i]+(F1[i]-F0[i])*u;
  const caught=t>=ET,er=caught?t-ET:-1,P=caught?[cat.px,cat.py]:[L(0),L(1)];
@@ -63,12 +65,12 @@ function draw(tv){
   else{const pc=Math.round(100*(1+D.cgrow*t)*D.vc0/D.vr);txt(ne<NC?`A new chaser every ${D.ENT} s · Chasers speed up ⚡`:`ALL 10 IN! Chaser speed ${pc}% of yours`,440,40,'#ffd23f',ease((tv-3.6)/.3))}}
  else{const s=1+.22*Math.exp(-er*5);txt(`CAUGHT by #${D.catcher+1} 😵`,392,62*s,RED(70),1);txt(PB?(ET>PB?`${ET.toFixed(1)} s · NEW RECORD 🏆 (was ${PB.toFixed(1)} s)`:`${ET.toFixed(1)} s · The record stays ${PB.toFixed(1)} s 💬`):`It lasted ${ET.toFixed(1)} s · Did you guess it? 💬`,448,42,'#fff',ease((er-.1)/.25))}
  // counters row
- const ry=548;x.save();x.textAlign='center';
- txt(`⏱ ${tm.toFixed(1)} s`,ry,caught?58:52,caught||(PB&&tm>=PB)?'#ffd23f':'#fff',1,270,330);
- txt(`CHASERS ${ne}/${NC}`,ry-6,34,RED(72),1,570,230);txt('·',ry-6,34,'rgba(255,255,255,.6)',1,704,30);txt(`DODGES ${nd}`,ry-6,34,'#fff',1,800,170);txt('chaser speed',ry+46,22,'rgba(255,190,200,.85)',1,680,300);x.restore();
- {const pc=cl((1+D.cgrow*Math.min(t,ET))*D.vc0/D.vr);x.save();x.fillStyle='rgba(255,255,255,.14)';x.beginPath();x.roundRect(470,ry+8,420,12,6);x.fill();x.fillStyle=RED(58);x.shadowColor=RED(60);x.shadowBlur=8;x.beginPath();x.roundRect(470,ry+8,420*pc,12,6);x.fill();x.restore()}
+ const ry=548,PF=ease((tv-(D.tmap.length/(D.vfps||60)-1.4))/.15),RA=1-PF;/* 19 Nov: counter row + speed bar fade out under the follow pill */x.save();x.textAlign='center';
+ txt(`⏱ ${tm.toFixed(1)} s`,ry,caught?58:52,caught||(PB&&tm>=PB)?'#ffd23f':'#fff',RA,270,330);
+ txt(`CHASERS ${ne}/${NC}`,ry-6,34,RED(72),RA,570,230);txt('·',ry-6,34,'rgba(255,255,255,.6)',RA,704,30);txt(`DODGES ${nd}`,ry-6,34,'#fff',RA,800,170);txt('chaser speed',ry+46,22,'rgba(255,190,200,.85)',RA,680,300);x.restore();
+ {const pc=cl((1+D.cgrow*Math.min(t,ET))*D.vc0/D.vr);x.save();x.globalAlpha=RA;x.fillStyle='rgba(255,255,255,.14)';x.beginPath();x.roundRect(470,ry+8,420,12,6);x.fill();x.fillStyle=RED(58);x.shadowColor=RED(60);x.shadowBlur=8;x.beginPath();x.roundRect(470,ry+8,420*pc,12,6);x.fill();x.restore()}
  // follow call, last FS seconds
- {const DUR=D.tmap.length/VF,FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=546;x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,1)';x.fillRect(90,480,820,110);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new one every day',PY+4,46,'#ffd23f',fa,CX,590)}}
+ {const DUR=D.tmap.length/VF,FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=546;x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,1)';x.fillRect(90,480,820,110);x.restore();x.save();x.globalAlpha=fa*HF;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new one every day',PY+4,46,'#ffd23f',fa,CX,590)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>

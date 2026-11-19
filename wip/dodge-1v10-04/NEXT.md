@@ -7,3 +7,5 @@ Result: seed 41440, caught by #9 at 30.784 s (NEW RECORD vs 28.5), 9 dodges, 153
 Gate: 1080x1920 60 fps H.264 CRF 16 + AAC, 36.55 s, YAVG first 36.6 / last 35.5, -14.0 LUFS TP -2.4, 4k band -48.4 (34.4 dB below), spelling OK, safe zones clear, loopfade 0.4 s. Catch at 32.23 s (88 %). Render 1 min (4 workers).
 Caption: 1 vs 10, Round 4 😬 The record is 28.5 s. Does it finally fall? Guess the seconds 👇 Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: 1 vs 10 Round 4 😬 Can it beat 28.5 s? Guess 👇
+Review v1 (subagent): 7.0 (hook 6, polish 7, clarity 8, pacing 6, payoff 8), LOGIC PASS -> schedule. Its fix #1 was a real overlap, fixed before scheduling (tools/dodge-ball/page.html): counter row + speed bar + "chaser speed" fade out under the follow pill; all HUD text fades 0.62 s before the end so the loop cross-fade never ghosts. Not done (physics): chaser blob 13-28 s, first chaser earlier for the hook.
+Gate (final v2): 36.55 s, YAVG 36.6 / 35.2, -14.0 LUFS TP -2.4, 4k band -48.4 (34.4 dB below), end frames checked (no ghosting). DONE: media/dodge-1v10-04.
