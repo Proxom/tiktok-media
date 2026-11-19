@@ -1,10 +1,10 @@
-# Oyun kataloğu (Tiny Chaos = sadece top oyunları) — güncelleme 18 Kas 2026 22:55
+# Oyun kataloğu (Tiny Chaos = sadece top oyunları) — güncelleme 19 Kas 2026 03:30
 İzlenmeler Metricool, 18 Kas 11:15. Hesap medyanı (son 10): 150. Yüz = tools/faces (göz + ses) eklendi mi.
 
 | Oyun | Motor | Durum | Yüz | Gönderi | İzlenme (medyan) | Paylaşım | Not |
 |------|-------|-------|-----|---------|------------------|----------|-----|
 | A halka kaçışı (+ melodi, iyileşen duvar) | tools/ball-grow, ball-grow-race, melody-ball, heal-ring | hazır | HAZIR (18 Kas, tools/ball-grow/faces.js) | 6 (+2 planlı: 20 Kas 17:00, 23 Kas 17:00) | 196 (186, 206, 170, 301, 261, 144) | 0 | en iyi aile, 1,4x |
-| B son top ayakta / savaş | tools/ball-battle | hazır | HAZIR (16 Kas) | 5 | 152 (144, 224, 152, 148, 152) | 0 | survivor-05 45 -> 152 (veri gecikmesi) |
+| B son top ayakta / savaş | tools/ball-battle | hazır | HAZIR (16 Kas) | 5 (+3 planlı: Game 7 21 Kas 01:00, Game 8 24 Kas 01:00; Game 6 18 Kas yayında) | 152 (144, 224, 152, 148, 152) | 0 | survivor-05 45 -> 152 (veri gecikmesi) |
 | C engelli yarış | tools/marble-elim, marble-disaster | hazır | yok | 2 | 141.5 (145, 138) | 0 | |
 | D plinko | tools/plinko | hazır | yok | 3 | 136 (192, 136, 135) | 0 | |
 | E birleştirme (top) | tools/merge-arena | hazır | yok | 2 | 135.5 (132, 139) | 0 | 0,92x |
