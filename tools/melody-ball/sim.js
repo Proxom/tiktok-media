@@ -31,6 +31,6 @@ for(let f=1;f<FPS*90;f++){
 const res={CX,CY,R,HT,BR,RE,STEP:STEP*180/Math.PI,V0,SPD,MEL:MEL.slice(0,NN),hits,frames,endT,tunnel,maxOut,ffps:FPS,vfps:60};
 // video time map: real time, with a short ease into slow motion is not needed (no single decisive frame); the reveal starts at endT
 res.tmap=[];for(let k=0;k<frames.length-1;k++)res.tmap.push(+(k/FPS).toFixed(4));
-if(process.env.GAME)res.game=+process.env.GAME;if(process.env.KEY)res.key=process.env.KEY;if(process.env.ANSWER)res.answer=process.env.ANSWER;if(process.env.SONG)res.song=process.env.SONG;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;
+if(process.env.GAME)res.game=+process.env.GAME;if(process.env.KEY)res.key=process.env.KEY;if(process.env.ANSWER)res.answer=process.env.ANSWER;if(process.env.SONG)res.song=process.env.SONG;if(process.env.HOOK2)res.hook2=process.env.HOOK2;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;
 console.log('notes',hits.length,'endT',endT&&endT.toFixed(2),'first note',hits[0].t.toFixed(2),'last gap',(hits[NN-1].t-hits[NN-2].t).toFixed(3),'final speed',v.toFixed(0),'video',(res.tmap.length/60).toFixed(2),'reveal at',(endT/(res.tmap.length/60)*100).toFixed(1)+'%','tunnel',tunnel,'maxStep px',(v*DT).toFixed(2));
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');

@@ -8,7 +8,8 @@ const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=v=>{v=cl(v);return v*v*(3-2
 const hueK=k=>(285+k*(360/NN)*0.9)%360;
 function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
-function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+let HF=1;/* 19 Nov: text fades out before the 0.4 s loop cross-fade */
+function txt(str,y,size,colr,a,cx=500,maxw=800,align='center'){a*=HF;if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
  const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
  let px=align==='center'?cx-w/2:cx;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=colr;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
@@ -21,6 +22,7 @@ function ball(bx,by,r,hue,al,sq,nx,ny){x.save();x.globalAlpha=al;x.translate(bx,
  x.shadowColor=`hsl(${hue},100%,60%)`;x.shadowBlur=26;const g=x.createRadialGradient(-r*.35,-r*.4,r*.08,0,0,r);g.addColorStop(0,`hsl(${hue},90%,90%)`);g.addColorStop(.45,`hsl(${hue},90%,58%)`);g.addColorStop(1,`hsl(${hue},90%,26%)`);
  x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.75)';x.beginPath();x.ellipse(-r*.38,-r*.44,r*.25,r*.15,-.6,0,7);x.fill();x.restore()}
 function draw(tv){
+ HF=1-ease((tv-(D.tmap.length/(D.vfps||60)-.62))/.15);
  const VF=D.vfps,DUR=D.tmap.length/VF,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],ff=Math.min(D.frames.length-1,t*D.ffps),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
  x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.drawImage(bg,0,0);
  const tq=t+.5/D.ffps,n=countAt(HI,tq),er=t>=ET?t-ET:-1,last=n?HI[n-1]:null,since=last?t-last.t:9,pulse=since<.2?1-since/.2:0;
@@ -45,7 +47,7 @@ function draw(tv){
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,286,30);x.fill();x.stroke();x.restore();
- if(er<0){txt('Every bounce = the next note 🎵',385,52*(1+.16*Math.exp(-tv*7)),'#fff',1);txt('Guess what it draws 👇',446,50,'#ffd23f',1)}
+ if(er<0){txt('Every bounce = the next note 🎵',385,52*(1+.16*Math.exp(-tv*7)),'#fff',1);txt(D.hook2||'Guess what it draws 👇',446,50,'#ffd23f',1)}
  else{const s=1+.22*Math.exp(-er*5);txt(D.answer||'IT DREW A STAR FLOWER! ✨',388,56*s,'#ffd23f',1);txt(er>=1.6?'Name the song 🎵 💬':'Did you guess it? 👀',442,42,'#fff',1)}
  const sp=Math.round((Math.pow(D.SPD,Math.min(n,NN))-1)*100);  // the sim multiplies the speed by SPD after EVERY bounce, the last one too
  txt(`NOTE ${Math.min(n,NN)} / ${NN}`,540,58*(1+.18*pulse*(er<0)),'#fff',1,300,380);
@@ -54,7 +56,7 @@ function draw(tv){
  // progress bar under the note counter
  x.save();x.fillStyle='rgba(255,255,255,.12)';x.beginPath();x.roundRect(130,566,340,16,8);x.fill();x.fillStyle=er>=0?'#ffd23f':`hsl(${hueNow},95%,62%)`;x.beginPath();x.roundRect(130,566,340*Math.min(n,NN)/NN,16,8);x.fill();x.restore();
  // FOLLOW CALL: pill over the dimmed circle for the last 1.4 s
- {const FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=CY+R*.62;x.save();x.globalAlpha=.4*fa;x.fillStyle='#05030c';x.beginPath();x.arc(CX,CY,R-HT,0,7);x.fill();x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.9)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new one every day',PY+4,44,'#ffd23f',fa,CX,590)}}
+ {const FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=CY+R*.62;x.save();x.globalAlpha=.4*fa;x.fillStyle='#05030c';x.beginPath();x.arc(CX,CY,R-HT,0,7);x.fill();x.restore();x.save();x.globalAlpha=fa*HF;x.fillStyle='rgba(8,8,30,.9)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new one every day',PY+4,44,'#ffd23f',fa,CX,590)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>

@@ -49,9 +49,9 @@ function draw(tv){
  const bl=countAt(bmp,t);for(let k=0;k<N;k++){const e=fallAt[k];if(e&&t>=e.t)continue;const px=L(3*k),py=L(3*k+1),isW=won&&k===D.win;
   if(isW){x.save();x.globalAlpha=.7;const g3=x.createRadialGradient(px,py,MR*.8,px,py,MR*3);g3.addColorStop(0,'rgba(255,215,80,.9)');g3.addColorStop(1,'rgba(255,215,80,0)');x.fillStyle=g3;x.beginPath();x.arc(px,py,MR*3,0,7);x.fill();x.restore()}
   const sc=isW?1+.35*ease(er/.5):1;gloss(COL(k),px,py,MR*sc,1,left<=3&&!won?22:12);if(D.faces)Faces.draw(x,D.faces,k,t,px,py,MR*sc,{lid:COL(k)(38),ey:-.3});num(k,px,py,MR*sc,1)
-  if(isW&&er>.2)txt('👑',py-MR*sc-26,70*ease((er-.2)/.3),'#fff',1,px,200)}
+  if(isW&&er>.2){/* 19 Nov: never into the HUD panel (bottom y 607): if the crown top would reach y<622, put it beside the winner, towards the centre */const cs=70*ease((er-.2)/.3),cy0=py-MR*sc-26;if(sy(cy0-.85*70)>=622)txt('👑',cy0,cs,'#fff',1,px,200);else txt('👑',py+24,cs,'#fff',1,px+(px<CX?1:-1)*(MR*sc+48),200)}}
  // win confetti
- if(won&&er<2.2){const wp=[L(3*D.win),L(3*D.win+1)],k2=er/2.2;x.save();x.shadowColor='#ffd23f';x.shadowBlur=10;for(let i=0;i<54;i++){const a=i*2.39996,h=((i*37)%11)/10,rr=MR+(240+420*h)*er,px=wp[0]+Math.cos(a)*rr,py=wp[1]+Math.sin(a)*rr+300*er*er;x.globalAlpha=Math.max(0,1-k2)*.95;x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':COL(D.win)(62);x.beginPath();x.arc(px,py,7*(1-k2)+2.5,0,7);x.fill()}x.restore()}
+ if(won&&er<2.2){const wp=[L(3*D.win),L(3*D.win+1)],k2=er/2.2;x.save();x.shadowColor='#ffd23f';x.shadowBlur=10;for(let i=0;i<54;i++){const a=i*2.39996,h=((i*37)%11)/10,rr=MR*1.75+(240+420*h)*er,/* 19 Nov: confetti starts outside the grown winner, never over its face */px=wp[0]+Math.cos(a)*rr,py=wp[1]+Math.sin(a)*rr+300*er*er;x.globalAlpha=Math.max(0,1-k2)*.95;x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':COL(D.win)(62);x.beginPath();x.arc(px,py,7*(1-k2)+2.5,0,7);x.fill()}x.restore()}
  if(won&&er<.25){x.fillStyle=`rgba(255,240,200,${.07*(1-er/.25)})`;x.fillRect(0,0,W,H)}
  x.setTransform(1,0,0,1,0,0);
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
