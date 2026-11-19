@@ -87,5 +87,5 @@ console.log('seed',res.seed,'winner',res.winner,'outs',res.outs.join(','),'endT'
 {const SPf=+process.env.SLOW||.35,s0=res.endT-(+process.env.S0||1.1),s1=res.endT+(+process.env.S1||.35),TAIL=+process.env.TAIL||3.6,end=Math.min((res.frames.length-1)/60,res.endT+TAIL);
  const VF=60;res.vfps=VF;const tm=[];let ts=0,sp=1;while(ts<end){tm.push(+ts.toFixed(4));const tg=(ts>=s0&&ts<s1)?SPf:1;sp+=(tg-sp)*Math.min(1,(1/VF)/.12);ts+=sp/VF}
  res.tmap=tm;console.log('video frames',tm.length,'video dur',(tm.length/VF).toFixed(2),'win at video t',(tm.findIndex(v=>v>=res.endT)/VF).toFixed(2))}
-res.game=+process.env.GAME||0;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;
+res.game=+process.env.GAME||0;res.lastWin=process.env.LASTWIN!==undefined?+process.env.LASTWIN:-1;if(process.env.FOLLOWTEXT)res.followText=process.env.FOLLOWTEXT;
 fs.writeFileSync(OUT,'window.DATA='+JSON.stringify(res)+';\n');

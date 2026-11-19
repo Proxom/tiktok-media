@@ -39,4 +39,9 @@ env=(.35+lvl)*(t<EV)+(t>=EV)*(.9*np.exp(-(t-EV)*.6)+.1)
 pad=sum(g*np.sin(2*np.pi*f*t+.3*np.sin(2*np.pi*.1*t+f)) for f,g in [(110.0,1),(164.81,.55),(220.0,.35),(261.63,.2)])
 m.bed(pad*.006*env)
 tt=np.arange(int(SR*2.4))/SR;m.add(EV,.06*np.sin(2*np.pi*55*tt)*(1-np.exp(-tt/.3))*np.exp(-tt*1.4))
+if d.get('faces'):
+    sys.path.insert(0,__file__.rsplit('/',2)[0]+'/faces');import voice
+    FR=d['frames'];FF=d['fps'];IDX={c:i for i,c in enumerate(d['order'])}
+    px=lambda b,t:(FR[min(len(FR)-1,max(0,int(t*FF)))][IDX[b]][0]-490)/520
+    print('voices',voice.add_voices(m,d['faces']['voices'],V,ref=.12,pan=px))
 m.reverb(wet=.3);m.write(sys.argv[2]);print('dur',round(D,2),'gate notes',len(gates),'outs',len(outs),'win at',round(EV,2))
