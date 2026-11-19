@@ -10,7 +10,8 @@ const HUES=[...Array(N)].map((_,i)=>(i*137.508)%360),COL=i=>l=>`hsl(${HUES[i]},$
 const fall=D.events.filter(e=>e.type==='fall'),bmp=D.events.filter(e=>e.type==='bump'),fallAt={};fall.forEach(e=>fallAt[e.m]=e);
 function countAt(arr,t){let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].t<=t)lo=m+1;else hi=m}return lo}
 const EMO=/(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)/u;
-function txt(str,y,size,colr,a,cx=CX,maxw=800,align='center'){if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
+let HF=1;/* HUD fade before the loop cross-fade (19 Nov) */
+function txt(str,y,size,colr,a,cx=CX,maxw=800,align='center'){a*=HF;if(a<=0)return;x.save();x.globalAlpha=Math.min(1,a);x.textAlign='left';x.lineJoin='round';
  const parts=str.split(EMO).filter(p=>p);const f=(p,sz)=>EMO.test(p)?sz*.9+'px "Noto Color Emoji"':'900 '+sz+'px "DejaVu Sans",Arial,sans-serif';
  let sz=size,wd=()=>parts.reduce((s,p)=>{x.font=f(p,sz);return s+x.measureText(p).width},0),w=wd();if(w>maxw){sz=size*maxw/w;w=wd()}
  let px=align==='center'?cx-w/2:cx;parts.forEach(p=>{x.font=f(p,sz);if(!EMO.test(p)){x.lineWidth=sz/5;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(p,px,y);x.fillStyle=colr;x.fillText(p,px,y)}else{x.fillStyle='#fff';x.fillText(p,px,y)}px+=x.measureText(p).width});x.restore()}
@@ -23,6 +24,7 @@ function gloss(cf,bx,by,r,al,glow){x.save();x.globalAlpha=al;x.translate(bx,by);
  x.fillStyle=g;x.beginPath();x.arc(0,0,r,0,7);x.fill();x.shadowBlur=0;x.fillStyle='rgba(255,255,255,.7)';x.beginPath();x.ellipse(-r*.38,-r*.44,r*.25,r*.15,-.6,0,7);x.fill();x.restore()}
 function num(k,px,py,r,al){if(D.faces){py+=r*.46;r*=.66}x.save();x.globalAlpha=al;x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(r*(k>=9?1.0:1.15))}px "DejaVu Sans"`;x.lineJoin='round';x.lineWidth=r*.3;x.strokeStyle='rgba(10,4,20,.95)';x.strokeText(k+1,px,py+r*.06);x.fillStyle='#fff';x.fillText(k+1,px,py+r*.06);x.restore()}
 function draw(tv){
+ HF=1-ease((tv-(D.tmap.length/(D.vfps||60)-.62))/.15);
  const VF=D.vfps||60,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
  const F0=D.frames[f0],F1=D.frames[f1],L=i=>F0[i]+(F1[i]-F0[i])*u;
  const won=t>=ET,er=won?t-ET:-1,R=Rt(t),nf=countAt(fall,t),left=N-nf,lastF=nf?fall[nf-1]:null;
@@ -59,11 +61,11 @@ function draw(tv){
   if(tv<3.6)txt(D.game&&D.prevWin?`#${D.prevWin} won Game ${D.game-1}. Pick a face 👇`:'Pick a number before the floor shrinks 👇',440,36,'#ffd23f',tv<3.2?1:1-(tv-3.2)/.4);
   else txt(left===2?'FINAL 2 ⚔️ Who stays on?':left===3?'FINAL 3 😬':'The floor shrinks and shakes · off the edge = OUT',440,left<=3?40:32,left<=3?'#ff6b81':'#ffd23f',ease((tv-3.6)/.3))}
  else{const s=1+.22*Math.exp(-er*5);txt(`#${D.win+1} SURVIVES 👑`,394,66*s,COL(D.win)(66),1);txt(`Last of 24 · Did you pick #${D.win+1}? 💬`,450,36,'#fff',ease((er-.1)/.25))}
- const ry=548;txt(`LEFT ${left}/${N}`,ry,left<=3?54:48,left<=3?'#ff6b81':'#fff',1,265,330);
- txt(`FLOOR ${Math.round(100*R*R/(R0*R0))}%`,ry-6,34,`hsl(${HUE},90%,78%)`,1,585,240);txt(`⏱ ${Math.min(t,ET).toFixed(1)} s`,ry-6,34,'#fff',1,800,190);
+ const ry=548;txt(`LEFT ${left}/${N}`,ry,left<=3?54:48,left<=3?'#ff6b81':'#fff',1,118,330,'left');
+ txt(`FLOOR ${Math.round(100*R*R/(R0*R0))}%`,ry-6,34,`hsl(${HUE},90%,78%)`,1,585,240);txt(`⏱ ${Math.min(t,ET).toFixed(1)} s`,ry-6,34,'#fff',1,722,190,'left');
  {const pc=R*R/(R0*R0);x.save();x.fillStyle='rgba(255,255,255,.14)';x.beginPath();x.roundRect(470,ry+8,420,12,6);x.fill();x.fillStyle=`hsl(${HUE},90%,62%)`;x.shadowColor=`hsl(${HUE},100%,60%)`;x.shadowBlur=8;x.beginPath();x.roundRect(470,ry+8,420*pc,12,6);x.fill();x.restore()}
  // follow call, last FS seconds
- {const DUR=D.tmap.length/VF,FS=1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=1392;/* below the zoomed final floor (screen radius ~280 px), above the bottom safe zone */x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new one every day',PY+4,46,'#ffd23f',fa,CX,590)}}
+ {const DUR=D.tmap.length/VF,FS=2.6,fa=ease((tv-(DUR-FS))/.15)*HF;if(fa>0){const PY=1392;/* below the zoomed final floor (screen radius ~280 px), above the bottom safe zone */x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-350,PY-62,700,98,49);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → a new one every day',PY+5,52,'#ffd23f',fa/(HF||1),CX,640)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>

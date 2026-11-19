@@ -65,6 +65,9 @@ function run(seed){const rnd=rng(seed),RIN=R-HT;
     if(best){const i=best.i,u=best.u,c=C[i];endT=t-DT+u*DT;catcher=i;
      const px=prevP[0]+(P.x-prevP[0])*u,py=prevP[1]+(P.y-prevP[1])*u,cx=prev[i][0]+(c.x-prev[i][0])*u,cy=prev[i][1]+(c.y-prev[i][1])*u;P.x=px;P.y=py;c.x=cx;c.y=cy;
      events.push({t:endT,type:'catch',c:i,x:px+(cx-px)*RR/(RR+RC),y:py+(cy-py)*RR/(RR+RC),px,py});P.vx=P.vy=0}}
+   // after the catch the runner is frozen: no chaser may drift into it (19 Nov fix: the fast catcher used to sink 2-4 px in)
+   if(endT!==null)for(const c of C){if(!c.on)continue;const dx=c.x-P.x,dy=c.y-P.y,d=Math.hypot(dx,dy)||1e-6,S=RR+RC;
+    if(d<S){const nx=dx/d,ny=dy/d;c.x=P.x+nx*S;c.y=P.y+ny*S;const vn=c.vx*nx+c.vy*ny;if(vn<0){c.vx-=vn*nx;c.vy-=vn*ny}}}
    // close calls
    if(endT===null)for(let i=0;i<NC;i++){const c=C[i];if(!c.on)continue;const g=Math.hypot(c.x-P.x,c.y-P.y)-RR-RC;if(g<0){maxPen=Math.max(maxPen,-g)}
     if(g<NEAR){c.near=1;if(g<c.minG){c.minG=g;c.minT=t;c.mx=(c.x+P.x)/2;c.my=(c.y+P.y)/2}}else if(c.near&&g>FAR){events.push({t:c.minT,type:'close',c:i,gap:+c.minG.toFixed(1),x:c.mx,y:c.my,tc:t});c.near=0;c.minG=1e9}}
