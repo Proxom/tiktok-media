@@ -59,9 +59,10 @@ function draw(tv){
  // +1 pops above the bin on every landing
  for(let k=nl-1;k>=0&&t-lands[k].t<.7;k--){const e=lands[k],s=t-e.t,bx=(BX[e.bin]+BX[e.bin+1])/2;txt('+1',BT-18-60*ease(s/.7),54,col(e.bin,72),(s<.45?1:1-(s-.45)/.25)*(er<0?1:Math.max(0,1-er/.5)),bx,160)  /* fade by video time after the end: sim time freezes in the tail */}
  // winner confetti out of the winning bin
- if(er>=0&&er<2.2){const bx=(BX[WIN]+BX[WIN+1])/2;x.save();x.beginPath();x.rect(XL,640,XR-XL,FL-634);x.clip();for(let i=0;i<70;i++){const a=-Math.PI/2+(((i*37)%23)/22-.5)*1.5,sp=520+520*((i*53)%17)/16,px=bx+Math.cos(a)*sp*er,py=BT+40+Math.sin(a)*sp*er+700*er*er;
-   if(py<640)continue;x.globalAlpha=Math.max(0,1-er/2.2);x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-7,-4,14,8);x.restore()}x.restore()}
- if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.06*(1-er/.25)})`;x.fillRect(0,0,W,H)}
+ if(er>=0&&er<2.2){const bx=(BX[WIN]+BX[WIN+1])/2;x.save();x.beginPath();x.rect(XL,640,XR-XL,FL-634);x.clip();for(let i=0;i<170;i++){const a=-Math.PI/2+(((i*37)%23)/22-.5)*1.5,sp=520+520*((i*53)%17)/16,px=bx+Math.cos(a)*sp*er,py=BT+40+Math.sin(a)*sp*er+700*er*er;
+   if(py<640)continue;x.globalAlpha=Math.max(0,1-er/2.2);x.fillStyle=i%3===0?'#fff':i%3===1?'#ffd23f':col(WIN,64);x.save();x.translate(px,py);x.rotate(i+er*6);x.fillRect(-10,-5,20,10);x.restore()}x.restore()}
+ if(er>=0&&er<.25){x.fillStyle=`rgba(255,240,200,${.10*(1-er/.25)})`;x.fillRect(0,0,W,H)}
+ if(er>=0&&er<.7){const bx=(BX[WIN]+BX[WIN+1])/2,q=1-er/.7;x.save();const g=x.createRadialGradient(bx,FL-40,10,bx,FL-40,420*(.5+er));g.addColorStop(0,`rgba(255,236,150,${.55*q})`);g.addColorStop(1,'rgba(255,210,63,0)');x.fillStyle=g;x.fillRect(XL,640,XR-XL,FL-634);x.restore()}
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: hook + rule/balls left + live counters (one column per bin)
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
@@ -77,7 +78,7 @@ function draw(tv){
   txt(String(cnt[i]),588,62*(1+.25*pp),'#fff',1,cx0,180);
  }
  // FOLLOW CALL (main goal, 8 Nov): small pill over the empty peg board for the last FOLLOWS seconds, then the loop cuts back to frame 0
- {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15)*HF;if(fa>0){const PY=D.followY||1000;x.save();x.globalAlpha=.5*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
+ {const DUR=D.tmap.length/VF,FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15)*HF;if(fa>0){const PY=D.followY||1000;x.save();x.globalAlpha=.5*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.95)';x.strokeStyle='rgba(255,210,63,.95)';x.lineWidth=3;x.beginPath();x.roundRect(CX-330,PY-58,660,92,46);x.fill();x.lineWidth=5;x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+4,48,'#ffd23f',fa,CX,600)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
