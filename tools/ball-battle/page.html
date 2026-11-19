@@ -30,7 +30,7 @@ let T_NOW=0;function ball(i,bx,by,r,sqx,sqy,sq,al,hp,flash){x.save();x.globalAlp
  else if(hp!=null){x.textAlign='center';x.textBaseline='middle';x.font=`900 ${Math.round(r*1.0)}px "DejaVu Sans"`;x.lineJoin='round';x.lineWidth=r*.16;x.strokeStyle='rgba(6,4,20,.85)';x.strokeText(hp,0,r*.06);x.fillStyle='#fff';x.fillText(hp,0,r*.06)}
  x.restore()}
 function draw(tv){
- const VF=D.vfps||30,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)) /* frames[k] = sim time (k+1)/FF */,f=Math.round(ff),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
+ const VF=D.vfps||30,EF=1-ease((tv-(D.tmap.length/VF-(D.endFade||.62)))/.2) /* 19 Nov (Game 7 review): header text + follow pill fade out BEFORE the 0.4 s loop cross-fade starts */,t=D.tmap[Math.min(D.tmap.length-1,Math.max(0,Math.round(tv*VF)))],FF=D.ffps,ff=Math.min(D.frames.length-1,Math.max(0,t*FF-1)) /* frames[k] = sim time (k+1)/FF */,f=Math.round(ff),f0=Math.floor(ff),f1=Math.min(D.frames.length-1,f0+1),u=ff-f0;
  const evIn=i=>D.events.some(e=>e.t>(f0+1)/FF&&e.t<=(f1+1)/FF&&(e.ball===i||e.a===i||e.b===i));
  const PP=[0,1,2,3].map(i=>{const A0=D.frames[f0][i],A1=D.frames[f1][i];if(A0[3]===A1[3]&&!evIn(i))return[A0[0]+(A1[0]-A0[0])*u,A0[1]+(A1[1]-A0[1])*u,A0[2]+(A1[2]-A0[2])*u,A0[3]];return D.frames[f][i]});
  T_NOW=t;x.setTransform(1,0,0,1,0,0);x.globalAlpha=1;x.shadowBlur=0;x.filter='none';x.drawImage(bg,0,0);
@@ -77,7 +77,7 @@ const LBt=[...koL.map(([o,s])=>[o.t,KA(o,s)])].sort((a,b)=>b[1]-a[1])[0],spA=spd
  if(er<0){txt(GAME?`Game ${GAME} · Pick a color 👇`:'Pick a color 👇 Who survives?',385,54*(1+.18*Math.exp(-tv*7)),'#fff',1);
   if(LW>=0&&tv<3.4){const a=tv<3?1:1-(tv-3)/.4;txt((D.lastStreak||1)>=2?`${NAMES[LW]} won ${D.lastStreak} in a row 👑 Can it make it ${D.lastStreak+1}?`:`Last winner: ${NAMES[LW]} 👑 Can it win again?`,437,38,'#ffd23f',a)}
   else txt(lv>=2?`FINAL DUEL! Speed +${Math.round((Math.pow(1+SU,lv)-1)*100)}%`:lv>0?`Slower ball loses 1 HP · Speed +${Math.round((Math.pow(1+SU,lv)-1)*100)}%`:'Every crash: the SLOWER ball loses 1 HP',437,38,'#ffd23f',LW>=0?ease((tv-3.4)/.3):1)}
- else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+(LW===WIN?' WINS AGAIN! 🏆':LW>=0?' IS THE NEW CHAMP! 👑':' SURVIVES! 🏆'),390,60*s,'#ffd23f',1);if(er>=.8)txt('Did your color win? 💬',446,40,'#fff',ease((er-.8)/.35))}
+ else{const s=1+.22*Math.exp(-er*5);txt(NAMES[WIN]+(LW===WIN?' WINS AGAIN! 🏆':LW>=0?' IS THE NEW CHAMP! 👑':' SURVIVES! 🏆'),390,60*s,'#ffd23f',EF);if(er>=.8)txt('Did your color win? 💬',446,40,'#fff',ease((er-.8)/.35)*EF)}
  for(let i=0;i<4;i++){const cx0=i%2?505:95,y0=478+Math.floor(i/2)*64,hp=PP[i][3],dead=hp<=0,h=lastHit(i),hit=h&&h.loser===i?t-h.t:9,pp=hit<.2?1-hit/.2:0;
   x.save();x.globalAlpha=dead?.38:1;ball(i,cx0+22,y0+18,17,0,1,0,1,null,0);if((i===LW&&er<0)||(i===WIN&&er>=.3)){x.font='20px "Noto Color Emoji"';x.textAlign='center';x.fillText('👑',cx0+22,y0+5)}
   x.textAlign='left';x.lineJoin='round';x.font='900 28px "DejaVu Sans"';x.lineWidth=7;x.strokeStyle='rgba(6,4,20,.92)';x.strokeText(NAMES[i],cx0+50,y0+30);x.fillStyle=col(i,72);x.fillText(NAMES[i],cx0+50,y0+30);
@@ -89,7 +89,7 @@ const LBt=[...koL.map(([o,s])=>[o.t,KA(o,s)])].sort((a,b)=>b[1]-a[1])[0],spA=spd
   }
 
  // FOLLOW CALL (main goal, 8 Nov): small pill inside the arena for the last FOLLOWS seconds, then the loop cuts back to frame 0
- {const DUR=D.tmap.length/(D.vfps||30),FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=D.followY||(()=>{const F=D.frames,k0=Math.max(0,F.length-90);let sy=0;for(let k=k0;k<F.length;k++)sy+=F[k][D.win][1];return sy/(F.length-k0)>CY?CY-215:CY+200})(); /* review 12 Nov: pill on the side away from the winner ball */x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.beginPath();x.arc(CX,CY,R-HT,0,7);x.fill();x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+4,50,'#ffd23f',fa,CX,590)}}
+ {const DUR=D.tmap.length/(D.vfps||30),FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15)*EF;if(fa>0){const PY=D.followY||(()=>{const F=D.frames,k0=Math.max(0,F.length-90);let sy=0;for(let k=k0;k<F.length;k++)sy+=F[k][D.win][1];return sy/(F.length-k0)>CY?CY-215:CY+200})(); /* review 12 Nov: pill on the side away from the winner ball */x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.beginPath();x.arc(CX,CY,R-HT,0,7);x.fill();x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-320,PY-56,640,86,43);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+4,50,'#ffd23f',fa,CX,590)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
