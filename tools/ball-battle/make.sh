@@ -14,6 +14,11 @@ python3 "$D/audio.py" "$D/data.js" "$TMP/a.wav"
 PRE="acompressor=threshold=0.06:ratio=3:attack=10:release=200,lowpass=f=7500,highshelf=f=5000:g=-4"
 J=$(ffmpeg -hide_banner -nostats -i "$TMP/a.wav" -af "$PRE,loudnorm=I=-14:TP=-2.5:LRA=20:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p')
 g(){ echo "$J" | python3 -c "import json,sys;print(json.load(sys.stdin)['$1'])"; }
+# 19 Nov fix: if a linear gain to -14 LUFS would push the true peak above -2.5 dBTP, loudnorm falls back and can overshoot
+# (Game 8 measured +0.3 dBFS). Then pre-gain to about -14 LUFS and soft-limit the few loud hits at about -4.4 dBFS before the 2-pass loudnorm.
+NEED=$(python3 -c "print(1 if $(g input_tp)+(-14-($(g input_i)))>-2.6 else 0)")
+if [ "$NEED" = 1 ]; then GN=$(python3 -c "print(round(-14-($(g input_i)),2))"); PRE="$PRE,volume=${GN}dB,alimiter=limit=0.6:attack=4:release=60:level=disabled"; echo "limiter on: pre-gain ${GN} dB"
+  J=$(ffmpeg -hide_banner -nostats -i "$TMP/a.wav" -af "$PRE,loudnorm=I=-14:TP=-2.5:LRA=20:print_format=json" -f null - 2>&1 | sed -n '/^{/,/^}/p'); fi
 LN="loudnorm=I=-14:TP=-2.5:LRA=20:measured_I=$(g input_i):measured_TP=$(g input_tp):measured_LRA=$(g input_lra):measured_thresh=$(g input_thresh):offset=$(g target_offset):linear=true"
 ffmpeg -hide_banner -loglevel error -y -framerate 60 -i "$TMP/f/%04d.jpg" -i "$TMP/a.wav" -map 0:v -map 1:a -af "$PRE,$LN,aresample=48000" \
   -c:v libx264 -preset slow -crf 16 -pix_fmt yuv420p -r 60 -c:a aac -b:a 192k -shortest -movflags +faststart "$OUT"
