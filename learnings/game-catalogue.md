@@ -7,7 +7,7 @@
 | B son top ayakta / savaş | tools/ball-battle | hazır | HAZIR (16 Kas) | 6 (+3 planlı: Game 7 21 Kas, Game 8 24 Kas, Game 9 27 Kas 01:00) | 150 (144, 224, 152, 148, 152) | 0 | survivor-05 45 -> 152 (veri gecikmesi) |
 | C engelli yarış | tools/marble-elim, marble-disaster | hazır | HAZIR (19 Kas, tools/marble-elim/faces.js, 40 px bilye) | 2 (+1 planlı: Game 2 21 Kas 21:00) | 141.5 (145, 138) | 0 | 19 Kas: Game N + son kazanan satırı, canlı kapı sayacı, HUD solması |
 | D plinko | tools/plinko | hazır | yok (top 30 px) | 3 (+1 planlı: Game 4 20 Kas 21:00) | 136 (192, 136, 135) | 0 | 19 Kas: HUD solması, lider anı, LASTFALL filtresi |
-| E birleştirme (top) | tools/merge-arena | hazır | yok | 2 | 135.5 (132, 139) | 0 | 0,92x |
+| E birleştirme (top) | tools/merge-arena/race | hazır | HAZIR (20 Kas, tools/merge-arena/race/faces.js, 68+ px top) | 2 (+1 planlı: Game 3 22 Kas 21:00) | 140 (132, 139, 140) | 0 | 0,93x; 20 Kas: beraberlik lider kutusu, büyük takip hapı |
 | F 1 top vs N kovalayıcı | tools/dodge-ball | hazır | HAZIR (18 Kas, tools/dodge-ball/faces.js) | 2 (+3 planlı: Round 3 22 Kas, Round 4 24 Kas 17:00, Round 5 27 Kas 17:00) | 290 (1.93x, 18 Kas) | 0 | KAZANAN -> 20 Kas yüzlü F |
 | G büyüyen kara delik | tools/black-hole | hazır | HAZIR (16 Kas, test videosu gate geçti) | 1 (+4 planlı: Game 2 20 Kas, 3 23 Kas, 4 26 Kas 01:00, 5 29 Kas 01:00) | 187 (1.25x) | 0 | black-hole-01 |
 | H küçülen zemin (24 bilye) | tools/marble-survival | hazır | HAZIR (18 Kas, 56 px bilye = tam göz; ses: sadece son düşüşler) | 1 (+3 planlı: Game 2 21 Kas, 3 25 Kas 01:00, 4 28 Kas 01:00) | 168 (42 saatte, 1.11x) | 0 | |
