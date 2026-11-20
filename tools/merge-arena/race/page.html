@@ -50,7 +50,7 @@ function draw(tv){
  const king=D.king,hold=[-1,-1,-1,-1];let kb=null;
  for(const a of F0){const b=F1.get(a[0])||a,bx=a[3]+(b[3]-a[3])*u,by=a[4]+(b[4]-a[4])*u,born=a[5],mg=mergedIds.has(a[0]),r=rAt(a[2],born,t,mg);hold[a[1]]=Math.max(hold[a[1]],a[2]);
   const fl=mg&&t-born<.22?1-(t-born)/.22:0,isK=a[0]===king.id;if(isK){kb=[bx,by,r];continue}
-  ball(bx,by,r,a[1],a[2],outA*(er>=0?1-.35*cl(er/.6):1),fl,0,a[0],t)}
+  ball(bx,by,r,a[1],a[2],outA*(er>=0?1-.18*cl(er/.6):1),fl,0,a[0],t)}
  // merge rings: a ring in the NEW owner's color (a takeover from another color gets a thicker ring)
  for(let k=countAt(merges,t)-1;k>=0&&t-merges[k].t<.4;k--){const e=merges[k],p=(t-e.t)/.4,q=F0.find(a=>a[0]===e.id),ex=q?q[3]:e.x,ey=q?q[4]:e.y,r=rad(e.k);
   x.save();x.globalAlpha=(1-p)*outA;x.strokeStyle=col(e.c,72);x.shadowColor=col(e.c,70);x.shadowBlur=16;x.lineWidth=(e.from!==e.c?9:5)*(1-p)+1;x.beginPath();x.arc(ex,ey,r*(1+.7*ease(p)),0,7);x.stroke();x.restore()}
@@ -62,7 +62,7 @@ function draw(tv){
  const vg=x.createRadialGradient(W/2,H*.5,H*.3,W/2,H*.5,H*.8);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(0,0,0,.45)');x.fillStyle=vg;x.fillRect(0,0,W,H);
  // top panel: hook + rule + live "biggest number each color holds"
  x.save();x.fillStyle='rgba(8,8,30,.84)';x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.beginPath();x.roundRect(70,322,860,300,30);x.fill();x.stroke();x.restore();
- const m=Math.max(...hold),ls=hold.map((v,i)=>v===m&&m>=0?i:-1).filter(i=>i>=0),lead=ls.length===1?ls[0]:-1;
+ const m=Math.max(...hold),ls=hold.map((v,i)=>v===m&&m>=0?i:-1).filter(i=>i>=0),lead=ls.length===1?ls[0]:-1,tieTop=ls.length>1&&m>=TOP-1?ls:[];
  const tops=F0.filter(a=>a[2]===TOP-1),duel=[...new Set(tops.map(a=>a[1]))];
  const first64=merges.find(e=>e.k===TOP-1),f64=first64&&t>=first64.t&&t-first64.t<1.6&&duel.length<2;
  // panel texts; in the last 0.35 s the panel cross-fades back to its frame-0 state so the loop seam matches (review 11 Nov)
@@ -73,13 +73,13 @@ function draw(tv){
    else if(!st&&f64)txt(`${NAMES[first64.c]} hits 64! 👀 64 + 64 = 👑`,437,38*(1+.12*Math.exp(-(t-first64.t)*6)),'#ffd23f',al);
    else txt(TV<4.2?'Same numbers merge · newest color takes it':'64 + 64 = 👑 · first color to make it wins',437,TV<4.2?34:36,'#ffd23f',al*(TV<4.2?1:ease((TV-4.2)/.3)))}
   else{const s=1+.22*Math.exp(-E*5);txt(NAMES[WIN]+' WINS THE 👑!',390,60*s,'#ffd23f',al);txt(E>=1.6?'Did your color win? 💬':(D.king.lose!==WIN?`64 + 64 = 👑 · stolen from ${NAMES[D.king.lose]}!`:'64 + 64 = 👑'),446,38,'#fff',al*(E>=1.6?ease((E-1.6)/.35):1))}
-  for(let i=0;i<4;i++){const cx0=175+i*217,isL=E<0?LD===i:i===WIN,pulse=!st&&f64&&i===first64.c?.5+.5*Math.sin(t*16):0;
-   x.save();x.globalAlpha=al;if(isL||pulse){x.strokeStyle=`rgba(255,210,63,${isL?.95:pulse})`;x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
+  for(let i=0;i<4;i++){const cx0=175+i*217,isT=!st&&E<0&&tieTop.includes(i),isL=E<0?(LD===i||isT):i===WIN,pulse=!st&&f64&&i===first64.c?.5+.5*Math.sin(t*16):0;
+   x.save();x.globalAlpha=al;if(isL||pulse){x.strokeStyle=`rgba(255,210,63,${isT?.6+.35*Math.sin(t*9):isL?.95:pulse})`;x.shadowColor='#ffd23f';x.shadowBlur=14;x.lineWidth=4;x.beginPath();x.roundRect(cx0-98,470,196,136,22);x.stroke()}x.restore();
    txt(NAMES[i],514,30,col(i,72),al,cx0,170);
    const hv=E>=0&&i===WIN?TOP:HO[i];txt(hv<0?'–':label(hv),588,hv>=TOP?58:56,'#fff',al,cx0,180)}}
  panelText(false,1-lf);panelText(true,lf);
  // FOLLOW CALL: small pill over the jar for the last FOLLOWS seconds, then the loop cuts back to frame 0
- {const FS=D.follows||1.4,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=1040;x.save();x.globalAlpha=.45*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-270,PY-46,540,70,35);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+3,38,'#ffd23f',fa,CX,500)}}
+ {const FS=D.follows||2.0,fa=ease((tv-(DUR-FS))/.15);if(fa>0){const PY=1040;x.save();x.globalAlpha=.62*fa;x.fillStyle='#05030c';x.fillRect(XL,640,XR-XL,FL-640+14);x.restore();x.save();x.globalAlpha=fa;x.fillStyle='rgba(8,8,30,.88)';x.strokeStyle='rgba(255,210,63,.7)';x.lineWidth=3;x.beginPath();x.roundRect(CX-330,PY-58,660,92,46);x.fill();x.stroke();x.restore();txt(D.followText||'Follow → next one tomorrow',PY+6,50,'#ffd23f',fa,CX,600)}}
  return c.toDataURL('image/jpeg',0.93)}
 window.draw=draw;
 </script>
