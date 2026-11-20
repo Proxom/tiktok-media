@@ -7,4 +7,7 @@ Result: seed 91096, RED 8 / BLUE 7 / YELLOW 10 / GREEN 11, GREEN wins by 1 with 
 Caption: Game 5 👇 YELLOW won Game 4. Pick a color before the first ball lands. Which bin gets the most? Follow for a new one every day #satisfying #physics #simulation #oddlysatisfying
 Title: Game 5 👇 YELLOW won Game 4. Pick a color! Which bin wins?
 Slot: 23 Nov 21:00 Europe/London.
-STATUS: rendering.
+Gate (v1, final): 1080x1920 60 fps H.264 CRF 16 + AAC, 23.78 s, YAVG 37.4 / 36.1 (no black ends), -14.0 LUFS TP -2.4, 4k band -48.4 (34.4 dB below), spelling OK, safe zones clear, loopfade 0.4 s. GATE PASS.
+Review v1 (subagent): 7.0 (hook 7, polish 7, clarity 7, pacing 6, payoff 8), LOGIC PASS -> scheduled (§6: 7+ = schedule).
+Fixes for the NEXT D episode (engine, tools/plinko/page.html): 1) end race hard to read (low piles, small white balls) -> tint each ball by its bin once it lands and/or taller bins; 2) static 19.5-21.5 s -> follow pill in at ~20.3 s, longer confetti, pulse winner bin; 3) mid-game lull 7-15 s -> "<COLOR> closing in!" callouts / lead-gap readout; YELLOW's first lead at 4.5 s had no "takes the lead" flash (check the flash condition).
+DONE: media/plinko-pick-bin-05. Next D: Game 6 with LASTWIN=3 (GREEN) WINEX=3.
