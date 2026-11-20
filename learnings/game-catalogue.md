@@ -5,7 +5,7 @@
 |------|-------|-------|-----|---------|------------------|----------|-----|
 | A halka kaçışı (+ melodi, iyileşen duvar) | tools/ball-grow, ball-grow-race, melody-ball, heal-ring | hazır | HAZIR (18 Kas, tools/ball-grow/faces.js) | 6 (+5 planlı: 20/23 Kas halka, 25 Kas melody-ball-02, 28 Kas ring-escape-faces-03) | 196 (186, 206, 170, 301, 261, 144) | 0 | en iyi aile, 1,4x |
 | B son top ayakta / savaş | tools/ball-battle | hazır | HAZIR (16 Kas) | 6 (+3 planlı: Game 7 21 Kas, Game 8 24 Kas, Game 9 27 Kas 01:00) | 150 (144, 224, 152, 148, 152) | 0 | survivor-05 45 -> 152 (veri gecikmesi) |
-| C engelli yarış | tools/marble-elim, marble-disaster | hazır | HAZIR (19 Kas, tools/marble-elim/faces.js, 40 px bilye) | 2 (+1 planlı: Game 2 21 Kas 21:00) | 141.5 (145, 138) | 0 | 19 Kas: Game N + son kazanan satırı, canlı kapı sayacı, HUD solması |
+| C engelli yarış | tools/marble-elim, marble-disaster | hazır | HAZIR (19 Kas, tools/marble-elim/faces.js, 40 px bilye) | 2 (+2 planlı: Game 2 21 Kas 21:00, Game 3 24 Kas 21:00) | 141.5 (145, 138) | 0 | 20 Kas: lift 1200, güçlü eleme anı; sonraki: tahta büyütme |
 | D plinko | tools/plinko | hazır | yok (top 30 px) | 3 (+2 planlı: Game 4 20 Kas 21:00, Game 5 23 Kas 21:00) | 136 (192, 136, 135) | 0 | 19 Kas: HUD solması, lider anı, LASTFALL filtresi |
 | E birleştirme (top) | tools/merge-arena/race | hazır | HAZIR (20 Kas, tools/merge-arena/race/faces.js, 68+ px top) | 2 (+1 planlı: Game 3 22 Kas 21:00) | 140 (132, 139, 140) | 0 | 0,93x; 20 Kas: beraberlik lider kutusu, büyük takip hapı |
 | F 1 top vs N kovalayıcı | tools/dodge-ball | hazır | HAZIR (18 Kas, tools/dodge-ball/faces.js) | 2 (+3 planlı: Round 3 22 Kas, Round 4 24 Kas 17:00, Round 5 27 Kas 17:00) | 290 (1.93x, 18 Kas) | 0 | KAZANAN -> 20 Kas yüzlü F |
