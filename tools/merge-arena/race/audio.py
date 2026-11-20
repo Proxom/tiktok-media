@@ -34,4 +34,13 @@ for i,f in enumerate([130.81,164.81,196.0,261.63,329.63,392.0]):m.add(v+.03+i*.0
 t=m.t;ten=np.clip(np.interp(t,[0,EV],[0,1]),0,1)*(t<EV)+(t>=EV)*np.exp(-(t-EV)*1.0)*.8
 pad=sum(g*np.sin(2*np.pi*f*t+.3*np.sin(2*np.pi*.11*t+f)) for f,g in [(130.81,1),(196.0,.6),(261.63,.35)])
 m.bed(pad*.006*(.4+.6*ten))
+if d.get('faces'):# shared ball voices (tools/faces/voice.py), 12 dB under the merge notes; pan = that ball's x at that time
+    sys.path.insert(0,__file__.rsplit('/',3)[0]+'/faces');import voice
+    FR=d['frames'];FPS=d['fps']
+    def px(b,t):
+        F=FR[min(len(FR)-1,max(0,int(round(t*FPS))))]
+        for q in F:
+            if q[0]==b:return (q[3]-CX)/520
+        return 0.0
+    print('voices',voice.add_voices(m,d['faces']['voices'],V,ref=.17,pan=px))
 m.reverb();m.write(sys.argv[2]);print('dur',round(D,2),'merge notes',k,'hit taps',len(hits),'drops',len(drops))

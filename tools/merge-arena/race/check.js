@@ -1,7 +1,7 @@
 // Headless gate for the merge race (family E): every ball that appears is a drop or a merge of exactly two vanished balls with the SAME number,
 // and it carries the color of the NEWER parent (the rule on screen); no ball vanishes without a merge; exactly one KING and its color = the winner shown;
 // every color got the same number of drops (+-1); no ball inside a wall/floor; no overlap between settled balls above 4 px; tunnel 0; ending reached.
-global.window={};require('./'+(process.argv[2]||'data.js'));const D=window.DATA,bad=[];
+global.window={};require(require('path').resolve(process.argv[2]||'data.js'));const D=window.DATA,bad=[];
 const rad=k=>D.R0*Math.pow(D.RF,k),merges=D.events.filter(e=>e.type==='merge'),drops=D.events.filter(e=>e.type==='drop'),mg=new Map(merges.map(e=>[e.id,e])),dr=new Set(drops.map(e=>e.id));
 const rAt=(q,t)=>mg.has(q[0])&&t-q[5]<D.GROW?rad(q[2]-1)+(rad(q[2])-rad(q[2]-1))*(t-q[5])/D.GROW:rad(q[2]);
 let maxOv=0,ovAt=-1;const seen=new Map();
@@ -23,6 +23,7 @@ const per=[0,0,0,0];drops.forEach(e=>per[e.c]++);if(Math.max(...per)-Math.min(..
 if(drops.some(e=>e.t>D.endT))bad.push('drop after the king');
 if(merges.some(e=>e.t>D.endT))bad.push('merge after the king');
 if(maxOv>4)bad.push('overlap '+maxOv.toFixed(1)+' px at frame '+ovAt);
-if(D.tunnel)bad.push('tunnel '+D.tunnel);{const vi=D.tmap.findIndex(v=>v>=D.endT);if(vi<0||(D.tmap.length-vi)/D.vfps<2)bad.push('ending not reached')}
+if(D.tunnel)bad.push('tunnel '+D.tunnel);
+if(D.faces){const vb=require('../../faces/plan.js').checkVoices(D.faces.voices);vb.forEach(v=>bad.push(v));if(D.faces.voices.some(v=>v.kind==='giggle'&&D.frames.every(F=>!F.some(q=>q[0]===v.b&&q[2]>=D.TOP))))bad.push('giggle not on the king')}{const vi=D.tmap.findIndex(v=>v>=D.endT);if(vi<0||(D.tmap.length-vi)/D.vfps<2)bad.push('ending not reached')}
 console.log(bad.length?'FAIL\n'+bad.slice(0,20).join('\n'):`PASS drops=${drops.length} per color ${per.join('/')} merges=${merges.length} takeovers=${merges.filter(e=>e.from!==e.c).length} winner=${['RED','BLUE','YELLOW','GREEN'][D.win]} (king = 64 ${['RED','BLUE','YELLOW','GREEN'][D.win]} + 64 ${['RED','BLUE','YELLOW','GREEN'][D.king.lose]}) leadChanges=${D.changes} maxOverlap=${maxOv.toFixed(2)} px maxStep/r=${D.maxStep.toFixed(3)} tunnel=0 sub-steps/frame=10 (600 Hz) passes=6`);
 process.exit(bad.length?1:0)

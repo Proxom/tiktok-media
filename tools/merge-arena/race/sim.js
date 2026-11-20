@@ -43,11 +43,11 @@ function run(seed,ccd){
       a.x-=nx*pc*mb/sm;a.y-=ny*pc*mb/sm;b.x+=nx*pc*ma/sm;b.y+=ny*pc*ma/sm;
       const rv=(b.vx-a.vx)*nx+(b.vy-a.vy)*ny;if(rv<0){const J=-(1+EB)*rv/(1/ma+1/mb);a.vx-=J*nx/ma;a.vy-=J*ny/ma;b.vx+=J*nx/mb;b.vy+=J*ny/mb;
        const tx=-ny,ty=nx,vt=(b.vx-a.vx)*tx+(b.vy-a.vy)*ty,Jt=.04*vt/(1/ma+1/mb);a.vx+=Jt*tx/ma;a.vy+=Jt*ty/ma;b.vx-=Jt*tx/mb;b.vy-=Jt*ty/mb;
-       if(-rv>230&&pass===0)events.push({t,type:'hit',v:-rv,x:(a.x+b.x)/2,y:(a.y+b.y)/2,k:Math.max(a.k,b.k)})}}}
+       if(-rv>230&&pass===0)events.push({t,type:'hit',v:-rv,x:(a.x+b.x)/2,y:(a.y+b.y)/2,k:Math.max(a.k,b.k),a:a.id,b:b.id})}}}
     for(const b of B){const r=rb_(b);
-     if(b.x<XL+r){b.x=XL+r;if(b.vx<0){if(-b.vx>260&&pass===0)events.push({t,type:'wall',v:-b.vx,x:b.x,y:b.y,k:b.k});b.vx*=-EW;b.vy*=.995}}
-     if(b.x>XR-r){b.x=XR-r;if(b.vx>0){if(b.vx>260&&pass===0)events.push({t,type:'wall',v:b.vx,x:b.x,y:b.y,k:b.k});b.vx*=-EW;b.vy*=.995}}
-     if(b.y>FL-r){b.y=FL-r;if(b.vy>0){if(b.vy>260&&pass===0)events.push({t,type:'wall',v:b.vy,x:b.x,y:b.y,k:b.k});b.vy*=-EW;b.vx*=.985}}}
+     if(b.x<XL+r){b.x=XL+r;if(b.vx<0){if(-b.vx>260&&pass===0)events.push({t,type:'wall',v:-b.vx,x:b.x,y:b.y,k:b.k,b:b.id});b.vx*=-EW;b.vy*=.995}}
+     if(b.x>XR-r){b.x=XR-r;if(b.vx>0){if(b.vx>260&&pass===0)events.push({t,type:'wall',v:b.vx,x:b.x,y:b.y,k:b.k,b:b.id});b.vx*=-EW;b.vy*=.995}}
+     if(b.y>FL-r){b.y=FL-r;if(b.vy>0){if(b.vy>260&&pass===0)events.push({t,type:'wall',v:b.vy,x:b.x,y:b.y,k:b.k,b:b.id});b.vy*=-EW;b.vx*=.985}}}
    }
    // swept check (only for the chosen run): a ball passing through another ball or a wall inside one sub-step
    if(ccd){for(let i=0;i<B.length;i++){const a=B[i],pa=prev.get(a.id);if(!pa)continue;const r=rb_(a);
