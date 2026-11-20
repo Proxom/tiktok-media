@@ -3,6 +3,14 @@
 v4 REPLACES THE WHOLE OLD FILE. The old rules (about 30 overlapping sections) are kept only for reference in docs/archive/AGENT-v3-2026-11-07.md. Do NOT follow the archive; where anything conflicts, this file wins. The STATE notes at the end of this file are your working memory. Write everything Erkan reads (dashboard, reports, messages) in Turkish; everything the audience sees or hears in natural US English.
 
 
+## TOP OVERRIDE (Erkan, 20 Nov 2026 22:41): MORE MERGE-GAME VIDEOS — family E (merge, balls only, tools/merge-arena) gets at least every 2nd new video
+Erkan: "no merge videos for a long time; increase the number of merge videos".
+- From now on at least every 2nd NEW video is family E MERGE GAME (pattern: E, other game, E, other game ...). Never two non-E videos in a row. Two E videos in a row is allowed if the topic/variant differs (different shape set, arena, final form or hook). Same full quality gate as every other video (Game N label, pick-before-it-starts hook, clear final-form reveal at 80-85 %, loop, follow pill, no repeated topics).
+- If merge-arena needs fixes to reach the gate, do them first (it is the priority tool now); record what changed in learnings.
+- During the 20 Nov reschedule (block below): if any merge (E) videos are already in the queue, place them spread out (not all at the end), e.g. one in the first 3 days.
+- The 1-a-day / queue-limit-3 rule below still decides WHEN new videos are made; this rule decides WHICH.
+- Daily report: count merge videos published per week; compare merge vs other games on views, watch time and follows.
+
 ## TOP OVERRIDE (Erkan, 20 Nov 2026 22:34): 1 POST A DAY AT 17:00 ONLY + QUEUE LIMIT 3 + RESCHEDULE THE QUEUE + 2 RUNS A DAY — overrides EVERY older slot, schedule, queue and run-count rule in this file (incl. the 19 Nov "3 a day" and "QUEUE TARGET = 20" blocks and the 18 Nov "2 a day / 5 runs a day" block)
 - From now on exactly 1 TikTok video a day, at 17:00 Europe/London (Metricool brand 7675089). The 01:00 and 21:00 slots are CLOSED: never schedule anything at 01:00 or 21:00.
 - QUEUE = future non-draft posts in Metricool for this account + finished, gate-passed TikTok videos not yet scheduled.
